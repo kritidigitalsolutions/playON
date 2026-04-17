@@ -11,7 +11,8 @@ const {
   updateStream,
   deleteStream,
   goLive,
-  endStream
+  endStream,
+  watchStream
 } = require("../../controllers/admin/stream.controller");
 
 // single thumbnail upload
@@ -37,5 +38,7 @@ router.patch("/:id/live", isAdmin, goLive);
 
 // End Stream
 router.patch("/:id/end", isAdmin, endStream);
+
+router.get("/:id/watch", isAdmin, watchStream);
 
 module.exports = router;

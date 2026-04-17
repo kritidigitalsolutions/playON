@@ -30,7 +30,7 @@ const createFirstAdmin = async () => {
     const existingAdmin = await Admin.findOne({ email });
 
     if (existingAdmin) {
-        // console.log(name);
+      // console.log(name);
       console.log("Admin already exists");
       return;
     }
@@ -91,11 +91,11 @@ app.use("/api/streams", streamRoutes);
 
 //live channels admin
 
-app.use("/api/admin/channels",require("./routes/admin/channel.routes"));
+app.use("/api/admin/channels", require("./routes/admin/channel.routes"));
 
 
 //user live channels
-app.use("/api/channels",require("./routes/user/channel.routes"));
+app.use("/api/channels", require("./routes/user/channel.routes"));
 
 // Admin players
 app.use(
@@ -108,5 +108,33 @@ app.use(
   "/api/players",
   require("./routes/user/player.routes")
 );
+
+//Admin Plans
+const planRoutes = require("./routes/admin/plan.routes");
+
+app.use("/api/admin/plans", planRoutes);
+
+// User Public Plans
+const userPlanRoutes = require("./routes/user/plan.routes");
+
+app.use("/api/plans", userPlanRoutes);
+
+// User Subscriptions
+const subscriptionRoutes = require("./routes/user/subscription.routes");
+
+app.use("/api/subscriptions", subscriptionRoutes);
+
+// Admin Subscriptions
+const adminSubscriptionRoutes = require("./routes/admin/subscription.routes");
+app.use("/api/admin/subscriptions", adminSubscriptionRoutes);
+
+// Admin Dashboard Stats
+app.use("/api/admin/stats", require("./routes/admin/subscription.routes"));
+
+const adminLegalRoutes = require("./routes/admin/legal.routes");
+const legalRoutes = require("./routes/user/legal.routes");
+
+app.use("/api/admin/legal", adminLegalRoutes);
+app.use("/api/legal", legalRoutes);
 
 module.exports = app;

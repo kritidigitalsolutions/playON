@@ -205,7 +205,7 @@ exports.toggleFeatured = async (req, res) => {
 // Go Live
 exports.goLive = async (req, res) => {
   try {
-    const match = await matchService.goLive(req.params.id, req.body);
+    const match = await matchService.goLive(req.params.id);
 
     if (!match) {
       return res.status(404).json({
@@ -243,6 +243,44 @@ exports.endLive = async (req, res) => {
       success: true,
       message: "Match ended",
       match: formatMatch(req, match)
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+exports.watchMatch = async (req, res) => {
+  try {
+    const match = await matchService.getMatchById(req.params.id);
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: "Match not found"
+      });
+    }
+
+    const Stream = require("../../models/stream.model");
+    const stream = await Stream.findOne({ matchId: req.params.id }).sort({ createdAt: -1 });
+
+    if (!stream || !stream.streamUrl) {
+      return res.status(404).json({
+        success: false,
+        message: "No stream URL found for this match"
+      });
+    }
+
+    res.json({
+      success: true,
+      preview: true,
+      stream: {
+        streamUrl: stream.streamUrl,
+        streamType: stream.streamType
+      },
+      match
     });
   } catch (error) {
     res.status(500).json({

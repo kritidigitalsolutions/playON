@@ -4,6 +4,7 @@ import { Eye, Pencil, Play, Plus, RefreshCw, Square, Star, Trash2, Tv, X } from 
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
+import WatchModal from "../components/WatchModal";
 import { STATUS_STYLES } from "../utils/constants";
 import { formatNumber, getBadgeClass } from "../utils/helpers";
 
@@ -38,6 +39,7 @@ function LiveTV() {
   const [actionChannelId, setActionChannelId] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [watchData, setWatchData] = useState(null);
 
   const loadChannels = async () => {
     try {
@@ -248,6 +250,21 @@ function LiveTV() {
     }
   };
 
+  const handleWatch = async (channel) => {
+    try {
+      const response = await api.get(`/admin/channels/${channel._id}/watch`);
+      if (response?.data?.success) {
+        setWatchData({
+          title: response.data.channel?.name || "Live Channel",
+          streamUrl: response.data.stream?.streamUrl,
+          streamType: response.data.stream?.streamType
+        });
+      }
+    } catch (apiError) {
+      setError(apiError?.response?.data?.message || "Stream not available");
+    }
+  };
+
   const handleDelete = async () => {
     if (!deleteTarget?._id) return;
 
@@ -397,6 +414,13 @@ function LiveTV() {
               >
                 <Star size={14} className={channel.featured ? "fill-current" : ""} />
                 {channel.featured ? "Featured" : "Feature"}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleWatch(channel)}
+                className="inline-flex items-center gap-1 rounded-xl border border-indigo-200 px-3 py-2 text-sm text-indigo-600 transition hover:bg-indigo-50 dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+              >
+                Watch
               </button>
               <button
                 type="button"
@@ -627,6 +651,8 @@ function LiveTV() {
         onConfirm={handleDelete}
         confirmLabel={deleting ? "Deleting..." : "Delete Channel"}
       />
+
+      <WatchModal isOpen={!!watchData} onClose={() => setWatchData(null)} watchData={watchData} />
     </div>
   );
 }

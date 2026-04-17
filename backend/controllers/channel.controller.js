@@ -71,3 +71,38 @@ exports.getChannelBySlug = async (req, res) => {
     });
   }
 };
+
+exports.watchChannel = async (req, res) => {
+  try {
+    const channel = await channelService.getChannelBySlug(req.params.slug);
+
+    if (!channel) {
+      return res.status(404).json({
+        success: false,
+        message: "Channel not found"
+      });
+    }
+
+    if (channel.status !== "live") {
+      return res.status(400).json({
+        success: false,
+        message: "Channel is offline"
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Access granted",
+      stream: {
+        streamUrl: channel.streamUrl,
+        streamType: channel.streamType
+      },
+      channel: formatChannel(req, channel)
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

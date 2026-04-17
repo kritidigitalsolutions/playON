@@ -14,7 +14,7 @@ const {
   goLive,
   goOffline,
   toggleFeatured,
-  getLiveChannels
+  getLiveChannels,watchChannel
 } = require("../../controllers/admin/channel.controller");
 
 const channelUploads = upload.fields([
@@ -35,5 +35,7 @@ router.delete("/:id", isAdmin, deleteChannel);
 router.patch("/:id/live", isAdmin, goLive);
 router.patch("/:id/offline", isAdmin, goOffline);
 router.patch("/:id/feature", isAdmin, toggleFeatured);
+
+router.get("/:id/watch", isAdmin, watchChannel);
 
 module.exports = router;

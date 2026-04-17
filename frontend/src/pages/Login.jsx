@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import { DASHBOARD_ROUTE } from "../utils/appPaths";
+import { storeAdminSession } from "../utils/auth";
 
 function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -35,13 +37,9 @@ function Login() {
         return;
       }
 
-      localStorage.setItem("playon_admin_token", token);
+      storeAdminSession(token, response?.data?.admin);
 
-      if (response?.data?.admin) {
-        localStorage.setItem("playon_admin_profile", JSON.stringify(response.data.admin));
-      }
-
-      const redirectPath = location.state?.from?.pathname || "/dashboard";
+      const redirectPath = location.state?.from?.pathname || DASHBOARD_ROUTE;
       navigate(redirectPath, { replace: true });
     } catch (apiError) {
       setError(apiError?.response?.data?.message || "Unable to login. Please try again.");

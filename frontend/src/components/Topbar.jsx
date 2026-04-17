@@ -4,6 +4,7 @@ import { ChevronDown, LogOut, Menu, Settings, User } from "lucide-react";
 import SearchBar from "./SearchBar";
 import ThemeToggle from "./ThemeToggle";
 import NotificationBell from "./NotificationBell";
+import { getAdminProfile } from "../utils/auth";
 import { getInitials } from "../utils/helpers";
 
 function Topbar({
@@ -24,12 +25,7 @@ function Topbar({
 
   useEffect(() => {
     const loadProfile = () => {
-      try {
-        const raw = localStorage.getItem("playon_admin_profile");
-        setAdminProfile(raw ? JSON.parse(raw) : null);
-      } catch {
-        setAdminProfile(null);
-      }
+      setAdminProfile(getAdminProfile());
     };
 
     loadProfile();

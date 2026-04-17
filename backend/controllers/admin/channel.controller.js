@@ -291,3 +291,31 @@ exports.getLiveChannels = async (req, res) => {
     });
   }
 };
+
+exports.watchChannel = async (req, res) => {
+  try {
+    const channel = await channelService.getChannelById(req.params.id);
+
+    if (!channel) {
+      return res.status(404).json({
+        success: false,
+        message: "Channel not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      preview: true,
+      stream: {
+        streamUrl: channel.streamUrl,
+        streamType: channel.streamType
+      },
+      channel: formatChannel(req, channel)
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

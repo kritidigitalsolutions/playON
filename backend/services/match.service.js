@@ -85,8 +85,8 @@ exports.goLive = async (id, payload = {}) => {
     id,
     {
       status: "live",
-      streamUrl: payload.streamUrl || "",
-      streamType: payload.streamType || "other",
+      // streamUrl: payload.streamUrl || "",
+      // streamType: payload.streamType || "other",
       liveStartedAt: new Date()
     },
     { new: true, runValidators: true }
@@ -101,7 +101,7 @@ exports.endLive = async (id) => {
       status: "completed",
       liveEndedAt: new Date()
     },
-    { new: true }
+    { new: true, runValidators: true }
   );
 };
 

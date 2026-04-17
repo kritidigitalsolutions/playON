@@ -196,3 +196,27 @@ exports.endStream = async (req, res) => {
     });
   }
 };
+
+exports.watchStream = async (req, res) => {
+  try {
+    const stream = await streamService.getStreamById(req.params.id);
+
+    if (!stream) {
+      return res.status(404).json({
+        success: false,
+        message: "Stream not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      preview: true,
+      stream: formatStream(req, stream)
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

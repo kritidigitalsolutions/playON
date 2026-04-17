@@ -125,3 +125,39 @@ exports.getSingleMatch = async (req, res) => {
     });
   }
 };
+
+//watch match
+exports.watchMatch = async (req, res) => {
+  try {
+    const match = await matchService.getMatchById(req.params.id);
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: "Match not found"
+      });
+    }
+
+    if (!match.streamUrl) {
+      return res.status(404).json({
+        success: false,
+        message: "Stream not available"
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Access granted",
+      stream: {
+        streamUrl: match.streamUrl,
+        streamType: match.streamType
+      },
+      match: formatMatch(req, match)
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

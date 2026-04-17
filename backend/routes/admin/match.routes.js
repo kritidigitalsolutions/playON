@@ -12,7 +12,8 @@ const {
   deleteMatch,
   toggleFeatured,
   goLive,
-  endLive
+  endLive,
+  watchMatch
 } = require("../../controllers/admin/match.controller");
 
 // shared upload fields
@@ -46,5 +47,8 @@ router.patch("/:id/live", isAdmin, goLive);
 
 // End Live
 router.patch("/:id/end", isAdmin, endLive);
+
+
+router.get("/:id/watch", isAdmin, watchMatch);
 
 module.exports = router;

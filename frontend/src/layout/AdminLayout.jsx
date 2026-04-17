@@ -3,6 +3,8 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import useTheme from "../hooks/useTheme";
+import { LOGIN_ROUTE } from "../utils/appPaths";
+import { clearAdminSession } from "../utils/auth";
 import { PAGE_TITLES } from "../utils/constants";
 import { buildBreadcrumbs } from "../utils/helpers";
 import { recentActivities } from "../utils/adminFallbackData";
@@ -19,9 +21,8 @@ function AdminLayout() {
   const breadcrumbs = useMemo(() => buildBreadcrumbs(location.pathname), [location.pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem("playon_admin_token");
-    localStorage.removeItem("playon_admin_profile");
-    navigate("/login");
+    clearAdminSession();
+    navigate(LOGIN_ROUTE);
   };
 
   return (

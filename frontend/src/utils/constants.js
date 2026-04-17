@@ -2,12 +2,15 @@ export const NAV_LINKS = [
   { label: "Dashboard", path: "/dashboard" },
   { label: "Users", path: "/users" },
   { label: "Players", path: "/players" },
+  { label: "Plans", path: "/plans" },
+  { label: "User Plans", path: "/user-plans" },
   { label: "Matches", path: "/matches" },
   { label: "Sports", path: "/sports" },
   { label: "Streams", path: "/streams" },
   { label: "Live TV", path: "/livetv" },
   { label: "Notifications", path: "/notifications" },
   { label: "Reports", path: "/reports" },
+  { label: "Legal", path: "/legal" },
   { label: "Settings", path: "/settings" }
 ];
 
@@ -15,12 +18,15 @@ export const PAGE_TITLES = {
   "/dashboard": "Dashboard",
   "/users": "Users",
   "/players": "Players",
+  "/plans": "Plans",
+  "/user-plans": "User Plans",
   "/matches": "Matches",
   "/sports": "Sports",
   "/streams": "Streams",
   "/livetv": "Live TV",
   "/notifications": "Notifications",
   "/reports": "Reports",
+  "/legal": "Legal Pages",
   "/settings": "Settings"
 };
 

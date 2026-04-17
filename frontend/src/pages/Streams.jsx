@@ -4,6 +4,7 @@ import { Eye, Pencil, Play, Plus, RefreshCw, Square, Trash2, X } from "lucide-re
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
+import WatchModal from "../components/WatchModal";
 import { STATUS_STYLES } from "../utils/constants";
 import { formatNumber, getBadgeClass } from "../utils/helpers";
 
@@ -58,6 +59,7 @@ function Streams() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [search, setSearch] = useState("");
+  const [watchData, setWatchData] = useState(null);
 
   const getStreamTitle = (stream) => {
     if (stream.title?.trim()) {
@@ -268,6 +270,21 @@ function Streams() {
     }
   };
 
+  const handleWatch = async (stream) => {
+    try {
+      const response = await api.get(`/admin/streams/${stream._id}/watch`);
+      if (response?.data?.success) {
+        setWatchData({
+          title: response.data.stream?.title || `Stream: ${response.data.stream?.provider}`,
+          streamUrl: response.data.stream?.streamUrl,
+          streamType: response.data.stream?.streamType
+        });
+      }
+    } catch (apiError) {
+      setError(apiError?.response?.data?.message || "Stream not available");
+    }
+  };
+
   const handleDelete = async () => {
     if (!deleteTarget?._id) {
       return;
@@ -364,6 +381,13 @@ function Streams() {
                   >
                     {stream.status === "live" ? <Square size={14} /> : <Play size={14} />}
                     {actionStreamId === stream._id ? "Updating..." : stream.status === "live" ? "Stop" : "Start"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleWatch(stream)}
+                    className="inline-flex items-center gap-1 rounded-xl border border-indigo-200 px-3 py-2 text-sm text-indigo-600 transition hover:bg-indigo-50 dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                  >
+                    Watch
                   </button>
                   <button
                     type="button"
@@ -559,6 +583,8 @@ function Streams() {
         onConfirm={handleDelete}
         confirmLabel={deleting ? "Deleting..." : "Delete Stream"}
       />
+
+      <WatchModal isOpen={!!watchData} onClose={() => setWatchData(null)} watchData={watchData} />
     </div>
   );
 }

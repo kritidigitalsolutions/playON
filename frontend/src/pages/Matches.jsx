@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Search,
   Star,
+  Play,
   Trash2,
   Trophy,
   Upload,
@@ -22,6 +23,7 @@ import {
 import api from "../api/axios";
 import useDebounce from "../hooks/useDebounce";
 import PageHeader from "../components/PageHeader";
+import WatchModal from "../components/WatchModal";
 
 const PAGE_SIZE = 8;
 
@@ -90,8 +92,6 @@ const defaultForm = {
   venue: "",
   matchDate: "",
   status: "upcoming",
-  streamUrl: "",
-  streamType: "",
   score: "",
   description: "",
   isFeatured: false,
@@ -159,6 +159,7 @@ function Matches() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
+  const [watchData, setWatchData] = useState(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
@@ -266,6 +267,21 @@ function Matches() {
     }
   };
 
+  const handleWatch = async (match) => {
+    try {
+      const response = await api.get(`/admin/matches/${match._id}/watch`);
+      if (response?.data?.success) {
+        setWatchData({
+          title: response.data.match?.title || `${response.data.match?.teamA} vs ${response.data.match?.teamB}`,
+          streamUrl: response.data.stream?.streamUrl,
+          streamType: response.data.stream?.streamType
+        });
+      }
+    } catch (error) {
+      pushToast(error?.response?.data?.message || "Stream not available", "error");
+    }
+  };
+
   const validate = () => {
     const nextErrors = {};
     if (!form.title?.trim()) nextErrors.title = "Title is required";
@@ -305,8 +321,6 @@ function Matches() {
       payload.append("venue", form.venue || "");
       payload.append("matchDate", new Date(form.matchDate).toISOString());
       payload.append("status", form.status);
-      payload.append("streamUrl", form.streamUrl || "");
-      payload.append("streamType", form.streamType || "");
       payload.append("score", form.score || "");
       payload.append("description", form.description || "");
       payload.append("isFeatured", String(Boolean(form.isFeatured)));
@@ -506,7 +520,6 @@ function Matches() {
                   <th className="px-4 py-3">Match</th>
                   <th className="px-4 py-3">Date & Venue</th>
                   <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Stream</th>
                   <th className="px-4 py-3 text-right">Controls</th>
                 </tr>
               </thead>
@@ -546,12 +559,11 @@ function Matches() {
                         {match.status || "upcoming"}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-slate-700 dark:text-slate-200">
-                      <p>{match.streamType || "No stream type"}</p>
-                      <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">{match.streamUrl || "No stream URL"}</p>
-                    </td>
                     <td className="px-4 py-4">
                       <div className="flex flex-wrap justify-end gap-2">
+                        <button type="button" onClick={() => handleWatch(match)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-indigo-200 text-indigo-600 transition hover:border-indigo-400 hover:bg-indigo-50 dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-indigo-500/10">
+                          <Play size={15} />
+                        </button>
                         <button type="button" onClick={() => openView(match)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:text-white">
                           <Eye size={15} />
                         </button>
@@ -667,16 +679,6 @@ function Matches() {
                   </label>
 
                   <label className="block text-sm md:col-span-2">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Stream URL</span>
-                    <input value={form.streamUrl} onChange={(e) => onFormChange("streamUrl", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
-                  </label>
-
-                  <label className="block text-sm">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Stream Type</span>
-                    <input value={form.streamType} onChange={(e) => onFormChange("streamType", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
-                  </label>
-
-                  <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Score</span>
                     <input value={form.score} onChange={(e) => onFormChange("score", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
@@ -763,7 +765,6 @@ function Matches() {
                 <p><strong>Teams:</strong> {selectedMatch.teamA} vs {selectedMatch.teamB}</p>
                 <p><strong>Date:</strong> {formatDate(selectedMatch.matchDate)}</p>
                 <p><strong>Venue:</strong> {selectedMatch.venue || "Venue TBD"}</p>
-                <p><strong>Stream:</strong> {selectedMatch.streamUrl || "No stream URL"}</p>
                 <p><strong>Status:</strong> {selectedMatch.status || "upcoming"}</p>
                 <p><strong>Description:</strong> {selectedMatch.description || "No description added."}</p>
               </div>
@@ -792,6 +793,8 @@ function Matches() {
           </motion.div>
         ) : null}
       </AnimatePresence>
+
+      <WatchModal isOpen={!!watchData} onClose={() => setWatchData(null)} watchData={watchData} />
     </div>
   );
 }

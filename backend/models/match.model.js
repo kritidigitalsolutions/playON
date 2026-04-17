@@ -80,16 +80,16 @@ const matchSchema = new mongoose.Schema(
       default: ""
     },
 
-    streamUrl: {
-      type: String,
-      default: ""
-    },
+    // streamUrl: {
+    //   type: String,
+    //   default: ""
+    // },
 
-    streamType: {
-      type: String,
-      enum: ["hls", "youtube", "iframe", "other"],
-      default: "other"
-    },
+    // streamType: {
+    //   type: String,
+    //   enum: ["hls", "youtube", "iframe", "other"],
+    //   default: "other"
+    // },
 
     score: {
       type: String,

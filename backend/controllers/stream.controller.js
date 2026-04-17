@@ -89,3 +89,34 @@ exports.getStreamByMatch = async (req, res) => {
 //     });
 //   }
 // };
+
+exports.playStream = async (req, res) => {
+  try {
+    const stream = await streamService.getStreamByMatch(req.params.matchId);
+
+    if (!stream) {
+      return res.status(404).json({
+        success: false,
+        message: "No stream found"
+      });
+    }
+
+    if (stream.status !== "live") {
+      return res.status(400).json({
+        success: false,
+        message: "Stream is not live"
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Access granted",
+      stream: formatStream(req, stream)
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
