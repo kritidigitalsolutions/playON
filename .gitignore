@@ -23,3 +23,5 @@ Thumbs.db
 
 # editor
 .vscode/
+
+backend/firebase/serviceAccountKey.json
