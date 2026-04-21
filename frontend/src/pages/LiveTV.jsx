@@ -15,6 +15,8 @@ const defaultForm = {
   description: "",
   streamUrl: "",
   backupUrl: "",
+  rtmpUrl: "",
+  srtUrl: "",
   streamType: "other",
   quality: "auto",
   status: "offline",
@@ -77,7 +79,17 @@ function LiveTV() {
     return channels.filter((item) => {
       const statusOk = statusFilter === "all" ? true : (item.status || "").toLowerCase() === statusFilter;
       const categoryOk = categoryFilter === "all" ? true : (item.category || "").toLowerCase() === categoryFilter;
-      const text = [item.name, item.slug, item.category, item.status, item.streamType, item.streamUrl, item.backupUrl]
+      const text = [
+        item.name,
+        item.slug,
+        item.category,
+        item.status,
+        item.streamType,
+        item.streamUrl,
+        item.backupUrl,
+        item.rtmpUrl,
+        item.srtUrl
+      ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -116,6 +128,8 @@ function LiveTV() {
       description: channel?.description || "",
       streamUrl: channel?.streamUrl || "",
       backupUrl: channel?.backupUrl || "",
+      rtmpUrl: channel?.rtmpUrl || "",
+      srtUrl: channel?.srtUrl || "",
       streamType: channel?.streamType || "other",
       quality: channel?.quality || "auto",
       status: channel?.status || "offline",
@@ -155,6 +169,8 @@ function LiveTV() {
       payload.append("description", form.description || "");
       payload.append("streamUrl", form.streamUrl || "");
       payload.append("backupUrl", form.backupUrl || "");
+      payload.append("rtmpUrl", form.rtmpUrl || "");
+      payload.append("srtUrl", form.srtUrl || "");
       payload.append("streamType", form.streamType || "other");
       payload.append("quality", form.quality || "auto");
       payload.append("status", form.status || "offline");
@@ -254,10 +270,15 @@ function LiveTV() {
     try {
       const response = await api.get(`/admin/channels/${channel._id}/watch`);
       if (response?.data?.success) {
+        const stream = response.data.stream || {};
+
         setWatchData({
           title: response.data.channel?.name || "Live Channel",
-          streamUrl: response.data.stream?.streamUrl,
-          streamType: response.data.stream?.streamType
+          streamUrl: stream.streamUrl || channel.streamUrl,
+          streamType: stream.streamType || channel.streamType,
+          backupUrl: stream.backupUrl || channel.backupUrl,
+          rtmpUrl: stream.rtmpUrl || channel.rtmpUrl,
+          srtUrl: stream.srtUrl || channel.srtUrl
         });
       }
     } catch (apiError) {
@@ -509,6 +530,26 @@ function LiveTV() {
                   </label>
 
                   <label className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">RTMP URL</span>
+                    <input
+                      value={form.rtmpUrl}
+                      onChange={(e) => onFormChange("rtmpUrl", e.target.value)}
+                      placeholder="rtmp://..."
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    />
+                  </label>
+
+                  <label className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">SRT URL</span>
+                    <input
+                      value={form.srtUrl}
+                      onChange={(e) => onFormChange("srtUrl", e.target.value)}
+                      placeholder="srt://..."
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    />
+                  </label>
+
+                  <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Stream Type</span>
                     <select
                       value={form.streamType}
@@ -518,6 +559,8 @@ function LiveTV() {
                       <option value="hls">hls</option>
                       <option value="youtube">youtube</option>
                       <option value="iframe">iframe</option>
+                      <option value="rtmp">rtmp</option>
+                      <option value="srt">srt</option>
                       <option value="other">other</option>
                     </select>
                   </label>
@@ -636,6 +679,8 @@ function LiveTV() {
                 <p><strong>Quality:</strong> {selectedChannel.quality || "auto"}</p>
                 <p><strong>Stream URL:</strong> {selectedChannel.streamUrl || "-"}</p>
                 <p><strong>Backup URL:</strong> {selectedChannel.backupUrl || "-"}</p>
+                <p><strong>RTMP URL:</strong> {selectedChannel.rtmpUrl || "-"}</p>
+                <p><strong>SRT URL:</strong> {selectedChannel.srtUrl || "-"}</p>
                 <p><strong>Description:</strong> {selectedChannel.description || "-"}</p>
               </div>
             </motion.div>

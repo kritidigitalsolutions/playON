@@ -11,7 +11,7 @@ const {
 } = require("../../controllers/channel.controller");
 
 router.get("/live", getLiveChannels);
-router.get("/:slug", getChannelBySlug);
 router.get("/:slug/watch", isAuth, hasSubscription, watchChannel);
+router.get("/:slug", getChannelBySlug);
 
 module.exports = router;

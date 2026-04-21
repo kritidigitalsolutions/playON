@@ -1,4 +1,5 @@
 const channelService = require("../../services/channel.service");
+const uploadToFirebase = require("../../utils/uploadToFirebase");
 
 const makeSlug = (text = "") =>
   text
@@ -34,11 +35,33 @@ const formatChannel = (req, doc) => {
 // Create
 exports.createChannel = async (req, res) => {
   try {
+    const streamType =
+      req.body.streamType ||
+      (req.body.streamUrl?.includes(".m3u8") ? "hls" : "other");
+
+    let thumbnail = "";
+    let logo = "";
+
+    if (req.files?.thumbnail?.[0]) {
+      thumbnail = await uploadToFirebase(
+        req.files.thumbnail[0],
+        "channels"
+      );
+    }
+
+    if (req.files?.logo?.[0]) {
+      logo = await uploadToFirebase(
+        req.files.logo[0],
+        "channels"
+      );
+    }
+
     const data = {
       ...req.body,
       slug: makeSlug(req.body.name),
-      thumbnail: req.files?.thumbnail?.[0]?.path || "",
-      logo: req.files?.logo?.[0]?.path || "",
+      streamType,
+      thumbnail,
+      logo,
       createdBy: req.admin?._id || null
     };
 
@@ -136,12 +159,24 @@ exports.updateChannel = async (req, res) => {
       data.slug = makeSlug(req.body.name);
     }
 
+    if (req.body.streamUrl && !req.body.streamType) {
+      data.streamType = req.body.streamUrl.includes(".m3u8")
+        ? "hls"
+        : "other";
+    }
+
     if (req.files?.thumbnail?.[0]) {
-      data.thumbnail = req.files.thumbnail[0].path;
+      data.thumbnail = await uploadToFirebase(
+        req.files.thumbnail[0],
+        "channels"
+      );
     }
 
     if (req.files?.logo?.[0]) {
-      data.logo = req.files.logo[0].path;
+      data.logo = await uploadToFirebase(
+        req.files.logo[0],
+        "channels"
+      );
     }
 
     const channel = await channelService.updateChannel(
@@ -292,6 +327,7 @@ exports.getLiveChannels = async (req, res) => {
   }
 };
 
+// Watch
 exports.watchChannel = async (req, res) => {
   try {
     const channel = await channelService.getChannelById(req.params.id);

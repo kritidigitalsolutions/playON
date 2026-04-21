@@ -13,7 +13,7 @@ const {
 } = require("../../controllers/subscription.controller");
 
 // Buy Plan
-router.post("/buy", isAuth, buyPlan);
+// router.post("/buy", isAuth, buyPlan);
 
 // Current Subscription
 router.get("/my", isAuth, getMySubscription);

@@ -7,7 +7,8 @@ const upload = require("../../middlewares/upload.middleware");
 const {
   completeProfile,
   getProfile,
-  updateProfile
+  updateProfile,
+  saveFcmToken
 } = require("../../controllers/user.controller");
 
 router.put("/complete-profile", isAuth, completeProfile);
@@ -19,5 +20,7 @@ router.put(
   upload.single("profileImage"),
   updateProfile
 );
+
+router.put("/fcm-token", isAuth, saveFcmToken);
 
 module.exports = router;

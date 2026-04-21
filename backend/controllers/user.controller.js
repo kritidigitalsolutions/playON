@@ -1,5 +1,5 @@
 const User = require("../models/user.model");
-
+const uploadToFirebase = require("../utils/uploadToFirebase");
 
 // COMPLETE PROFILE / FIRST TIME SETUP
 exports.completeProfile = async (req, res) => {
@@ -13,8 +13,11 @@ exports.completeProfile = async (req, res) => {
       });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.userId,
+    const updatedUser = await User.findOneAndUpdate(
+      {
+        _id: req.user.userId,
+        isDeleted: false
+      },
       {
         fullName: fullName.trim(),
         favoriteSports: favoriteSports || [],
@@ -23,12 +26,18 @@ exports.completeProfile = async (req, res) => {
       { new: true }
     );
 
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
     res.json({
       success: true,
       message: "Profile completed successfully",
       user: updatedUser
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -37,11 +46,13 @@ exports.completeProfile = async (req, res) => {
   }
 };
 
-
 // GET PROFILE
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId);
+    const user = await User.findOne({
+      _id: req.user.userId,
+      isDeleted: false
+    });
 
     if (!user) {
       return res.status(404).json({
@@ -54,7 +65,6 @@ exports.getProfile = async (req, res) => {
       success: true,
       user
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -63,8 +73,7 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-
-// UPDATE PROFILE LATER
+// UPDATE PROFILE
 exports.updateProfile = async (req, res) => {
   try {
     const { fullName, email, favoriteSports, mobile } = req.body;
@@ -80,9 +89,9 @@ exports.updateProfile = async (req, res) => {
       updateData.email = email.trim().toLowerCase();
     }
 
-if(mobile){
-  updateData.mobile=mobile.trim();
-}
+    if (mobile) {
+      updateData.mobile = mobile.trim();
+    }
 
     if (favoriteSports) {
       updateData.favoriteSports = Array.isArray(favoriteSports)
@@ -91,22 +100,57 @@ if(mobile){
     }
 
     if (req.file) {
-      updateData.profilePic =
-        `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+      updateData.profilePic = await uploadToFirebase(
+        req.file,
+        "profiles"
+      );
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.userId,
+    const updatedUser = await User.findOneAndUpdate(
+      {
+        _id: req.user.userId,
+        isDeleted: false
+      },
       updateData,
       { new: true }
     );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
 
     res.json({
       success: true,
       message: "Profile updated successfully",
       user: updatedUser
     });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
 
+
+//save token
+exports.saveFcmToken = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    await User.findByIdAndUpdate(
+      req.user.userId,
+      { fcmToken: token },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Token saved"
+    });
   } catch (error) {
     res.status(500).json({
       success: false,

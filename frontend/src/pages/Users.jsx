@@ -29,6 +29,33 @@ const formatDate = (dateValue) => {
   });
 };
 
+const isDeletedProfile = (user) => user?.accountStatus === "deleted" || user?.isDeleted;
+
+const getProfileStatus = (user) => {
+  if (isDeletedProfile(user)) {
+    return {
+      label: "Deleted",
+      className: "border border-rose-500/20 bg-rose-500/10 text-rose-500"
+    };
+  }
+
+  if (user?.isProfileComplete) {
+    return {
+      label: "Complete",
+      className: "border border-emerald-500/20 bg-emerald-500/10 text-emerald-500"
+    };
+  }
+
+  return {
+    label: "Pending",
+    className: "border border-amber-500/20 bg-amber-500/10 text-amber-500"
+  };
+};
+
+const getDeleteReason = (user) => {
+  return user?.deleteReason || user?.deletionReason || user?.deletedReason || user?.reason || "-";
+};
+
 function Users() {
   const outlet = useOutletContext();
   const globalSearch = outlet?.search || "";
@@ -74,6 +101,8 @@ function Users() {
 
   const totalPages = Math.max(1, Math.ceil(users.length / ITEMS_PER_PAGE));
   const pagedUsers = useMemo(() => paginate(users, page, ITEMS_PER_PAGE), [users, page]);
+  const selectedUserStatus = getProfileStatus(selectedUser);
+  const selectedUserDeleted = isDeletedProfile(selectedUser);
 
   const handleDeleteUser = async () => {
     if (!userToDelete?._id) {
@@ -119,17 +148,15 @@ function Users() {
     {
       key: "isProfileComplete",
       label: "Profile",
-      render: (row) => (
-        <span
-          className={`rounded-full px-2.5 py-1 text-xs ${
-            row.isProfileComplete
-              ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-500"
-              : "border border-amber-500/20 bg-amber-500/10 text-amber-500"
-          }`}
-        >
-          {row.isProfileComplete ? "Complete" : "Pending"}
-        </span>
-      )
+      render: (row) => {
+        const status = getProfileStatus(row);
+
+        return (
+          <span className={`rounded-full px-2.5 py-1 text-xs ${status.className}`}>
+            {status.label}
+          </span>
+        );
+      }
     },
     {
       key: "favoriteSports",
@@ -140,24 +167,26 @@ function Users() {
     {
       key: "actions",
       label: "Actions",
-      render: (row) => (
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setSelectedUser(row)}
-            className="flex items-center gap-1 rounded-lg border border-slate-300 px-2 py-1 text-xs dark:border-slate-700"
-          >
-            <Eye size={13} /> 
-          </button>
-          <button
-            type="button"
-            onClick={() => setUserToDelete(row)}
-            className="flex items-center gap-1 rounded-lg border border-rose-300 px-2 py-1 text-xs text-rose-500"
-          >
-            <Trash2 size={13} />
-          </button>
-        </div>
-      )
+      render: (row) => {
+        return (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedUser(row)}
+              className="flex items-center gap-1 rounded-lg border border-slate-300 px-2 py-1 text-xs dark:border-slate-700"
+            >
+              <Eye size={13} /> 
+            </button>
+            <button
+              type="button"
+              onClick={() => setUserToDelete(row)}
+              className="flex items-center gap-1 rounded-lg border border-rose-300 px-2 py-1 text-xs text-rose-500"
+            >
+              <Trash2 size={13} />
+            </button>
+          </div>
+        );
+      }
     }
   ];
 
@@ -260,10 +289,24 @@ function Users() {
                 </div>
                 <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
                   <p className="text-slate-500 dark:text-slate-400">Profile Status</p>
-                  <p className="font-medium text-slate-800 dark:text-slate-100">
-                    {selectedUser.isProfileComplete ? "Complete" : "Pending"}
-                  </p>
+                  <span className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-xs ${selectedUserStatus.className}`}>
+                    {selectedUserStatus.label}
+                  </span>
                 </div>
+                {selectedUserDeleted ? (
+                  <>
+                    <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 dark:border-rose-500/30 dark:bg-rose-500/10">
+                      <p className="text-rose-600 dark:text-rose-300">Deletion Reason</p>
+                      <p className="mt-1 whitespace-pre-wrap font-medium text-slate-800 dark:text-slate-100">
+                        {getDeleteReason(selectedUser)}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                      <p className="text-slate-500 dark:text-slate-400">Deleted On</p>
+                      <p className="font-medium text-slate-800 dark:text-slate-100">{formatDate(selectedUser.deletedAt)}</p>
+                    </div>
+                  </>
+                ) : null}
                 <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
                   <p className="text-slate-500 dark:text-slate-400">Joined On</p>
                   <p className="font-medium text-slate-800 dark:text-slate-100">{formatDate(selectedUser.createdAt)}</p>

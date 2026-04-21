@@ -1,35 +1,35 @@
 const subscriptionService = require("../services/subscription.service");
 
 // Buy Plan
-exports.buyPlan = async (req, res) => {
-  try {
-    const { planId } = req.body;
+// exports.buyPlan = async (req, res) => {
+//   try {
+//     const { planId } = req.body;
 
-    if (!planId) {
-      return res.status(400).json({
-        success: false,
-        message: "planId is required"
-      });
-    }
+//     if (!planId) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "planId is required"
+//       });
+//     }
 
-    const subscription =
-      await subscriptionService.buyPlan(
-        req.user.userId,
-        planId
-      );
+//     const subscription =
+//       await subscriptionService.buyPlan(
+//         req.user.userId,
+//         planId
+//       );
 
-    res.status(201).json({
-      success: true,
-      message: "Plan purchased successfully",
-      subscription
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
+//     res.status(201).json({
+//       success: true,
+//       message: "Plan purchased successfully",
+//       subscription
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message
+//     });
+//   }
+// };
 
 // My Current Subscription
 exports.getMySubscription = async (req, res) => {

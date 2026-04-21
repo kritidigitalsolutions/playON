@@ -34,7 +34,7 @@ const streamSchema = new mongoose.Schema(
 
     streamType: {
       type: String,
-      enum: ["hls", "youtube", "iframe", "rtmp", "other"],
+      enum: ["hls", "youtube", "iframe", "rtmp", "srt", "other"],
       default: "other"
     },
 

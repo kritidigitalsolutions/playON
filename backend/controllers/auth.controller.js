@@ -1,6 +1,36 @@
 const Otp = require("../models/otp.model");
 const User = require("../models/user.model");
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
+
+const sendSmsOtp = async (mobile, otp) => {
+  try {
+    const text = process.env.SMS_GH_OTP_TEXT.replace("{{otp}}", otp);
+
+    const url = "https://www.smsgatewayhub.com/api/mt/SendSMS";
+
+    const response = await axios.get(url, {
+      params: {
+        APIKey: process.env.SMS_GH_API_KEY,
+        senderid: process.env.SMS_GH_SENDER_ID,
+        channel: 2,
+        DCS: 0,
+        flashsms: 0,
+        number: `91${mobile}`,
+        text: text,
+        route: process.env.SMS_GH_ROUTE,
+        EntityId: process.env.SMS_GH_ENTITY_ID,
+        dlttemplateid: process.env.SMS_GH_DLT_TEMPLATE_ID
+      }
+    });
+
+    console.log("SMS Response:", response.data);
+    return true;
+  } catch (error) {
+    console.log("SMS Error:", error.response?.data || error.message);
+    return false;
+  }
+};
 
 exports.sendOtp = async (req, res) => {
   try {
@@ -40,13 +70,20 @@ exports.sendOtp = async (req, res) => {
       expiresAt: new Date(Date.now() + 5 * 60 * 1000)
     });
 
-    console.log(`OTP for ${mobile}: ${otp}`);
+    const smsSent = await sendSmsOtp(mobile, otp);
+
+    if (!smsSent) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send OTP SMS"
+      });
+    }
 
     res.json({
       success: true,
       message: "OTP sent successfully",
-      otp,
-      isNewUser
+      isNewUser,
+      otp
     });
 
   } catch (error) {
@@ -57,7 +94,6 @@ exports.sendOtp = async (req, res) => {
   }
 };
 
-
 exports.verifyOtp = async (req, res) => {
   try {
     const { mobile, otp } = req.body;
@@ -65,7 +101,7 @@ exports.verifyOtp = async (req, res) => {
     if (!mobile || !otp) {
       return res.status(400).json({
         success: false,
-        message: "Mobile and OTP are required"
+        message: "Mobile and OTP required"
       });
     }
 
@@ -91,14 +127,7 @@ exports.verifyOtp = async (req, res) => {
     if (!user) {
       user = await User.create({ mobile });
     } else {
-      const hasFullName =
-        user.fullName &&
-        user.fullName.trim() !== "";
-
-      const profileDone =
-        user.isProfileComplete === true;
-
-      if (hasFullName && profileDone) {
+      if (user.fullName && user.isProfileComplete) {
         isNewUser = false;
       }
     }
@@ -111,7 +140,7 @@ exports.verifyOtp = async (req, res) => {
 
     await Otp.deleteMany({ mobile });
 
-    return res.json({
+    res.json({
       success: true,
       message: "OTP verified successfully",
       token,

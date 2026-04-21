@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Eye, Pencil, RefreshCw, Trash2, X } from "lucide-react";
+import { Eye, Pencil, Plus, RefreshCw, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import api from "../api/axios";
 import PageHeader from "../components/PageHeader";
@@ -11,6 +11,61 @@ const LEGAL_TYPES = [
   { id: "refund-policy", label: "Refund Policy" }
 ];
 
+const htmlToPlainText = (value = "", shouldTrim = false) => {
+  const plainText = value
+    .replace(/<\s*br\s*\/?>/gi, "\n")
+    .replace(/<\/\s*(p|div|h[1-6]|li|tr)\s*>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, "\"")
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, "\n\n");
+
+  return shouldTrim ? plainText.trim() : plainText;
+};
+
+const createEmptySection = () => ({ title: "", content: "" });
+
+const parseContentSections = (content = "") => {
+  const plainContent = htmlToPlainText(content, true);
+
+  if (!plainContent) {
+    return [createEmptySection()];
+  }
+
+  return plainContent
+    .split(/\n{2,}/)
+    .map((block) => {
+      const lines = block.split("\n");
+      const [firstLine, ...rest] = lines;
+
+      if (!rest.length) {
+        return { title: "", content: htmlToPlainText(firstLine, true) };
+      }
+
+      return {
+        title: htmlToPlainText(firstLine, true),
+        content: htmlToPlainText(rest.join("\n"), true)
+      };
+    })
+    .filter((section) => section.title || section.content);
+};
+
+const buildContentFromSections = (sections = []) => {
+  return sections
+    .map((section) => {
+      const title = htmlToPlainText(section.title, true);
+      const content = htmlToPlainText(section.content, true);
+
+      return [title, content].filter(Boolean).join("\n");
+    })
+    .filter(Boolean)
+    .join("\n\n");
+};
+
 function Legal() {
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +75,7 @@ function Legal() {
   const [editModal, setEditModal] = useState(null); // holds type id string
   const [deleteTarget, setDeleteTarget] = useState(null); // holds type id string
   
-  const [form, setForm] = useState({ title: "", content: "", isActive: true });
+  const [form, setForm] = useState({ title: "", sections: [createEmptySection()], isActive: true });
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -47,32 +102,65 @@ function Legal() {
     const existing = pages.find((p) => p.type === typeId);
     setEditModal(typeId);
     if (existing) {
-      setForm({ title: existing.title, content: existing.content, isActive: existing.isActive });
+      setForm({
+        title: htmlToPlainText(existing.title, true),
+        sections: parseContentSections(existing.content),
+        isActive: existing.isActive
+      });
     } else {
       const label = LEGAL_TYPES.find((t) => t.id === typeId)?.label || "";
-      setForm({ title: label, content: "", isActive: true });
+      setForm({ title: label, sections: [createEmptySection()], isActive: true });
     }
   };
 
   const closeEdit = () => {
     setEditModal(null);
-    setForm({ title: "", content: "", isActive: true });
+    setForm({ title: "", sections: [createEmptySection()], isActive: true });
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: htmlToPlainText(value) }));
+  };
+
+  const handleSectionChange = (index, field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      sections: prev.sections.map((section, sectionIndex) => (
+        sectionIndex === index
+          ? { ...section, [field]: htmlToPlainText(value) }
+          : section
+      ))
+    }));
+  };
+
+  const addSection = () => {
+    setForm((prev) => ({
+      ...prev,
+      sections: [...prev.sections, createEmptySection()]
+    }));
+  };
+
+  const removeSection = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      sections: prev.sections.length > 1
+        ? prev.sections.filter((_, sectionIndex) => sectionIndex !== index)
+        : [createEmptySection()]
+    }));
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!form.title.trim() || !form.content.trim()) return;
+    const title = htmlToPlainText(form.title, true);
+    const content = buildContentFromSections(form.sections);
+    if (!title.trim() || !content.trim()) return;
 
     try {
       setSubmitting(true);
       const response = await api.post(`/admin/legal/${editModal}`, {
-        title: form.title,
-        content: form.content
+        title,
+        content
       });
       if (response.data?.success) {
         fetchPages();
@@ -181,7 +269,7 @@ function Legal() {
                           title="View Page"
                           className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:text-white"
                         >
-                          <Eye size={15} /> View
+                          <Eye size={15} /> 
                         </button>
                         <button
                           type="button"
@@ -189,7 +277,7 @@ function Legal() {
                           title="Edit Page"
                           className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:text-white"
                         >
-                          <Pencil size={15} /> Edit
+                          <Pencil size={15} /> 
                         </button>
                         <button
                           type="button"
@@ -251,18 +339,72 @@ function Legal() {
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="content" className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Content (Markdown / HTML)
-                  </label>
-                  <textarea
-                    id="content"
-                    name="content"
-                    value={form.content}
-                    onChange={handleChange}
-                    rows={12}
-                    className="w-full rounded-xl border border-slate-200 p-4 font-mono text-sm leading-relaxed outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500"
-                  />
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Sections
+                      </h3>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        Add each section with a separate title and content. HTML tags are removed automatically.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addSection}
+                      className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 text-sm font-medium text-indigo-600 transition hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20"
+                    >
+                      <Plus size={15} /> Add Section
+                    </button>
+                  </div>
+
+                  {form.sections.map((section, index) => (
+                    <div key={index} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-950/40">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                          Section {index + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeSection(index)}
+                          className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-rose-200 px-2.5 text-xs font-medium text-rose-500 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-500/30 dark:hover:bg-rose-500/10"
+                          disabled={form.sections.length === 1 && !section.title && !section.content}
+                        >
+                          <Trash2 size={13} /> Remove
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label htmlFor={`section-title-${index}`} className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Section Title
+                          </label>
+                          <input
+                            type="text"
+                            id={`section-title-${index}`}
+                            value={section.title}
+                            onChange={(e) => handleSectionChange(index, "title", e.target.value)}
+                            placeholder="Example: Information We Collect"
+                            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor={`section-content-${index}`} className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Section Content
+                          </label>
+                          <textarea
+                            id={`section-content-${index}`}
+                            value={section.content}
+                            onChange={(e) => handleSectionChange(index, "content", e.target.value)}
+                            rows={5}
+                            placeholder="Write this section in plain text."
+                            className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm leading-relaxed outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="mt-6 flex justify-end gap-3">
@@ -299,9 +441,8 @@ function Legal() {
               </div>
 
               <div className="prose prose-slate max-w-none dark:prose-invert">
-                {/* For simple display we just render the raw text/html. In production you might use a markdown parser or dangerouslySetInnerHTML. */}
                 <div className="whitespace-pre-wrap font-sans text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                  {viewModal.content}
+                  {htmlToPlainText(viewModal.content)}
                 </div>
               </div>
             </motion.div>

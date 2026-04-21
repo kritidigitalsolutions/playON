@@ -46,13 +46,28 @@ const channelSchema = new mongoose.Schema(
       default: "",
       trim: true
     },
+    rtmpUrl: {
+  type: String,
+  default: "",
+  trim: true
+},
 
-    streamType: {
-      type: String,
-      enum: ["hls", "youtube", "iframe", "other"],
-      default: "other"
-    },
+srtUrl: {
+  type: String,
+  default: "",
+  trim: true
+},
 
+    // streamType: {
+    //   type: String,
+    //   enum: ["hls", "youtube", "iframe", "other"],
+    //   default: "other"
+    // },
+streamType: {
+  type: String,
+  enum: ["hls", "youtube", "iframe", "rtmp", "srt", "other"],
+  default: "other"
+},
     quality: {
       type: String,
       enum: ["240p", "360p", "480p", "720p", "1080p", "auto"],

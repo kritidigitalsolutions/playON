@@ -1,4 +1,5 @@
 const matchService = require("../../services/match.service");
+const uploadToFirebase = require("../../utils/uploadToFirebase");
 
 // helpers
 const parseBoolean = (value) => {
@@ -37,15 +38,48 @@ const formatMatch = (req, doc) => {
 // Create
 exports.createMatch = async (req, res) => {
   try {
-    const data = {
-      ...req.body,
-      isFeatured: parseBoolean(req.body.isFeatured),
-      thumbnail: req.files?.thumbnail?.[0]?.path || "",
-      banner: req.files?.banner?.[0]?.path || "",
-      teamALogo: req.files?.teamALogo?.[0]?.path || "",
-      teamBLogo: req.files?.teamBLogo?.[0]?.path || "",
-      createdBy: req.admin._id
-    };
+  let thumbnail = "";
+let banner = "";
+let teamALogo = "";
+let teamBLogo = "";
+
+if (req.files?.thumbnail?.[0]) {
+  thumbnail = await uploadToFirebase(
+    req.files.thumbnail[0],
+    "matches"
+  );
+}
+
+if (req.files?.banner?.[0]) {
+  banner = await uploadToFirebase(
+    req.files.banner[0],
+    "matches"
+  );
+}
+
+if (req.files?.teamALogo?.[0]) {
+  teamALogo = await uploadToFirebase(
+    req.files.teamALogo[0],
+    "matches"
+  );
+}
+
+if (req.files?.teamBLogo?.[0]) {
+  teamBLogo = await uploadToFirebase(
+    req.files.teamBLogo[0],
+    "matches"
+  );
+}
+
+const data = {
+  ...req.body,
+  isFeatured: parseBoolean(req.body.isFeatured),
+  thumbnail,
+  banner,
+  teamALogo,
+  teamBLogo,
+  createdBy: req.admin._id
+};
 
     const match = await matchService.createMatch(data);
 
@@ -116,21 +150,32 @@ exports.updateMatch = async (req, res) => {
     }
 
     if (req.files?.thumbnail?.[0]) {
-      data.thumbnail = req.files.thumbnail[0].path;
-    }
+  data.thumbnail = await uploadToFirebase(
+    req.files.thumbnail[0],
+    "matches"
+  );
+}
 
-    if (req.files?.banner?.[0]) {
-      data.banner = req.files.banner[0].path;
-    }
+if (req.files?.banner?.[0]) {
+  data.banner = await uploadToFirebase(
+    req.files.banner[0],
+    "matches"
+  );
+}
 
-    if (req.files?.teamALogo?.[0]) {
-      data.teamALogo = req.files.teamALogo[0].path;
-    }
+if (req.files?.teamALogo?.[0]) {
+  data.teamALogo = await uploadToFirebase(
+    req.files.teamALogo[0],
+    "matches"
+  );
+}
 
-    if (req.files?.teamBLogo?.[0]) {
-      data.teamBLogo = req.files.teamBLogo[0].path;
-    }
-
+if (req.files?.teamBLogo?.[0]) {
+  data.teamBLogo = await uploadToFirebase(
+    req.files.teamBLogo[0],
+    "matches"
+  );
+}
     const match = await matchService.updateMatch(req.params.id, data);
 
     if (!match) {

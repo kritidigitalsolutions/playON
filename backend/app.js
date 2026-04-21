@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 
 // Create First Admin Automatically
@@ -67,6 +67,9 @@ app.get("/", (req, res) => {
 app.use("/api/auth", require("./routes/user/auth.routes"));
 app.use("/api/user", require("./routes/user/user.routes"));
 app.use("/api/admin", require("./routes/admin/admin.routes"));
+
+//USER DELETE ITS ACCOUNT 
+app.use("/api/user", require("./routes/user/account.routes"));
 
 
 //Admin match routes 
@@ -127,9 +130,10 @@ app.use("/api/subscriptions", subscriptionRoutes);
 // Admin Subscriptions
 const adminSubscriptionRoutes = require("./routes/admin/subscription.routes");
 app.use("/api/admin/subscriptions", adminSubscriptionRoutes);
+app.use("/api/payment", require("./routes/user/payment.routes"));
 
 // Admin Dashboard Stats
-app.use("/api/admin/stats", require("./routes/admin/subscription.routes"));
+// app.use("/api/admin/stats", require("./routes/admin/subscription.routes"));
 
 const adminLegalRoutes = require("./routes/admin/legal.routes");
 const legalRoutes = require("./routes/user/legal.routes");
@@ -137,4 +141,7 @@ const legalRoutes = require("./routes/user/legal.routes");
 app.use("/api/admin/legal", adminLegalRoutes);
 app.use("/api/legal", legalRoutes);
 
+//notifications
+app.use("/api/notifications", require("./routes/user/notification.routes"));
+app.use("/api/admin/notifications", require("./routes/admin/notification.routes"));
 module.exports = app;

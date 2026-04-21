@@ -93,10 +93,13 @@ exports.watchChannel = async (req, res) => {
     res.json({
       success: true,
       message: "Access granted",
-      stream: {
-        streamUrl: channel.streamUrl,
-        streamType: channel.streamType
-      },
+    stream: {
+  streamUrl: channel.streamUrl,
+  backupUrl: channel.backupUrl,
+  rtmpUrl: channel.rtmpUrl,
+  srtUrl: channel.srtUrl,
+  streamType: channel.streamType
+},
       channel: formatChannel(req, channel)
     });
   } catch (error) {

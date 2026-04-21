@@ -138,10 +138,16 @@ exports.watchMatch = async (req, res) => {
       });
     }
 
-    if (!match.streamUrl) {
+    const Stream = require("../models/stream.model");
+
+    const stream = await Stream.findOne({
+      matchId: req.params.id
+    }).sort({ createdAt: -1 });
+
+    if (!stream || !stream.streamUrl) {
       return res.status(404).json({
         success: false,
-        message: "Stream not available"
+        message: "No stream URL found for this match"
       });
     }
 
@@ -149,11 +155,12 @@ exports.watchMatch = async (req, res) => {
       success: true,
       message: "Access granted",
       stream: {
-        streamUrl: match.streamUrl,
-        streamType: match.streamType
+        streamUrl: stream.streamUrl,
+        streamType: stream.streamType
       },
       match: formatMatch(req, match)
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,

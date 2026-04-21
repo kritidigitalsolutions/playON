@@ -35,6 +35,11 @@ const subscriptionSchema = new mongoose.Schema(
       required: true
     },
 
+    paymentId: {
+      type: String,
+      default: ""
+    },
+
     autoRenew: {
       type: Boolean,
       default: false

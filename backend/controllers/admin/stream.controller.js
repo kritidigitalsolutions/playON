@@ -1,4 +1,5 @@
 const streamService = require("../../services/stream.service");
+const uploadToFirebase = require("../../utils/uploadToFirebase");
 
 // helper
 const fileUrl = (req, filePath) => {
@@ -27,12 +28,17 @@ const formatStream = (req, doc) => {
 // Create
 exports.createStream = async (req, res) => {
   try {
-    const data = {
-      ...req.body,
-      thumbnail: req.file?.path || "",
-      createdBy: req.admin._id
-    };
+   let thumbnail = "";
 
+if (req.file) {
+  thumbnail = await uploadToFirebase(req.file, "streams");
+}
+
+const data = {
+  ...req.body,
+  thumbnail,
+  createdBy: req.admin._id
+};
     const stream = await streamService.createStream(data);
 
     res.status(201).json({
@@ -96,10 +102,9 @@ exports.updateStream = async (req, res) => {
     const data = {
       ...req.body
     };
-
-    if (req.file) {
-      data.thumbnail = req.file.path;
-    }
+if (req.file) {
+  data.thumbnail = await uploadToFirebase(req.file, "streams");
+}
 
     const stream = await streamService.updateStream(req.params.id, data);
 

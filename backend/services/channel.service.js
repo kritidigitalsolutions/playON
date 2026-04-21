@@ -120,6 +120,13 @@ exports.getLiveChannels = async (query = {}) => {
   }
 
   return await Channel.find(filter).sort({
-    createdAt: -1
+  featured: -1,
+  createdAt: -1
+});
+};
+exports.getWatchableChannel = async (id) => {
+  return await Channel.findOne({
+    _id: id,
+    status: "live"
   });
 };

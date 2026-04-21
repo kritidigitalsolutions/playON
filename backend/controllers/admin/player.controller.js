@@ -1,4 +1,5 @@
 const playerService = require("../../services/player.service");
+const uploadToFirebase = require("../../utils/uploadToFirebase");
 
 const makeSlug = (text = "") =>
   text
@@ -33,10 +34,16 @@ const formatPlayer = (req, doc) => {
 // Create
 exports.createPlayer = async (req, res) => {
   try {
+    let image = "";
+
+    if (req.file) {
+      image = await uploadToFirebase(req.file, "players");
+    }
+
     const data = {
       ...req.body,
       slug: makeSlug(req.body.name),
-      image: req.file?.path || ""
+      image
     };
 
     const player = await playerService.createPlayer(data);
@@ -110,7 +117,10 @@ exports.updatePlayer = async (req, res) => {
     }
 
     if (req.file) {
-      data.image = req.file.path;
+      data.image = await uploadToFirebase(
+        req.file,
+        "players"
+      );
     }
 
     const player = await playerService.updatePlayer(
