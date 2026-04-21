@@ -1,6 +1,19 @@
 const Admin = require("../../models/admin.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const AdminOtp = require("../../models/adminOtp.model");
+const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS
+  }
+});
+
+const generateOtp = () =>
+  Math.floor(100000 + Math.random() * 900000).toString();
 
 exports.loginAdmin = async (req, res) => {
   try {
@@ -47,6 +60,151 @@ exports.loginAdmin = async (req, res) => {
         name: admin.name,
         email: admin.email
       }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+/* FORGOT PASSWORD - SEND OTP */
+exports.sendForgotPasswordOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const admin = await Admin.findOne({
+      email: email.toLowerCase()
+    });
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Email not found"
+      });
+    }
+
+    const otp = generateOtp();
+
+    await AdminOtp.deleteMany({
+      email: email.toLowerCase(),
+      purpose: "forgot-password"
+    });
+
+    await AdminOtp.create({
+      email: email.toLowerCase(),
+      otp,
+      purpose: "forgot-password",
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000)
+    });
+
+    await transporter.sendMail({
+      from: process.env.MAIL_USER,
+      to: email.toLowerCase(),
+      subject: "Forgot Password OTP",
+      html: `<h3>Your OTP is ${otp}</h3><p>Valid for 5 minutes.</p>`
+    });
+
+    res.json({
+      success: true,
+      message: "OTP sent successfully"
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+/* FORGOT PASSWORD - VERIFY OTP */
+exports.verifyForgotPasswordOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and OTP are required"
+      });
+    }
+
+    const record = await AdminOtp.findOne({
+      email: email.toLowerCase(),
+      otp,
+      purpose: "forgot-password",
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!record) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP"
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "OTP verified successfully"
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+/* FORGOT PASSWORD - RESET */
+exports.resetForgotPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword, confirmPassword } = req.body;
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Passwords do not match"
+      });
+    }
+
+    const record = await AdminOtp.findOne({
+      email: email.toLowerCase(),
+      otp,
+      purpose: "forgot-password",
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!record) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP"
+      });
+    }
+
+    const admin = await Admin.findOne({
+      email: email.toLowerCase()
+    });
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found"
+      });
+    }
+
+    admin.password = await bcrypt.hash(newPassword, 10);
+    await admin.save();
+
+    await AdminOtp.deleteMany({
+      email: email.toLowerCase(),
+      purpose: "forgot-password"
+    });
+
+    res.json({
+      success: true,
+      message: "Password changed successfully"
     });
 
   } catch (error) {

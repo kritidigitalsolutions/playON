@@ -14,9 +14,16 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Legal from "./pages/Legal";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import { getValidAdminToken } from "./utils/auth";
-import { DASHBOARD_ROUTE, LOGIN_ROUTE } from "./utils/appPaths";
+import {
+  DASHBOARD_ROUTE,
+  FORGOT_PASSWORD_ROUTE,
+  LOGIN_ROUTE,
+  RESET_PASSWORD_ROUTE
+} from "./utils/appPaths";
 
 const hasAuthToken = () => Boolean(getValidAdminToken());
 
@@ -46,6 +53,22 @@ function App() {
         element={
           <PublicRoute>
             <Login />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path={FORGOT_PASSWORD_ROUTE}
+        element={
+          <PublicRoute>
+            <ForgotPassword />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path={RESET_PASSWORD_ROUTE}
+        element={
+          <PublicRoute>
+            <ResetPassword />
           </PublicRoute>
         }
       />

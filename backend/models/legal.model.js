@@ -9,8 +9,10 @@ const legalSchema = new mongoose.Schema(
       enum: [
         "privacy-policy",
         "terms-conditions",
-        "refund-policy"
+        "refund-policy",
+        "about-us"
       ]
+      
     },
 
     title: {

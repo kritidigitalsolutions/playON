@@ -6,6 +6,7 @@ import ThemeToggle from "./ThemeToggle";
 import NotificationBell from "./NotificationBell";
 import { getAdminProfile } from "../utils/auth";
 import { getInitials } from "../utils/helpers";
+import { SETTINGS_ROUTE } from "../utils/appPaths";
 
 function Topbar({
   title,
@@ -107,7 +108,7 @@ function Topbar({
                   type="button"
                   onClick={() => {
                     setOpenProfileMenu(false);
-                    navigate("/settings");
+                    navigate(SETTINGS_ROUTE);
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
@@ -118,7 +119,7 @@ function Topbar({
                   type="button"
                   onClick={() => {
                     setOpenProfileMenu(false);
-                    navigate("/settings");
+                    navigate(SETTINGS_ROUTE);
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                 >

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import api from "../api/axios";
-import { DASHBOARD_ROUTE } from "../utils/appPaths";
+import { DASHBOARD_ROUTE, FORGOT_PASSWORD_ROUTE } from "../utils/appPaths";
 import { storeAdminSession } from "../utils/auth";
 
 function Login() {
@@ -86,6 +86,12 @@ function Login() {
         </label>
 
         {error ? <p className="mt-3 text-sm text-rose-500">{error}</p> : null}
+
+        <div className="mt-3 flex justify-end">
+          <Link to={FORGOT_PASSWORD_ROUTE} className="text-sm font-medium text-indigo-500 transition hover:text-indigo-600">
+            Forgot password?
+          </Link>
+        </div>
 
         <button
           type="submit"

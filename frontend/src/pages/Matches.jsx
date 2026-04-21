@@ -267,21 +267,45 @@ function Matches() {
     }
   };
 
-  const handleWatch = async (match) => {
-    try {
-      const response = await api.get(`/admin/matches/${match._id}/watch`);
-      if (response?.data?.success) {
-        setWatchData({
-          title: response.data.match?.title || `${response.data.match?.teamA} vs ${response.data.match?.teamB}`,
-          streamUrl: response.data.stream?.streamUrl,
-          streamType: response.data.stream?.streamType
-        });
-      }
-    } catch (error) {
-      pushToast(error?.response?.data?.message || "Stream not available", "error");
-    }
-  };
+  // const handleWatch = async (match) => {
+  //   try {
+  //     const response = await api.get(`/admin/matches/${match._id}/watch`);
+  //     if (response?.data?.success) {
+  //       setWatchData({
+  //         title: response.data.match?.title || `${response.data.match?.teamA} vs ${response.data.match?.teamB}`,
+  //         streamUrl: response.data.stream?.streamUrl,
+  //         streamType: response.data.stream?.streamType
+  //       });
+  //     }
+  //   } catch (error) {
+  //     pushToast(error?.response?.data?.message || "Stream not available", "error");
+  //   }
+  // };
+const handleWatch = async (match) => {
+  if (match.status !== "live") {
+    pushToast("Match is not live yet", "error");
+    return;
+  }
 
+  try {
+    const response = await api.get(`/admin/matches/${match._id}/watch`);
+
+    if (response?.data?.success) {
+      setWatchData({
+        title:
+          response.data.match?.title ||
+          `${response.data.match?.teamA} vs ${response.data.match?.teamB}`,
+        streamUrl: response.data.stream?.streamUrl,
+        streamType: response.data.stream?.streamType
+      });
+    }
+  } catch (error) {
+    pushToast(
+      error?.response?.data?.message || "Stream not available",
+      "error"
+    );
+  }
+};
   const validate = () => {
     const nextErrors = {};
     if (!form.title?.trim()) nextErrors.title = "Title is required";
@@ -561,9 +585,19 @@ function Matches() {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex flex-wrap justify-end gap-2">
-                        <button type="button" onClick={() => handleWatch(match)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-indigo-200 text-indigo-600 transition hover:border-indigo-400 hover:bg-indigo-50 dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-indigo-500/10">
-                          <Play size={15} />
-                        </button>
+                        <button
+  type="button"
+  onClick={() => handleWatch(match)}
+  disabled={match.status !== "live"}
+  className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border transition
+    ${
+      match.status === "live"
+        ? "border-indigo-200 text-indigo-600 hover:border-indigo-400 hover:bg-indigo-50"
+        : "cursor-not-allowed opacity-50 border-slate-300 text-slate-400"
+    }`}
+>
+  <Play size={15} />
+</button>
                         <button type="button" onClick={() => openView(match)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:text-white">
                           <Eye size={15} />
                         </button>

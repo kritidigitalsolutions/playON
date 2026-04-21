@@ -270,21 +270,44 @@ function Streams() {
     }
   };
 
-  const handleWatch = async (stream) => {
-    try {
-      const response = await api.get(`/admin/streams/${stream._id}/watch`);
-      if (response?.data?.success) {
-        setWatchData({
-          title: response.data.stream?.title || `Stream: ${response.data.stream?.provider}`,
-          streamUrl: response.data.stream?.streamUrl,
-          streamType: response.data.stream?.streamType
-        });
-      }
-    } catch (apiError) {
-      setError(apiError?.response?.data?.message || "Stream not available");
-    }
-  };
+  // const handleWatch = async (stream) => {
+  //   try {
+  //     const response = await api.get(`/admin/streams/${stream._id}/watch`);
+  //     if (response?.data?.success) {
+  //       setWatchData({
+  //         title: response.data.stream?.title || `Stream: ${response.data.stream?.provider}`,
+  //         streamUrl: response.data.stream?.streamUrl,
+  //         streamType: response.data.stream?.streamType
+  //       });
+  //     }
+  //   } catch (apiError) {
+  //     setError(apiError?.response?.data?.message || "Stream not available");
+  //   }
+  // };
+const handleWatch = async (stream) => {
+  if (stream.status !== "live") {
+    setError("Stream is not live yet");
+    return;
+  }
 
+  try {
+    const response = await api.get(`/admin/streams/${stream._id}/watch`);
+
+    if (response?.data?.success) {
+      setWatchData({
+        title:
+          response.data.stream?.title ||
+          `Stream: ${response.data.stream?.provider}`,
+        streamUrl: response.data.stream?.streamUrl,
+        streamType: response.data.stream?.streamType
+      });
+    }
+  } catch (apiError) {
+    setError(
+      apiError?.response?.data?.message || "Stream not available"
+    );
+  }
+};
   const handleDelete = async () => {
     if (!deleteTarget?._id) {
       return;
@@ -382,13 +405,19 @@ function Streams() {
                     {stream.status === "live" ? <Square size={14} /> : <Play size={14} />}
                     {actionStreamId === stream._id ? "Updating..." : stream.status === "live" ? "Stop" : "Start"}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleWatch(stream)}
-                    className="inline-flex items-center gap-1 rounded-xl border border-indigo-200 px-3 py-2 text-sm text-indigo-600 transition hover:bg-indigo-50 dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
-                  >
-                    Watch
-                  </button>
+                 <button
+  type="button"
+  onClick={() => handleWatch(stream)}
+  disabled={stream.status !== "live"}
+  className={`inline-flex items-center gap-1 rounded-xl border px-3 py-2 text-sm transition
+    ${
+      stream.status === "live"
+        ? "border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+        : "cursor-not-allowed opacity-50 border-slate-300 text-slate-400"
+    }`}
+>
+  Watch
+</button>
                   <button
                     type="button"
                     onClick={() => openView(stream)}

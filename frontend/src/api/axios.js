@@ -1,8 +1,16 @@
 import axios from "axios";
 import { clearAdminSession, getValidAdminToken } from "../utils/auth";
-import { LOGIN_ROUTE, toAppPath } from "../utils/appPaths";
+import {
+  FORGOT_PASSWORD_ROUTE,
+  LOGIN_ROUTE,
+  RESET_PASSWORD_ROUTE,
+  toAppPath
+} from "../utils/appPaths";
 
 const loginPath = toAppPath(LOGIN_ROUTE);
+const forgotPasswordPath = toAppPath(FORGOT_PASSWORD_ROUTE);
+const resetPasswordPath = toAppPath(RESET_PASSWORD_ROUTE);
+const publicPaths = [loginPath, forgotPasswordPath, resetPasswordPath];
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000/api",
@@ -17,7 +25,7 @@ api.interceptors.request.use(
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-    } else if (window.location.pathname !== loginPath) {
+    } else if (!publicPaths.includes(window.location.pathname)) {
       window.location.href = loginPath;
       return Promise.reject(new Error("Token expired"));
     }

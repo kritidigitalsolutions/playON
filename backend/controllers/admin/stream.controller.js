@@ -1,5 +1,6 @@
 const streamService = require("../../services/stream.service");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
+const autoNotify = require("../../utils/autoNotify");
 
 // helper
 const fileUrl = (req, filePath) => {
@@ -164,6 +165,15 @@ exports.goLive = async (req, res) => {
       });
     }
 
+    await autoNotify({
+  title: "Live Stream Started",
+  message: `${stream.title} is live now.`,
+  type: "STREAM",
+  metadata: {
+    streamId: stream._id
+  }
+});
+
     res.json({
       success: true,
       message: "Stream is now live",
@@ -212,6 +222,12 @@ exports.watchStream = async (req, res) => {
         message: "Stream not found"
       });
     }
+    if (stream.status !== "live") {
+  return res.status(400).json({
+    success: false,
+    message: "Stream is not live yet"
+  });
+}
 
     res.json({
       success: true,

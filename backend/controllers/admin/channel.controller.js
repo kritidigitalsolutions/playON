@@ -1,5 +1,6 @@
 const channelService = require("../../services/channel.service");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
+const autoNotify = require("../../utils/autoNotify");
 
 const makeSlug = (text = "") =>
   text
@@ -35,6 +36,8 @@ const formatChannel = (req, doc) => {
 // Create
 exports.createChannel = async (req, res) => {
   try {
+
+  
     const streamType =
       req.body.streamType ||
       (req.body.streamUrl?.includes(".m3u8") ? "hls" : "other");
@@ -66,6 +69,14 @@ exports.createChannel = async (req, res) => {
     };
 
     const channel = await channelService.createChannel(data);
+    await autoNotify({
+  title: "New Channel Added",
+  message: `${channel.name} is now available.`,
+  type: "CHANNEL",
+  metadata: {
+    channelId: channel._id
+  }
+});
 
     res.status(201).json({
       success: true,
@@ -241,6 +252,14 @@ exports.goLive = async (req, res) => {
         message: "Channel not found"
       });
     }
+    await autoNotify({
+  title: "Channel Live Now",
+  message: `${channel.name} is live now.`,
+  type: "CHANNEL",
+  metadata: {
+    channelId: channel._id
+  }
+});
 
     res.json({
       success: true,
@@ -266,6 +285,14 @@ exports.goOffline = async (req, res) => {
         message: "Channel not found"
       });
     }
+    await autoNotify({
+  title: "Channel Offline",
+  message: `${channel.name} is now offline.`,
+  type: "CHANNEL",
+  metadata: {
+    channelId: channel._id
+  }
+});
 
     res.json({
       success: true,
@@ -338,6 +365,12 @@ exports.watchChannel = async (req, res) => {
         message: "Channel not found"
       });
     }
+    if (channel.status !== "live") {
+  return res.status(400).json({
+    success: false,
+    message: "Channel is offline"
+  });
+}
 
     res.json({
       success: true,

@@ -1,5 +1,6 @@
 const matchService = require("../../services/match.service");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
+const autoNotify = require("../../utils/autoNotify");
 
 // helpers
 const parseBoolean = (value) => {
@@ -82,7 +83,14 @@ const data = {
 };
 
     const match = await matchService.createMatch(data);
-
+await autoNotify({
+  title: "New Match Added",
+  message: `${match.teamA} vs ${match.teamB} is now scheduled.`,
+  type: "MATCH",
+  metadata: {
+    matchId: match._id
+  }
+});
     res.status(201).json({
       success: true,
       message: "Match created successfully",
@@ -250,7 +258,12 @@ exports.toggleFeatured = async (req, res) => {
 // Go Live
 exports.goLive = async (req, res) => {
   try {
-    const match = await matchService.goLive(req.params.id);
+    // const match = await matchService.goLive(req.params.id);
+
+    const match = await matchService.goLive(
+  req.params.id,
+  req.body
+);
 
     if (!match) {
       return res.status(404).json({
@@ -258,7 +271,14 @@ exports.goLive = async (req, res) => {
         message: "Match not found"
       });
     }
-
+await autoNotify({
+  title: "Match Live Now",
+  message: `${match.teamA} vs ${match.teamB} is live now.`,
+  type: "MATCH",
+  metadata: {
+    matchId: match._id
+  }
+});
     res.json({
       success: true,
       message: "Match is now live",
@@ -307,6 +327,12 @@ exports.watchMatch = async (req, res) => {
         message: "Match not found"
       });
     }
+    if (match.status !== "live") {
+  return res.status(400).json({
+    success: false,
+    message: "Match is not live yet"
+  });
+}
 
     const Stream = require("../../models/stream.model");
     const stream = await Stream.findOne({ matchId: req.params.id }).sort({ createdAt: -1 });
@@ -317,6 +343,12 @@ exports.watchMatch = async (req, res) => {
         message: "No stream URL found for this match"
       });
     }
+    if (stream.status !== "live") {
+  return res.status(400).json({
+    success: false,
+    message: "Stream is not live yet"
+  });
+}
 
     res.json({
       success: true,

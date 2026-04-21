@@ -137,6 +137,12 @@ exports.watchMatch = async (req, res) => {
         message: "Match not found"
       });
     }
+    if (match.status !== "live") {
+  return res.status(400).json({
+    success: false,
+    message: "Match is not live yet"
+  });}
+
 
     const Stream = require("../models/stream.model");
 
@@ -150,6 +156,12 @@ exports.watchMatch = async (req, res) => {
         message: "No stream URL found for this match"
       });
     }
+    if (stream.status !== "live") {
+  return res.status(400).json({
+    success: false,
+    message: "Stream is not live yet"
+  });
+}
 
     res.json({
       success: true,

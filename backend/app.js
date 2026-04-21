@@ -144,4 +144,9 @@ app.use("/api/legal", legalRoutes);
 //notifications
 app.use("/api/notifications", require("./routes/user/notification.routes"));
 app.use("/api/admin/notifications", require("./routes/admin/notification.routes"));
+
+//watchlist
+app.use("/api/watchlist", require("./routes/user/watchlist.routes"));
+
+
 module.exports = app;

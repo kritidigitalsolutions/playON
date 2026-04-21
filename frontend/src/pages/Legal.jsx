@@ -8,7 +8,8 @@ import ConfirmModal from "../components/ConfirmModal";
 const LEGAL_TYPES = [
   { id: "privacy-policy", label: "Privacy Policy" },
   { id: "terms-conditions", label: "Terms & Conditions" },
-  { id: "refund-policy", label: "Refund Policy" }
+  { id: "refund-policy", label: "Refund Policy" },
+  { id: "about-us", label: "About Us" }
 ];
 
 const htmlToPlainText = (value = "", shouldTrim = false) => {
@@ -78,6 +79,7 @@ function Legal() {
   const [form, setForm] = useState({ title: "", sections: [createEmptySection()], isActive: true });
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [togglingType, setTogglingType] = useState("");
 
   const fetchPages = async () => {
     try {
@@ -187,6 +189,28 @@ function Legal() {
     }
   };
 
+  const handleToggleStatus = async (typeId) => {
+    if (!typeId) return;
+
+    try {
+      setTogglingType(typeId);
+      setError("");
+      const response = await api.patch(`/admin/legal/${typeId}/toggle-status`);
+      const updatedPage = response?.data?.page;
+
+      if (updatedPage?.type) {
+        setPages((prev) => prev.map((page) => (page.type === updatedPage.type ? updatedPage : page)));
+        setViewModal((prev) => (prev?.type === updatedPage.type ? updatedPage : prev));
+      } else {
+        await fetchPages();
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to update status");
+    } finally {
+      setTogglingType("");
+    }
+  };
+
   const getStatusBadge = (page) => {
     if (!page) {
       return <span className="inline-flex rounded-full border border-slate-300/40 bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">Not Created</span>;
@@ -249,11 +273,11 @@ function Legal() {
                   <div className="mt-6 space-y-3 rounded-xl bg-slate-50 p-4 dark:bg-slate-950/50">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-slate-500 dark:text-slate-400">Document Title</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{existingPage ? existingPage.title : "—"}</span>
+                      <span className="font-medium text-slate-900 dark:text-slate-100">{existingPage ? existingPage.title : "-"}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-slate-500 dark:text-slate-400">Last Updated</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{existingPage ? new Date(existingPage.updatedAt).toLocaleDateString() : "—"}</span>
+                      <span className="font-medium text-slate-900 dark:text-slate-100">{existingPage ? new Date(existingPage.updatedAt).toLocaleDateString() : "-"}</span>
                     </div>
                   </div>
                 </div>
@@ -278,6 +302,19 @@ function Legal() {
                           className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:text-white"
                         >
                           <Pencil size={15} /> 
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(type.id)}
+                          disabled={togglingType === type.id}
+                          title={existingPage?.isActive ? "Unpublish Page" : "Publish Page"}
+                          className={`inline-flex h-9 items-center justify-center gap-2 rounded-xl border px-3 text-sm font-medium transition disabled:opacity-60 ${
+                            existingPage?.isActive
+                              ? "border-amber-200 text-amber-600 hover:bg-amber-50 dark:border-amber-500/30 dark:text-amber-400 dark:hover:bg-amber-500/10"
+                              : "border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
+                          }`}
+                        >
+                          {togglingType === type.id ? "Saving..." : existingPage?.isActive ? "Unpublish" : "Publish"}
                         </button>
                         <button
                           type="button"
