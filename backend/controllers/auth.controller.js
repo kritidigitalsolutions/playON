@@ -1,37 +1,51 @@
 const Otp = require("../models/otp.model");
 const User = require("../models/user.model");
 const jwt = require("jsonwebtoken");
-const axios = require("axios");
+// const axios = require("axios");
+
+// const sendSmsOtp = async (mobile, otp) => {
+//   try {
+//     const text = process.env.SMS_GH_OTP_TEXT.replace("{{otp}}", otp);
+
+//     const url = "https://www.smsgatewayhub.com/api/mt/SendSMS";
+
+//     const response = await axios.get(url, {
+//       params: {
+//         APIKey: process.env.SMS_GH_API_KEY,
+//         senderid: process.env.SMS_GH_SENDER_ID,
+//         channel: 2,
+//         DCS: 0,
+//         flashsms: 0,
+//         number: `91${mobile}`,
+//         text: text,
+//         route: process.env.SMS_GH_ROUTE,
+//         EntityId: process.env.SMS_GH_ENTITY_ID,
+//         dlttemplateid: process.env.SMS_GH_DLT_TEMPLATE_ID
+//       }
+//     });
+
+//     console.log("SMS Response:", response.data);
+//     return true;
+//   } catch (error) {
+//     console.log("SMS Error:", error.response?.data || error.message);
+//     return false;
+//   }
+// };
 
 const sendSmsOtp = async (mobile, otp) => {
   try {
-    const text = process.env.SMS_GH_OTP_TEXT.replace("{{otp}}", otp);
-
-    const url = "https://www.smsgatewayhub.com/api/mt/SendSMS";
-
-    const response = await axios.get(url, {
-      params: {
-        APIKey: process.env.SMS_GH_API_KEY,
-        senderid: process.env.SMS_GH_SENDER_ID,
-        channel: 2,
-        DCS: 0,
-        flashsms: 0,
-        number: `91${mobile}`,
-        text: text,
-        route: process.env.SMS_GH_ROUTE,
-        EntityId: process.env.SMS_GH_ENTITY_ID,
-        dlttemplateid: process.env.SMS_GH_DLT_TEMPLATE_ID
-      }
-    });
-
-    console.log("SMS Response:", response.data);
+    console.log("=================================");
+    console.log("SMS DISABLED (DEV MODE)");
+    console.log("Mobile:", mobile);
+    console.log("OTP:", otp);
+    console.log("=================================");
     return true;
   } catch (error) {
-    console.log("SMS Error:", error.response?.data || error.message);
     return false;
   }
 };
 
+// SEND OTP
 exports.sendOtp = async (req, res) => {
   try {
     const { mobile } = req.body;
@@ -43,9 +57,20 @@ exports.sendOtp = async (req, res) => {
       });
     }
 
+    if (!/^[6-9]\d{9}$/.test(mobile)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid mobile number"
+      });
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const existingUser = await User.findOne({ mobile });
+    // only active user check
+    const existingUser = await User.findOne({
+      mobile,
+      isDeleted: false
+    });
 
     let isNewUser = true;
 
@@ -79,12 +104,17 @@ exports.sendOtp = async (req, res) => {
       });
     }
 
-    res.json({
+    const response = {
       success: true,
       message: "OTP sent successfully",
-      isNewUser,
-      otp
-    });
+      isNewUser
+    };
+
+    if (process.env.NODE_ENV !== "production") {
+      response.otp = otp;
+    }
+
+    res.json(response);
 
   } catch (error) {
     res.status(500).json({
@@ -94,6 +124,7 @@ exports.sendOtp = async (req, res) => {
   }
 };
 
+// VERIFY OTP
 exports.verifyOtp = async (req, res) => {
   try {
     const { mobile, otp } = req.body;
@@ -125,7 +156,25 @@ exports.verifyOtp = async (req, res) => {
     let isNewUser = true;
 
     if (!user) {
+      // brand new user
       user = await User.create({ mobile });
+
+    } else if (user.isDeleted) {
+      // restore deleted account
+      user.isDeleted = false;
+      user.deletedAt = null;
+      user.deleteReason = "";
+      user.accountStatus = "active";
+
+      user.fullName = "";
+      user.email = "";
+      user.profilePic = "";
+      user.favoriteSports = [];
+      user.isProfileComplete = false;
+      user.fcmToken = "";
+
+      await user.save();
+
     } else {
       if (user.fullName && user.isProfileComplete) {
         isNewUser = false;

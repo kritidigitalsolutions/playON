@@ -16,6 +16,7 @@ const {
   sendEmailOtp,
   changeEmail
 } = require("../../controllers/admin auth/admin.settings.controller");
+const { getDashboard } = require("../../controllers/admin/dashboard.controller");
 
 router.post("/login", loginAdmin);
 router.post("/forgot-password/send-otp", sendForgotPasswordOtp);
@@ -24,12 +25,7 @@ router.post("/forgot-password/reset", resetForgotPassword);
 router.get("/users", isAdmin, getAllUsers);
 router.delete("/users/:id", isAdmin, deleteUserById);
 
-router.get("/dashboard", isAdmin, (req, res) => {
-  res.json({
-    success: true,
-    message: "Welcome Admin Dashboard"
-  });
-});
+router.get("/dashboard", isAdmin, getDashboard);
 
 //Admin settings page
 router.post("/send-password-otp", isAdmin, sendPasswordOtp);

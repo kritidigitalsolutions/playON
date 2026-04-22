@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import {
-  BarChart3,
   Bell,
   ChevronLeft,
   ChevronRight,
@@ -32,7 +31,6 @@ const navItems = [
   { label: "Streams", path: "/streams", icon: Radio },
   { label: "Live TV", path: "/livetv", icon: Tv },
   { label: "Notifications", path: "/notifications", icon: Bell },
-  { label: "Reports", path: "/reports", icon: BarChart3 },
   { label: "Legal", path: "/legal", icon: ScrollText },
   { label: "Settings", path: "/settings", icon: Settings }
 ];

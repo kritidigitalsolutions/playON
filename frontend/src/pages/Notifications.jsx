@@ -97,10 +97,7 @@ function Notifications() {
       return;
     }
 
-    if (form.sendTo === "SPECIFIC_USER" && !form.targetUser.trim()) {
-      setError("Target user id is required for a specific user notification.");
-      return;
-    }
+
 
     try {
       setSubmitting(true);
@@ -116,9 +113,7 @@ function Notifications() {
         metadata: {}
       };
 
-      if (form.sendTo === "SPECIFIC_USER") {
-        payload.targetUser = form.targetUser.trim();
-      }
+
 
       if (form.actionUrl.trim()) {
         payload.metadata.actionUrl = form.actionUrl.trim();
@@ -323,28 +318,7 @@ function Notifications() {
             </select>
           </label>
 
-          <label className="block text-sm">
-            <span className="mb-1 block text-slate-500 dark:text-slate-400">Audience</span>
-            <select
-              value={form.sendTo}
-              onChange={(event) => onFormChange("sendTo", event.target.value)}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-            >
-              <option value="ALL_USERS">All Users</option>
-              <option value="SPECIFIC_USER">Specific User</option>
-            </select>
-          </label>
 
-          <label className="block text-sm">
-            <span className="mb-1 block text-slate-500 dark:text-slate-400">Target User ID</span>
-            <input
-              value={form.targetUser}
-              onChange={(event) => onFormChange("targetUser", event.target.value)}
-              disabled={form.sendTo !== "SPECIFIC_USER"}
-              placeholder="Mongo user id"
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:disabled:bg-slate-800"
-            />
-          </label>
 
           <label className="block text-sm md:col-span-2">
             <span className="mb-1 block text-slate-500 dark:text-slate-400">Action URL</span>

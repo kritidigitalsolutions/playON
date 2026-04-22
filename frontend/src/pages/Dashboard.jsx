@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Bolt, Download, Plus } from "lucide-react";
 import api from "../api/axios";
+import { getAdminProfile } from "../utils/auth";
 import StatCard from "../components/StatCard";
 import ChartCard from "../components/ChartCard";
 import PageHeader from "../components/PageHeader";
@@ -13,97 +13,9 @@ import { dashboardLine, dashboardStats, latestMatches, recentActivities, sportsD
 import { STATUS_STYLES } from "../utils/constants";
 import { getBadgeClass, formatNumber } from "../utils/helpers";
 
-const toTitleCase = (value = "") =>
-  value
-    .toString()
-    .trim()
-    .split(" ")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
-
-const getRelativeTime = (value) => {
-  if (!value) return "Recently";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Recently";
-
-  const diffMs = Date.now() - date.getTime();
-  const diffMinutes = Math.floor(diffMs / 60000);
-  if (diffMinutes < 1) return "Just now";
-  if (diffMinutes < 60) return `${diffMinutes} min ago`;
-  const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
-};
-
-const growthFromDates = (rows = []) => {
-  const now = Date.now();
-  const last30Start = now - 30 * 24 * 60 * 60 * 1000;
-  const prev30Start = now - 60 * 24 * 60 * 60 * 1000;
-
-  let current = 0;
-  let previous = 0;
-
-  rows.forEach((row) => {
-    const date = new Date(row?.createdAt);
-    if (Number.isNaN(date.getTime())) return;
-    const time = date.getTime();
-    if (time >= last30Start) current += 1;
-    else if (time >= prev30Start && time < last30Start) previous += 1;
-  });
-
-  if (previous === 0) {
-    return {
-      growth: `+${current} in last 30d`,
-      trend: current > 0 ? "up" : "down"
-    };
-  }
-
-  const pct = ((current - previous) / previous) * 100;
-  return {
-    growth: `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}% vs prev 30d`,
-    trend: pct >= 0 ? "up" : "down"
-  };
-};
-
-const buildLastSixMonthSeries = (users = [], matches = []) => {
-  const today = new Date();
-  const months = [];
-
-  for (let i = 5; i >= 0; i -= 1) {
-    const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    months.push({
-      key,
-      name: date.toLocaleString("en-US", { month: "short" }),
-      users: 0,
-      matches: 0
-    });
-  }
-
-  const monthMap = new Map(months.map((month) => [month.key, month]));
-
-  users.forEach((user) => {
-    const date = new Date(user?.createdAt);
-    if (Number.isNaN(date.getTime())) return;
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const bucket = monthMap.get(key);
-    if (bucket) bucket.users += 1;
-  });
-
-  matches.forEach((match) => {
-    const date = new Date(match?.createdAt);
-    if (Number.isNaN(date.getTime())) return;
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const bucket = monthMap.get(key);
-    if (bucket) bucket.matches += 1;
-  });
-
-  return months;
-};
-
 function Dashboard() {
+  const admin = getAdminProfile();
+  const adminName = admin?.name || admin?.username || "PlayON Admin";
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [data, setData] = useState({
@@ -111,7 +23,18 @@ function Dashboard() {
     line: dashboardLine,
     bars: sportsDistribution,
     activities: recentActivities,
-    matches: latestMatches
+    matches: latestMatches,
+    registrationStats: { today: 0, yesterday: 0, total: 0 },
+    incomeStats: { today: 0, yesterday: 0, weekly: 0, monthly: 0, yearly: 0, total: 0 },
+    matchDetails: { total: 0, live: 0, upcoming: 0, completed: 0, cancelled: 0 },
+    streamDetails: { total: 0, live: 0, scheduled: 0, ended: 0, offline: 0 },
+    channelDetails: { total: 0, live: 0, offline: 0, maintenance: 0 }
+  });
+
+  const [subStats, setSubStats] = useState({
+    subscribed: 0,
+    notSubscribed: 0,
+    expired: 0
   });
 
   useEffect(() => {
@@ -119,143 +42,36 @@ function Dashboard() {
 
     const fetchDashboard = async () => {
       try {
-        const [usersRes, matchesRes, streamsRes, channelsRes] = await Promise.allSettled([
-          api.get("/admin/users"),
-          api.get("/admin/matches", { params: { page: 1, limit: 500 } }),
-          api.get("/admin/streams", { params: { page: 1, limit: 500 } }),
-          api.get("/admin/channels", { params: { page: 1, limit: 500 } })
+        const [dashRes, subRes] = await Promise.all([
+          api.get("/admin/dashboard"),
+          api.get("/admin/subscriptions/stats/overview").catch(() => null)
         ]);
 
-        const users = usersRes.status === "fulfilled" ? usersRes.value?.data?.users || [] : [];
-        const matches = matchesRes.status === "fulfilled" ? matchesRes.value?.data?.matches || [] : [];
-        const streams = streamsRes.status === "fulfilled" ? streamsRes.value?.data?.streams || [] : [];
-        const channels = channelsRes.status === "fulfilled" ? channelsRes.value?.data?.channels || [] : [];
-
-        const usersGrowth = growthFromDates(users);
-        const matchesGrowth = growthFromDates(matches);
-
-        const liveMatches = matches.filter((match) => (match?.status || "").toLowerCase() === "live").length;
-        const upcomingMatches = matches.filter((match) => (match?.status || "").toLowerCase() === "upcoming").length;
-        const liveStreams = streams.filter((stream) => (stream?.status || "").toLowerCase() === "live").length;
-        const scheduledStreams = streams.filter((stream) => (stream?.status || "").toLowerCase() === "scheduled").length;
-        const liveChannels = channels.filter((channel) => (channel?.status || "").toLowerCase() === "live").length;
-
-        const stats = [
-          {
-            title: "Total Users",
-            value: users.length,
-            growth: usersGrowth.growth,
-            trend: usersGrowth.trend
-          },
-          {
-            title: "Total Matches",
-            value: matches.length,
-            growth: matchesGrowth.growth,
-            trend: matchesGrowth.trend
-          },
-          {
-            title: "Live Matches",
-            value: liveMatches,
-            growth: `${upcomingMatches} upcoming`,
-            trend: liveMatches > 0 ? "up" : "down"
-          },
-          {
-            title: "Streams Running",
-            value: liveStreams,
-            growth: `${scheduledStreams} scheduled`,
-            trend: liveStreams > 0 ? "up" : "down"
-          },
-          {
-            title: "Live Channels",
-            value: liveChannels,
-            growth: `${channels.length} total`,
-            trend: liveChannels > 0 ? "up" : "down"
-          }
-        ];
-
-        const line = buildLastSixMonthSeries(users, matches);
-
-        const sportCountMap = matches.reduce((acc, match) => {
-          const key = toTitleCase(match?.sport || "Other");
-          acc[key] = (acc[key] || 0) + 1;
-          return acc;
-        }, {});
-
-        const bars = Object.entries(sportCountMap)
-          .map(([sport, count]) => ({ sport, matches: count }))
-          .sort((a, b) => b.matches - a.matches);
-
-        const viewerByMatch = streams.reduce((acc, stream) => {
-          const matchId = stream?.matchId?._id || stream?.matchId;
-          if (!matchId) return acc;
-          const key = String(matchId);
-          acc[key] = (acc[key] || 0) + Number(stream?.viewerCount || 0);
-          return acc;
-        }, {});
-
-        const matchesForTable = [...matches]
-          .sort((a, b) => new Date(b.matchDate || b.createdAt) - new Date(a.matchDate || a.createdAt))
-          .slice(0, 6)
-          .map((match) => ({
-            id: `M-${String(match?._id || "").slice(-6).toUpperCase()}`,
-            teams: `${match?.teamA || "Team A"} vs ${match?.teamB || "Team B"}`,
-            sport: toTitleCase(match?.sport || "Other"),
-            status: (match?.status || "upcoming").toLowerCase(),
-            viewers: viewerByMatch[String(match?._id)] || 0
-          }));
-
-        const latestMatch = [...matches].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-        const latestUser = [...users].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-        const latestLiveStream = [...streams]
-          .filter((stream) => (stream?.status || "").toLowerCase() === "live")
-          .sort((a, b) => Number(b?.viewerCount || 0) - Number(a?.viewerCount || 0))[0];
-
-        const activities = [
-          {
-            id: "act-1",
-            text: `${liveMatches} match${liveMatches === 1 ? "" : "es"} currently live.`,
-            time: "Now"
-          },
-          {
-            id: "act-2",
-            text: `${liveStreams} stream${liveStreams === 1 ? "" : "s"} running with ${formatNumber(
-              streams.reduce((sum, stream) => sum + Number(stream?.viewerCount || 0), 0)
-            )} total viewers.`,
-            time: "Now"
-          },
-          latestMatch
-            ? {
-                id: "act-3",
-                text: `Latest match added: ${latestMatch.title || `${latestMatch.teamA} vs ${latestMatch.teamB}`}.`,
-                time: getRelativeTime(latestMatch.createdAt)
-              }
-            : null,
-          latestUser
-            ? {
-                id: "act-4",
-                text: `New user joined: ${latestUser.fullName || latestUser.mobile || "User"}.`,
-                time: getRelativeTime(latestUser.createdAt)
-              }
-            : null,
-          latestLiveStream
-            ? {
-                id: "act-5",
-                text: `Top live stream: ${latestLiveStream.title || "Untitled Stream"} (${formatNumber(
-                  latestLiveStream.viewerCount || 0
-                )} viewers).`,
-                time: "Live"
-              }
-            : null
-        ].filter(Boolean);
+        const payload = dashRes?.data;
+        const subPayload = subRes?.data?.stats;
 
         if (mounted) {
           setData({
-            stats,
-            line,
-            bars: bars.length ? bars : sportsDistribution,
-            activities: activities.length ? activities : recentActivities,
-            matches: matchesForTable.length ? matchesForTable : latestMatches
+            stats: payload?.stats?.length ? payload.stats : dashboardStats,
+            line: payload?.line?.length ? payload.line : dashboardLine,
+            bars: payload?.bars?.length ? payload.bars : sportsDistribution,
+            activities: payload?.activities?.length ? payload.activities : recentActivities,
+            matches: payload?.matches?.length ? payload.matches : latestMatches,
+            registrationStats: payload?.registrationStats || { today: 0, yesterday: 0, total: 0 },
+            incomeStats: payload?.incomeStats || { today: 0, yesterday: 0, weekly: 0, monthly: 0, yearly: 0, total: 0 },
+            matchDetails: payload?.matchDetails || { total: 0, live: 0, upcoming: 0, completed: 0, cancelled: 0 },
+            streamDetails: payload?.streamDetails || { total: 0, live: 0, scheduled: 0, ended: 0, offline: 0 },
+            channelDetails: payload?.channelDetails || { total: 0, live: 0, offline: 0, maintenance: 0 }
           });
+
+          if (subPayload) {
+            const totalUsers = payload?.stats?.find(s => s.title === "Total Users")?.value || 0;
+            setSubStats({
+              subscribed: subPayload.active || 0,
+              notSubscribed: Math.max(0, totalUsers - (subPayload.active || 0)),
+              expired: subPayload.expired || 0
+            });
+          }
         }
       } catch (apiError) {
         setError(apiError?.response?.data?.message || "Using fallback dashboard data.");
@@ -293,18 +109,8 @@ function Dashboard() {
   return (
     <div>
       <PageHeader
-        title="Welcome back, PlayON Admin"
+        title={`Welcome back, ${adminName}`}
         subtitle="Track your platform health, users, and live broadcasts in one place."
-        action={
-          <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1 rounded-xl border border-slate-300 px-3 py-2 text-sm dark:border-slate-700">
-              <Download size={14} /> Export
-            </button>
-            <button className="flex items-center gap-1 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-3 py-2 text-sm font-medium text-white">
-              <Plus size={14} /> New Match
-            </button>
-          </div>
-        }
       />
 
       {error ? <p className="mb-4 text-sm text-amber-500">{error}</p> : null}
@@ -325,6 +131,146 @@ function Dashboard() {
                 currency={stat.title.toLowerCase().includes("revenue")}
               />
             ))}
+          </div>
+
+          <div className="mt-6">
+            <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Subscription Overview</h3>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <StatCard
+                title="Total Subscribe Users"
+                value={subStats.subscribed}
+                growth="Active Subscriptions"
+                trend="up"
+                index={0}
+              />
+              <StatCard
+                title="Total Not Subscribe Users"
+                value={subStats.notSubscribed}
+                growth="Without Subs"
+                trend="down"
+                index={1}
+              />
+              <StatCard
+                title="Expiry Subscription Counts"
+                value={subStats.expired}
+                growth="Expired Subs"
+                trend="down"
+                index={2}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Registration Overview</h3>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <StatCard
+                title="Today Registration"
+                value={data.registrationStats.today}
+                growth="New Users"
+                trend="up"
+                index={0}
+              />
+              <StatCard
+                title="Yesterday Registration"
+                value={data.registrationStats.yesterday}
+                growth="Previous Day"
+                trend="up"
+                index={1}
+              />
+              <StatCard
+                title="Total Registration"
+                value={data.registrationStats.total}
+                growth="All Time Users"
+                trend="up"
+                index={2}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Income Overview</h3>
+            <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-6">
+              <StatCard
+                title="Today Income"
+                value={data.incomeStats.today}
+                growth="Today"
+                trend="up"
+                index={0}
+                currency={true}
+              />
+              <StatCard
+                title="Yesterday Income"
+                value={data.incomeStats.yesterday}
+                growth="Previous Day"
+                trend="up"
+                index={1}
+                currency={true}
+              />
+              <StatCard
+                title="Weekly Income"
+                value={data.incomeStats.weekly}
+                growth="This Week"
+                trend="up"
+                index={2}
+                currency={true}
+              />
+              <StatCard
+                title="Monthly Income"
+                value={data.incomeStats.monthly}
+                growth="This Month"
+                trend="up"
+                index={3}
+                currency={true}
+              />
+              <StatCard
+                title="Yearly Income"
+                value={data.incomeStats.yearly}
+                growth="This Year"
+                trend="up"
+                index={4}
+                currency={true}
+              />
+              <StatCard
+                title="Total Income"
+                value={data.incomeStats.total}
+                growth="All Time"
+                trend="up"
+                index={5}
+                currency={true}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Match Overview</h3>
+            <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-5">
+              <StatCard title="Total Matches" value={data.matchDetails.total} growth="All Matches" trend="up" index={0} />
+              <StatCard title="Live Matches" value={data.matchDetails.live} growth="Playing Now" trend="up" index={1} />
+              <StatCard title="Upcoming Matches" value={data.matchDetails.upcoming} growth="Scheduled" trend="up" index={2} />
+              <StatCard title="Completed Matches" value={data.matchDetails.completed} growth="Finished" trend="up" index={3} />
+              <StatCard title="Cancelled Matches" value={data.matchDetails.cancelled} growth="Dropped" trend="down" index={4} />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Stream Overview</h3>
+            <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-5">
+              <StatCard title="Total Streams" value={data.streamDetails.total} growth="All Streams" trend="up" index={0} />
+              <StatCard title="Live Streams" value={data.streamDetails.live} growth="Running Now" trend="up" index={1} />
+              <StatCard title="Scheduled Streams" value={data.streamDetails.scheduled} growth="Ready to Go" trend="up" index={2} />
+              <StatCard title="Ended Streams" value={data.streamDetails.ended} growth="Finished" trend="up" index={3} />
+              <StatCard title="Offline Streams" value={data.streamDetails.offline} growth="Not Connected" trend="down" index={4} />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Channel Overview</h3>
+            <div className="grid gap-4 sm:grid-cols-4 xl:grid-cols-4">
+              <StatCard title="Total Channels" value={data.channelDetails.total} growth="All Channels" trend="up" index={0} />
+              <StatCard title="Live Channels" value={data.channelDetails.live} growth="Running Now" trend="up" index={1} />
+              <StatCard title="Offline Channels" value={data.channelDetails.offline} growth="Not Running" trend="down" index={2} />
+              <StatCard title="Maintenance Channels" value={data.channelDetails.maintenance} growth="Under Fixing" trend="down" index={3} />
+            </div>
           </div>
 
           <div className="mt-6 grid gap-4 xl:grid-cols-2">
@@ -383,13 +329,7 @@ function Dashboard() {
             )}
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-white">
-              <Bolt size={14} /> Start Broadcast
-            </button>
-            <button className="rounded-xl border border-slate-300 px-4 py-2 text-sm dark:border-slate-700">Invite Admin</button>
-            <button className="rounded-xl border border-slate-300 px-4 py-2 text-sm dark:border-slate-700">Generate Report</button>
-          </div>
+
         </>
       )}
     </div>

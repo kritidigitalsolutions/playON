@@ -31,17 +31,17 @@ export const PAGE_TITLES = {
 };
 
 export const STATUS_STYLES = {
-  active: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20",
-  pending: "bg-amber-500/15 text-amber-400 border border-amber-500/20",
-  inactive: "bg-slate-500/15 text-slate-400 border border-slate-500/20",
-  live: "bg-rose-500/15 text-rose-400 border border-rose-500/20",
-  maintenance: "bg-amber-500/15 text-amber-400 border border-amber-500/20",
-  completed: "bg-indigo-500/15 text-indigo-400 border border-indigo-500/20",
-  upcoming: "bg-violet-500/15 text-violet-400 border border-violet-500/20",
-  scheduled: "bg-violet-500/15 text-violet-400 border border-violet-500/20",
-  ended: "bg-slate-500/15 text-slate-400 border border-slate-500/20",
-  offline: "bg-slate-500/15 text-slate-400 border border-slate-500/20",
-  failed: "bg-amber-500/15 text-amber-400 border border-amber-500/20"
+  active: "bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/20",
+  pending: "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/20",
+  inactive: "bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-500/15 dark:text-slate-400 dark:border-slate-500/20",
+  live: "bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-500/15 dark:text-rose-400 dark:border-rose-500/20",
+  maintenance: "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/20",
+  completed: "bg-indigo-100 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/15 dark:text-indigo-400 dark:border-indigo-500/20",
+  upcoming: "bg-violet-100 text-violet-700 border border-violet-200 dark:bg-violet-500/15 dark:text-violet-400 dark:border-violet-500/20",
+  scheduled: "bg-violet-100 text-violet-700 border border-violet-200 dark:bg-violet-500/15 dark:text-violet-400 dark:border-violet-500/20",
+  ended: "bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-500/15 dark:text-slate-400 dark:border-slate-500/20",
+  offline: "bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-500/15 dark:text-slate-400 dark:border-slate-500/20",
+  failed: "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/20"
 };
 
 export const ITEMS_PER_PAGE = 7;
