@@ -124,10 +124,10 @@ function Series() {
     }
   };
 
-  const onMultiSelectChange = (key, options) => {
-    const values = Array.from(options).filter(o => o.selected).map(o => o.value);
-    setForm((prev) => ({ ...prev, [key]: values }));
-  };
+  // const onMultiSelectChange = (key, options) => {
+  //   const values = Array.from(options).filter(o => o.selected).map(o => o.value);
+  //   setForm((prev) => ({ ...prev, [key]: values }));
+  // };
 
   const addPlayer = (teamKey, playerId) => {
     if (!playerId) return;

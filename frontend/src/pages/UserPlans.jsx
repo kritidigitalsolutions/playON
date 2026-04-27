@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle, Eye, Trash2, X, XCircle } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
@@ -69,29 +69,65 @@ function UserPlans() {
     }
   };
 
-  const fetchSubscriptions = async (searchTerm = "") => {
+  // const fetchSubscriptions = async (searchTerm = "") => {
+  //   try {
+  //     setLoading(true);
+  //     setError("");
+
+  //     const response = await api.get("/admin/subscriptions", {
+  //       params: searchTerm ? { search: searchTerm, limit: 1000 } : { limit: 1000 }
+  //     });
+
+  //     const apiSubs = Array.isArray(response?.data?.subscriptions) ? response.data.subscriptions : [];
+  //     setSubscriptions(apiSubs);
+  //     fetchStats();
+  //   } catch (apiError) {
+  //     setError(apiError?.response?.data?.message || "Unable to fetch subscriptions.");
+  //     setSubscriptions([]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchSubscriptions(debouncedQuery);
+  // }, [debouncedQuery]);
+
+const fetchSubscriptions = useCallback(
+  async (searchTerm = "") => {
     try {
       setLoading(true);
       setError("");
 
       const response = await api.get("/admin/subscriptions", {
-        params: searchTerm ? { search: searchTerm, limit: 1000 } : { limit: 1000 }
+        params: searchTerm
+          ? { search: searchTerm, limit: 1000 }
+          : { limit: 1000 }
       });
 
-      const apiSubs = Array.isArray(response?.data?.subscriptions) ? response.data.subscriptions : [];
+      const apiSubs = Array.isArray(response?.data?.subscriptions)
+        ? response.data.subscriptions
+        : [];
+
       setSubscriptions(apiSubs);
       fetchStats();
     } catch (apiError) {
-      setError(apiError?.response?.data?.message || "Unable to fetch subscriptions.");
+      setError(
+        apiError?.response?.data?.message ||
+        "Unable to fetch subscriptions."
+      );
       setSubscriptions([]);
     } finally {
       setLoading(false);
     }
-  };
+  },
+  []
+);
 
-  useEffect(() => {
-    fetchSubscriptions(debouncedQuery);
-  }, [debouncedQuery]);
+useEffect(() => {
+  fetchSubscriptions(debouncedQuery);
+}, [debouncedQuery, fetchSubscriptions]);
+
 
   useEffect(() => {
     setPage(1);

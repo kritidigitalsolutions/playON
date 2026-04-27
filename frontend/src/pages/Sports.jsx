@@ -8,8 +8,6 @@ import {
   Radio, 
   RefreshCw, 
   Shield, 
-  ToggleLeft, 
-  ToggleRight, 
   Trash2, 
   Trophy, 
   X 
@@ -48,7 +46,7 @@ function Sports() {
   const [selectedSport, setSelectedSport] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
-  const [actionId, setActionId] = useState("");
+  // const [actionId, setActionId] = useState("");
 
   const loadSports = async () => {
     try {
@@ -138,20 +136,20 @@ function Sports() {
     }
   };
 
-  const toggleStatus = async (sport) => {
-    if (!sport?._id) return;
-    try {
-      setActionId(sport._id);
-      const res = await api.patch(`/admin/sports/${sport._id}/toggle-status`);
-      if (res?.data?.success) {
-        setSports(prev => prev.map(s => s._id === sport._id ? { ...s, isActive: !s.isActive } : s));
-      }
-    } catch (e) {
-      setError(e?.response?.data?.message || "Unable to toggle status.");
-    } finally {
-      setActionId("");
-    }
-  };
+  // const toggleStatus = async (sport) => {
+  //   if (!sport?._id) return;
+  //   try {
+  //     // setActionId(sport._id);
+  //     const res = await api.patch(`/admin/sports/${sport._id}/toggle-status`);
+  //     if (res?.data?.success) {
+  //       setSports(prev => prev.map(s => s._id === sport._id ? { ...s, isActive: !s.isActive } : s));
+  //     }
+  //   } catch (e) {
+  //     setError(e?.response?.data?.message || "Unable to toggle status.");
+  //   } finally {
+  //     // setActionId("");
+  //   }
+  // };
 
   const handleDelete = async () => {
     if (!deleteTarget?._id) return;
