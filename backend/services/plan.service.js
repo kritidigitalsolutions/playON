@@ -5,26 +5,31 @@ exports.createPlan = async (data) => {
   return await Plan.create(data);
 };
 
-// List (Admin)
+// Admin List
 exports.getPlans = async (query) => {
   const {
     search,
     isActive,
+    planType,
     page = 1,
     limit = 10
   } = query;
 
   const filter = {};
 
+  if (isActive !== undefined) {
+    filter.isActive = isActive === "true";
+  }
+
+  if (planType) {
+    filter.planType = planType;
+  }
+
   if (search) {
     filter.$or = [
       { title: { $regex: search, $options: "i" } },
-      { billingType: { $regex: search, $options: "i" } }
+      { planType: { $regex: search, $options: "i" } }
     ];
-  }
-
-  if (isActive !== undefined) {
-    filter.isActive = isActive === "true";
   }
 
   const skip = (Number(page) - 1) * Number(limit);
@@ -55,14 +60,10 @@ exports.getPlanById = async (id) => {
 
 // Update
 exports.updatePlan = async (id, data) => {
-  return await Plan.findByIdAndUpdate(
-    id,
-    data,
-    {
-      new: true,
-      runValidators: true
-    }
-  );
+  return await Plan.findByIdAndUpdate(id, data, {
+    new: true,
+    runValidators: true
+  });
 };
 
 // Delete
@@ -83,7 +84,10 @@ exports.toggleStatus = async (id) => {
 };
 
 // Sort Order
-exports.updateSortOrder = async (id, sortOrder) => {
+exports.updateSortOrder = async (
+  id,
+  sortOrder
+) => {
   return await Plan.findByIdAndUpdate(
     id,
     { sortOrder },
@@ -91,8 +95,12 @@ exports.updateSortOrder = async (id, sortOrder) => {
   );
 };
 
-// User Public Plans
+// Public Plans
 exports.getActivePlans = async () => {
-  return await Plan.find({ isActive: true })
-    .sort({ sortOrder: 1, createdAt: -1 });
+  return await Plan.find({
+    isActive: true
+  }).sort({
+    sortOrder: 1,
+    createdAt: -1
+  });
 };

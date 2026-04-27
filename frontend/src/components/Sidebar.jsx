@@ -9,6 +9,7 @@ import {
   Radio,
   Tv,
   Settings,
+  Shield,
   ShieldCheck,
   Swords,
   LogOut,
@@ -16,7 +17,9 @@ import {
   UserRound,
   Users,
   Wallet,
-  ScrollText
+  ScrollText,
+  Film,
+  Image as ImageIcon
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -24,12 +27,16 @@ const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { label: "Users", path: "/users", icon: Users },
   { label: "Players", path: "/players", icon: UserRound },
-  { label: "User Plans", path: "/user-plans", icon: Wallet },
+  { label: "Teams", path: "/teams", icon: Shield },
+  { label: "Series", path: "/series", icon: Film },
+  { label: "Subscribed Users", path: "/user-plans", icon: Wallet },
   { label: "Subscription Plans", path: "/plans", icon: Layers3 },
   { label: "Matches", path: "/matches", icon: Swords },
   { label: "Sports", path: "/sports", icon: Trophy },
+  { label: "Banners", path: "/banners", icon: ImageIcon },
   { label: "Streams", path: "/streams", icon: Radio },
   { label: "Live TV", path: "/livetv", icon: Tv },
+  { label: "Activate TV", path: "/activate-tv", icon: Tv },
   { label: "Notifications", path: "/notifications", icon: Bell },
   { label: "Legal", path: "/legal", icon: ScrollText },
   { label: "Settings", path: "/settings", icon: Settings }
@@ -55,7 +62,7 @@ function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onCloseMobile, o
           </button>
         </div>
 
-        <nav className="mt-3 flex-1 space-y-2 px-3">
+        <nav className="mt-3 flex-1 space-y-2 px-3 overflow-y-auto pretty-scroll">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -105,7 +112,7 @@ function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onCloseMobile, o
             Close
           </button>
         </div>
-        <nav className="space-y-2 px-3">
+        <nav className="flex-1 space-y-2 px-3 overflow-y-auto pretty-scroll">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (

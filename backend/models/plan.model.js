@@ -27,10 +27,37 @@ const planSchema = new mongoose.Schema(
       uppercase: true
     },
 
-    billingType: {
-      type: String,
-      enum: ["monthly", "yearly", "per_match"],
-      required: true
+    // MAIN PLAN TYPE
+   planType: {
+  type: String,
+  enum: [
+    "match_pass",
+    "team_pass",
+    "series_pass",
+    "monthly_pass",
+    "yearly_pass",
+    "ad_free"
+  ],
+  required: true
+},
+
+    // RELATIONS
+    matchId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Match",
+      default: null
+    },
+
+    teamId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Team",
+      default: null
+    },
+
+    seriesId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Series",
+      default: null
     },
 
     durationDays: {
@@ -44,11 +71,17 @@ const planSchema = new mongoose.Schema(
       default: []
     },
 
-    buttonText: {
-      type: String,
-      default: "Buy Now"
-    },
-
+   buttonText: {
+  type: String,
+  enum: [
+    "Choose The Match",
+    "Choose The Team",
+    "Choose The Series",
+    "Unlock Now",
+    "Go Ad-Free"
+  ],
+  default: "Unlock Now"
+},
     description: {
       type: String,
       default: ""
@@ -72,14 +105,15 @@ const planSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-planSchema.pre("save", function () {
+planSchema.pre("save", function (next) {
   if (!this.slug && this.title) {
     this.slug = this.title
       .toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^\w-]/g, "");
   }
-});
 
+  
+});
 
 module.exports = mongoose.model("Plan", planSchema);

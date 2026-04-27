@@ -8,6 +8,7 @@ const {
   resetForgotPassword
 } = require("../../controllers/admin auth/admin.auth.controller");
 const { getAllUsers, deleteUserById } = require("../../controllers/admin/users.admin.controller");
+const { getTvConnections } = require("../../controllers/admin/tv.admin.controller");
 const { isAdmin } = require("../../middlewares/admin.middleware");
 
 const {
@@ -24,6 +25,7 @@ router.post("/forgot-password/verify-otp", verifyForgotPasswordOtp);
 router.post("/forgot-password/reset", resetForgotPassword);
 router.get("/users", isAdmin, getAllUsers);
 router.delete("/users/:id", isAdmin, deleteUserById);
+router.get("/tv-connections", isAdmin, getTvConnections);
 
 router.get("/dashboard", isAdmin, getDashboard);
 

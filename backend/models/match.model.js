@@ -96,6 +96,12 @@ const matchSchema = new mongoose.Schema(
       default: ""
     },
 
+    seriesId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Series",
+  default: null
+},
+
     description: {
       type: String,
       default: ""
@@ -132,5 +138,6 @@ matchSchema.index({ sport: 1 });
 matchSchema.index({ status: 1 });
 matchSchema.index({ matchDate: 1 });
 matchSchema.index({ isFeatured: 1 });
+matchSchema.index({ seriesId: 1 });
 
 module.exports = mongoose.model("Match", matchSchema);

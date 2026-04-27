@@ -1,15 +1,54 @@
 const planService = require("../../services/plan.service");
 
+// helper validation
+const validatePlan = (data) => {
+  if (!data.planType) {
+    return "planType is required";
+  }
+
+  if (!data.title || !data.title.trim()) {
+    return "title is required";
+  }
+
+  if (
+    data.price === undefined ||
+    Number(data.price) < 0
+  ) {
+    return "valid price is required";
+  }
+
+  if (
+    !data.durationDays ||
+    Number(data.durationDays) < 1
+  ) {
+    return "valid durationDays is required";
+  }
+
+  return null;
+};
+
 // Create
 exports.createPlan = async (req, res) => {
   try {
-    const plan = await planService.createPlan(req.body);
+    const data = { ...req.body };
+
+    const errorMessage = validatePlan(data);
+
+    if (errorMessage) {
+      return res.status(400).json({
+        success: false,
+        message: errorMessage
+      });
+    }
+
+    const plan = await planService.createPlan(data);
 
     res.status(201).json({
       success: true,
       message: "Plan created successfully",
       plan
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -27,6 +66,7 @@ exports.getPlans = async (req, res) => {
       success: true,
       ...result
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -51,6 +91,7 @@ exports.getSinglePlan = async (req, res) => {
       success: true,
       plan
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -62,9 +103,20 @@ exports.getSinglePlan = async (req, res) => {
 // Update
 exports.updatePlan = async (req, res) => {
   try {
+    const updatedData = { ...req.body };
+
+    const errorMessage = validatePlan(updatedData);
+
+    if (errorMessage) {
+      return res.status(400).json({
+        success: false,
+        message: errorMessage
+      });
+    }
+
     const plan = await planService.updatePlan(
       req.params.id,
-      req.body
+      updatedData
     );
 
     if (!plan) {
@@ -79,6 +131,7 @@ exports.updatePlan = async (req, res) => {
       message: "Plan updated successfully",
       plan
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -103,6 +156,7 @@ exports.deletePlan = async (req, res) => {
       success: true,
       message: "Plan deleted successfully"
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -128,6 +182,7 @@ exports.toggleStatus = async (req, res) => {
       message: "Status updated successfully",
       plan
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -158,6 +213,7 @@ exports.updateSortOrder = async (req, res) => {
       message: "Sort order updated successfully",
       plan
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,

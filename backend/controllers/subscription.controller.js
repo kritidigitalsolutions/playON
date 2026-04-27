@@ -34,14 +34,15 @@ const subscriptionService = require("../services/subscription.service");
 // My Current Subscription
 exports.getMySubscription = async (req, res) => {
   try {
-    const subscription =
+    const subscriptions =
       await subscriptionService.getMySubscription(
         req.user.userId
       );
 
     res.json({
       success: true,
-      subscription
+      count: subscriptions.length,
+      subscriptions
     });
   } catch (error) {
     res.status(500).json({
@@ -102,23 +103,26 @@ exports.cancelSubscription = async (req, res) => {
 };
 
 // Check Access
-exports.checkAccess = async (req, res) => {
-  try {
-    const hasAccess =
-      await subscriptionService.checkAccess(
-        req.user.userId
-      );
+exports.checkAccess = async (userId) => {
+  const now = new Date();
 
-    res.json({
-      success: true,
-      hasAccess
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
-  }
+  const subscription = await Subscription.findOne({
+    userId,
+    status: "active",
+    endDate: { $gt: now },
+    isDeleted: { $ne: true },
+    accessType: {
+      $in: [
+        "monthly_pass",
+        "yearly_pass",
+        "match_pass",
+        "team_pass",
+        "series_pass"
+      ]
+    }
+  });
+
+  return !!subscription;
 };
 
 exports.deleteSubscription = async (req, res) => {

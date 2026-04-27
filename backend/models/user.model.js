@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema(
     type: String,
     default: "",
     trim: true,
+    unique: true,
     lowercase: true
   },
 
@@ -30,10 +31,11 @@ const userSchema = new mongoose.Schema(
     type: [String],
     default: []
   },
+
   fcmToken: {
-  type: String,
-  default: ""
-},
+    type: String,
+    default: ""
+  },
 
   profilePic: {
     type: String,
@@ -69,7 +71,35 @@ const userSchema = new mongoose.Schema(
       }
     ],
     default: []
+  },
+
+  followedSeries: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Series"
+      }
+    ],
+    default: []
+  },
+
+  // AD FREE ACCESS
+  adsDisabled: {
+    type: Boolean,
+    default: false
+  },
+
+  adsExpiry: {
+    type: Date,
+    default: null
+  },
+
+  adFreePurchaseType: {
+    type: String,
+    enum: ["none", "temporary", "lifetime"],
+    default: "none"
   }
+
 },
 { timestamps: true }
 );

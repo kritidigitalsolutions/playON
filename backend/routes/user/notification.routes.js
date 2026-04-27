@@ -6,6 +6,7 @@ const { isAuth } = require("../../middlewares/auth.middleware");
 const {
   getMyNotifications,
   getUnreadCount,
+  getReadCount,
   markAsRead,
   markAllAsRead,
   deleteNotification
@@ -19,10 +20,11 @@ const {
 router.use(isAuth);
 
 // Inbox
-router.get("/", getMyNotifications);
+router.get("/",getMyNotifications);
 
 // Badge count
 router.get("/unread-count", getUnreadCount);
+router.get("/read-count", getReadCount);
 
 // Mark all read
 router.patch("/read-all", markAllAsRead);

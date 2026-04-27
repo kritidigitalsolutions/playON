@@ -50,8 +50,7 @@ exports.sendPasswordOtp = async (req, res) => {
     const otp = generateOtp();
 
     await AdminOtp.deleteMany({
-      email: admin.email,
-      purpose: "change-password"
+      email: admin.email
     });
 
     await AdminOtp.create({
@@ -131,10 +130,7 @@ exports.changePassword = async (req, res) => {
     admin.password = await bcrypt.hash(newPassword, 10);
     await admin.save();
 
-    await AdminOtp.deleteMany({
-      email: admin.email,
-      purpose: "change-password"
-    });
+    await AdminOtp.findByIdAndDelete(record._id);
 
     res.json({
       success: true,
@@ -150,7 +146,6 @@ exports.changePassword = async (req, res) => {
 };
 
 /* SEND EMAIL OTP */
-/* SEND EMAIL OTP (to old email) */
 exports.sendEmailOtp = async (req, res) => {
   try {
     const { oldEmail, newEmail } = req.body;
@@ -185,8 +180,7 @@ exports.sendEmailOtp = async (req, res) => {
     const otp = generateOtp();
 
     await AdminOtp.deleteMany({
-      email: oldEmail.toLowerCase(),
-      purpose: "change-email"
+      email: oldEmail.toLowerCase()
     });
 
     await AdminOtp.create({
@@ -206,8 +200,7 @@ exports.sendEmailOtp = async (req, res) => {
 
     res.json({
       success: true,
-      message: "OTP sent to old email",
-      otp
+      message: "OTP sent to old email"
     });
 
   } catch (error) {
@@ -218,7 +211,6 @@ exports.sendEmailOtp = async (req, res) => {
   }
 };
 
-/* CHANGE EMAIL */
 /* CHANGE EMAIL */
 exports.changeEmail = async (req, res) => {
   try {
@@ -241,6 +233,13 @@ exports.changeEmail = async (req, res) => {
 
     const admin = await Admin.findById(req.admin.adminId);
 
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found"
+      });
+    }
+
     if (admin.email !== oldEmail.toLowerCase()) {
       return res.status(400).json({
         success: false,
@@ -251,10 +250,7 @@ exports.changeEmail = async (req, res) => {
     admin.email = newEmail.toLowerCase();
     await admin.save();
 
-    await AdminOtp.deleteMany({
-      email: oldEmail.toLowerCase(),
-      purpose: "change-email"
-    });
+    await AdminOtp.findByIdAndDelete(record._id);
 
     res.json({
       success: true,

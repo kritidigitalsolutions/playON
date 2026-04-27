@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, LogOut, Menu, Settings, User, X, Shield, Mail, Activity } from "lucide-react";
-import SearchBar from "./SearchBar";
+import GlobalSearch from "./GlobalSearch";
 import ThemeToggle from "./ThemeToggle";
 import NotificationBell from "./NotificationBell";
 import { getAdminProfile } from "../utils/auth";
@@ -11,19 +11,34 @@ import { SETTINGS_ROUTE } from "../utils/appPaths";
 function Topbar({
   title,
   breadcrumbs,
-  search,
-  onSearch,
   isDark,
   onThemeToggle,
   onMenuClick,
-  notifications,
   onLogout
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const profileMenuRef = useRef(null);
   const [openProfileMenu, setOpenProfileMenu] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [adminProfile, setAdminProfile] = useState(null);
+
+  const SEARCH_PLACEHOLDERS = {
+    "/dashboard": "Search matches, users, streams...",
+    "/users": "Search by name, email, phone...",
+    "/players": "Search by player name, team, sport...",
+    "/teams": "Search by team name, country, sport...",
+    "/series": "Search by title, sport, team...",
+    "/matches": "Search by teams, sport, status...",
+    "/streams": "Search by title, type, status...",
+    "/livetv": "Search channels by name...",
+    "/activate-tv": "Search TV connected users...",
+    "/plans": "Search subscription plans...",
+    "/user-plans": "Search user subscriptions...",
+    "/notifications": "Search notifications...",
+    "/legal": "Search legal documents...",
+    "/settings": "Search settings..."
+  };
 
   useEffect(() => {
     const loadProfile = () => {
@@ -81,9 +96,9 @@ function Topbar({
         </div>
 
         <div className="flex w-full items-center gap-3 sm:w-auto">
-          <SearchBar value={search} onChange={onSearch} placeholder="Search users, matches, streams..." className="w-full sm:w-72" />
+          <GlobalSearch className="w-full sm:w-80" placeholder={SEARCH_PLACEHOLDERS[location.pathname] || "Search..."} />
           <ThemeToggle isDark={isDark} onToggle={onThemeToggle} />
-          <NotificationBell items={notifications} />
+          <NotificationBell />
           <div ref={profileMenuRef} className="relative">
             <button
               type="button"

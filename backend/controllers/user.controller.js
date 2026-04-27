@@ -13,31 +13,43 @@ exports.completeProfile = async (req, res) => {
       });
     }
 
-    const updatedUser = await User.findOneAndUpdate(
-      {
-        _id: req.user.userId,
-        isDeleted: false
-      },
-      {
-        fullName: fullName.trim(),
-        favoriteSports: favoriteSports || [],
-        isProfileComplete: true
-      },
-      { new: true }
-    );
+    const user = await User.findOne({
+      _id: req.user.userId,
+      isDeleted: false
+    });
 
-    if (!updatedUser) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found"
       });
     }
 
+    // Only first-time onboarding allowed
+    if (user.isProfileComplete === true) {
+      return res.status(400).json({
+        success: false,
+        message: "Profile already completed. Use update profile."
+      });
+    }
+
+    user.fullName = fullName.trim();
+    user.favoriteSports = Array.isArray(favoriteSports)
+      ? favoriteSports
+      : favoriteSports
+      ? [favoriteSports]
+      : [];
+
+    user.isProfileComplete = true;
+
+    await user.save();
+
     res.json({
       success: true,
       message: "Profile completed successfully",
-      user: updatedUser
+      user
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,

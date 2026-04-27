@@ -91,4 +91,30 @@ app.use("/api/admin/notifications", require("./routes/admin/notification.routes"
 //watchlist
 app.use("/api/watchlist", require("./routes/user/watchlist.routes"));
 
+//Active tv generate code
+const tvRoutes = require("./routes/user/tv.routes");
+
+app.use("/api/tv", tvRoutes);
+//TOurs/Series
+const adminSeriesRoutes = require("./routes/admin/series.routes");
+
+app.use("/api/admin/series", adminSeriesRoutes);
+
+const userSeriesRoutes = require("./routes/user/series.routes");
+
+app.use("/api/series", userSeriesRoutes);
+
+//teams api
+app.use("/api/admin/teams", require("./routes/admin/team.routes"));
+app.use("/api/teams", require("./routes/user/team.routes"));
+
+app.use("/api/scores", require("./routes/user/score.routes"));
+
+app.use("/api/admin/sports", require("./routes/admin/sport.routes"));
+app.use("/api/sports", require("./routes/user/sport.routes"));
+
+//banner ads
+app.use("/api/admin/banner-ads", require("./routes/admin/bannerAd.routes"));
+app.use("/api/banner-ads", require("./routes/user/bannerAd.routes"));
+
 module.exports = app;

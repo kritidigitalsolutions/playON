@@ -12,21 +12,45 @@ const defaultForm = {
   slug: "",
   price: "",
   currency: "INR",
-  billingType: "monthly",
+  planType: "monthly_pass",
+  matchId: "",
+  teamId: "",
+  seriesId: "",
   durationDays: "30",
   features: "",
-  buttonText: "Buy Now",
+  buttonText: "Unlock Now",
   description: "",
   badge: "",
   isActive: true,
   sortOrder: "0"
 };
 
-const billingOptions = [
-  { label: "Monthly", value: "monthly" },
-  { label: "Yearly", value: "yearly" },
-  { label: "Per Match", value: "per_match" }
+const PLAN_TYPE_OPTIONS = [
+  { label: "Monthly Pass", value: "monthly_pass", color: "indigo" },
+  { label: "Yearly Pass", value: "yearly_pass", color: "violet" },
+  { label: "Match Pass", value: "match_pass", color: "amber" },
+  { label: "Team Pass", value: "team_pass", color: "rose" },
+  { label: "Series Pass", value: "series_pass", color: "emerald" },
+  { label: "Ad-Free", value: "ad_free", color: "sky" }
 ];
+
+const PLAN_TYPE_LABELS = {
+  monthly_pass: "Monthly Pass",
+  yearly_pass: "Yearly Pass",
+  match_pass: "Match Pass",
+  team_pass: "Team Pass",
+  series_pass: "Series Pass",
+  ad_free: "Ad-Free"
+};
+
+const PLAN_TYPE_COLORS = {
+  monthly_pass: "bg-indigo-50 text-indigo-600 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400",
+  yearly_pass: "bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-500/10 dark:text-violet-400",
+  match_pass: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400",
+  team_pass: "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400",
+  series_pass: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400",
+  ad_free: "bg-sky-50 text-sky-600 border-sky-200 dark:bg-sky-500/10 dark:text-sky-400"
+};
 
 const formatMoney = (value, currency = "INR") => {
   const amount = Number(value);
@@ -50,10 +74,14 @@ const normalizeFeatures = (value) =>
 
 function Plans() {
   const [plans, setPlans] = useState([]);
+  // const [allMatches, setAllMatches] = useState([]);
+  // const [allTeams, setAllTeams] = useState([]);
+  // const [allSeries, setAllSeries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [planTypeFilter, setPlanTypeFilter] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -69,14 +97,21 @@ function Plans() {
       setLoading(true);
       setError("");
 
-      const response = await api.get("/admin/plans", {
+      const plansRes = await api.get("/admin/plans", {
         params: { page: 1, limit: 200 }
       });
 
-      setPlans(Array.isArray(response?.data?.plans) ? response.data.plans : []);
+      setPlans(
+        Array.isArray(plansRes?.data?.plans)
+          ? plansRes.data.plans
+          : []
+      );
     } catch (apiError) {
       setPlans([]);
-      setError(apiError?.response?.data?.message || "Unable to load plans.");
+      setError(
+        apiError?.response?.data?.message ||
+        "Unable to load plans."
+      );
     } finally {
       setLoading(false);
     }
@@ -86,51 +121,59 @@ function Plans() {
     loadPlans();
   }, []);
 
+
+
   const stats = useMemo(() => {
     const active = plans.filter((item) => item.isActive).length;
-    const yearly = plans.filter((item) => item.billingType === "yearly").length;
-    const monthly = plans.filter((item) => item.billingType === "monthly").length;
-
-    return {
-      total: plans.length,
-      active,
-      inactive: plans.length - active,
-      yearly,
-      monthly
-    };
+    const byType = {};
+    PLAN_TYPE_OPTIONS.forEach(opt => {
+      byType[opt.value] = plans.filter(p => p.planType === opt.value).length;
+    });
+    return { total: plans.length, active, inactive: plans.length - active, ...byType };
   }, [plans]);
 
   const filteredPlans = useMemo(() => {
     const query = search.trim().toLowerCase();
-
     return plans.filter((item) => {
-      const statusOk =
-        statusFilter === "all"
-          ? true
-          : statusFilter === "active"
-            ? item.isActive
-            : !item.isActive;
-
+      const statusOk = statusFilter === "all" ? true : statusFilter === "active" ? item.isActive : !item.isActive;
+      const typeOk = planTypeFilter === "all" ? true : item.planType === planTypeFilter;
       const haystack = [
         item.title,
         item.slug,
-        item.billingType,
+        item.planType,
         item.currency,
         item.badge,
         item.description,
+        item.buttonText,
+        // (item.matchId),
+        // (item.teamId),
+        // (item.seriesId),
         ...(item.features || [])
       ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      const searchOk = !query || haystack.includes(query);
-      return statusOk && searchOk;
+        .filter(Boolean).join(" ").toLowerCase();
+      return statusOk && typeOk && (!query || haystack.includes(query));
     });
-  }, [plans, search, statusFilter]);
+  }, [plans, search, statusFilter, planTypeFilter]);
 
   const onFormChange = (key, value) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm((prev) => {
+      const updated = { ...prev, [key]: value };
+
+      if (key === "planType") {
+        const map = {
+          monthly_pass: "Unlock Now",
+          yearly_pass: "Unlock Now",
+          match_pass: "Choose The Match",
+          team_pass: "Choose The Team",
+          series_pass: "Choose The Series",
+          ad_free: "Go Ad-Free"
+        };
+
+        updated.buttonText = map[value] || "Unlock Now";
+      }
+
+      return updated;
+    });
 
     if (formErrors[key]) {
       setFormErrors((prev) => ({ ...prev, [key]: "" }));
@@ -153,10 +196,13 @@ function Plans() {
       slug: plan?.slug || "",
       price: String(plan?.price ?? ""),
       currency: plan?.currency || "INR",
-      billingType: plan?.billingType || "monthly",
+      planType: plan?.planType || "monthly_pass",
+      matchId: plan?.matchId?._id || plan?.matchId || "",
+      teamId: plan?.teamId?._id || plan?.teamId || "",
+      seriesId: plan?.seriesId?._id || plan?.seriesId || "",
       durationDays: String(plan?.durationDays ?? 30),
       features: Array.isArray(plan?.features) ? plan.features.join("\n") : "",
-      buttonText: plan?.buttonText || "Buy Now",
+      buttonText: plan?.buttonText || "Unlock Now",
       description: plan?.description || "",
       badge: plan?.badge || "",
       isActive: Boolean(plan?.isActive),
@@ -174,13 +220,14 @@ function Plans() {
 
   const validate = () => {
     const nextErrors = {};
-
     if (!form.title.trim()) nextErrors.title = "Plan title is required";
     if (form.price === "" || Number(form.price) < 0) nextErrors.price = "Enter a valid price";
     if (form.durationDays === "" || Number(form.durationDays) < 1) nextErrors.durationDays = "Duration must be at least 1 day";
-    if (!form.billingType) nextErrors.billingType = "Select a billing type";
+    if (!form.planType) nextErrors.planType = "Select a plan type";
     if (!form.currency.trim()) nextErrors.currency = "Currency is required";
-
+    // if (form.planType === "match_pass" && !form.matchId) nextErrors.matchId = "Select a match for Match Pass";
+    // if (form.planType === "team_pass" && !form.teamId) nextErrors.teamId = "Select a team for Team Pass";
+    // if (form.planType === "series_pass" && !form.seriesId) nextErrors.seriesId = "Select a series for Series Pass";
     setFormErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
@@ -201,10 +248,16 @@ function Plans() {
         slug: form.slug.trim(),
         price: Number(form.price),
         currency: form.currency.trim().toUpperCase(),
-        billingType: form.billingType,
+        planType: form.planType,
+        // matchId: form.planType === "match_pass" ? form.matchId || null : null,
+        // teamId: form.planType === "team_pass" ? form.teamId || null : null,
+        // seriesId: form.planType === "series_pass" ? form.seriesId || null : null,
+        matchId: null,
+        teamId: null,
+        seriesId: null,
         durationDays: Number(form.durationDays),
         features: normalizeFeatures(form.features),
-        buttonText: form.buttonText.trim() || "Buy Now",
+        buttonText: form.buttonText || "Unlock Now",
         description: form.description.trim(),
         badge: form.badge.trim(),
         isActive: Boolean(form.isActive),
@@ -351,13 +404,23 @@ function Plans() {
 
       {error ? <p className="mb-4 text-sm text-rose-500">{error}</p> : null}
 
-      <div className="mb-4 grid gap-3 lg:grid-cols-[minmax(0,2fr),220px]">
+      <div className="mb-4 grid gap-3 lg:grid-cols-[minmax(0,2fr),200px,200px]">
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search by title, slug, billing type, badge..."
+          placeholder="Search by title, plan type, badge..."
           className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
         />
+        <select
+          value={planTypeFilter}
+          onChange={(event) => setPlanTypeFilter(event.target.value)}
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        >
+          <option value="all">Type: All</option>
+          {PLAN_TYPE_OPTIONS.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
         <select
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}
@@ -369,7 +432,7 @@ function Plans() {
         </select>
       </div>
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Plans</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.total}</p>
@@ -380,15 +443,17 @@ function Plans() {
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Inactive</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.inactive}</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-500">{stats.inactive}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Monthly</p>
-          <p className="mt-2 text-2xl font-semibold text-indigo-500">{stats.monthly}</p>
-        </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Yearly</p>
-          <p className="mt-2 text-2xl font-semibold text-violet-500">{stats.yearly}</p>
+        <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-4 shadow-sm dark:border-indigo-900 dark:bg-indigo-950/30">
+          <p className="text-xs uppercase tracking-wide text-indigo-500">By Type</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {PLAN_TYPE_OPTIONS.map(opt => (
+              <span key={opt.value} className={`rounded-lg border px-2 py-0.5 text-[11px] font-semibold ${PLAN_TYPE_COLORS[opt.value]}`}>
+                {opt.label.split(" ")[0]} {stats[opt.value] || 0}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -412,22 +477,24 @@ function Plans() {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{plan.title || "Untitled Plan"}</h3>
-                    {plan.badge ? (
-                      <span className="rounded-full bg-violet-500/10 px-2.5 py-1 text-xs font-medium text-violet-500">
-                        {plan.badge}
+                    {plan.badge && (
+                      <span className="rounded-full bg-violet-500/10 px-2.5 py-1 text-xs font-medium text-violet-500">{plan.badge}</span>
+                    )}
+                    {plan.planType && (
+                      <span className={`rounded-lg border px-2 py-0.5 text-[11px] font-semibold ${PLAN_TYPE_COLORS[plan.planType] || ""}`}>
+                        {PLAN_TYPE_LABELS[plan.planType] || plan.planType}
                       </span>
-                    ) : null}
+                    )}
                   </div>
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    {formatMoney(plan.price, plan.currency)} · {plan.billingType} · {plan.durationDays} days
+                    {formatMoney(plan.price, plan.currency)} - {plan.durationDays} days
                   </p>
                 </div>
                 <span
-                  className={`rounded-full px-2.5 py-1 text-xs ${
-                    plan.isActive
-                      ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-500"
-                      : "border border-slate-500/20 bg-slate-500/10 text-slate-500"
-                  }`}
+                  className={`rounded-full px-2.5 py-1 text-xs ${plan.isActive
+                    ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-500"
+                    : "border border-slate-500/20 bg-slate-500/10 text-slate-500"
+                    }`}
                 >
                   {plan.isActive ? "Active" : "Inactive"}
                 </span>
@@ -503,7 +570,7 @@ function Plans() {
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{editMode ? "Edit Plan" : "Create Plan"}</h2>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Control title, pricing, features, status, and sort order for admin plans.</p>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Create reusable subscription templates. Users will choose team, match, or series during purchase.</p>
                 </div>
                 <button type="button" onClick={closeModal} className="text-slate-500 transition hover:text-slate-800 dark:hover:text-slate-200">
                   <X size={18} />
@@ -536,14 +603,13 @@ function Plans() {
                   </label>
 
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Billing Type</span>
-                    <select value={form.billingType} onChange={(event) => onFormChange("billingType", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
-                      {billingOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Plan Type</span>
+                    <select value={form.planType} onChange={(event) => onFormChange("planType", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                      {PLAN_TYPE_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
                     </select>
+                    {formErrors.planType ? <span className="mt-1 block text-xs text-rose-500">{formErrors.planType}</span> : null}
                   </label>
 
                   <label className="block text-sm">
@@ -552,9 +618,17 @@ function Plans() {
                     {formErrors.durationDays ? <span className="mt-1 block text-xs text-rose-500">{formErrors.durationDays}</span> : null}
                   </label>
 
+
+
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Button Text</span>
-                    <input value={form.buttonText} onChange={(event) => onFormChange("buttonText", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <select value={form.buttonText} onChange={(event) => onFormChange("buttonText", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                      <option value="Unlock Now">Unlock Now</option>
+                      <option value="Choose The Match">Choose The Match</option>
+                      <option value="Choose The Team">Choose The Team</option>
+                      <option value="Choose The Series">Choose The Series</option>
+                      <option value="Go Ad-Free">Go Ad-Free</option>
+                    </select>
                   </label>
 
                   <label className="block text-sm">
@@ -617,16 +691,44 @@ function Plans() {
                   <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatMoney(selectedPlan.price, selectedPlan.currency)}</p>
                 </div>
                 <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
-                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Cycle</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedPlan.billingType || "-"} | {selectedPlan.durationDays || 0} days</p>
+                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Plan Type</p>
+                  <span className={`mt-2 inline-block rounded-lg border px-2.5 py-1 text-sm font-semibold ${PLAN_TYPE_COLORS[selectedPlan.planType] || "text-slate-600"}`}>
+                    {PLAN_TYPE_LABELS[selectedPlan.planType] || selectedPlan.planType || "-"}
+                  </span>
                 </div>
                 <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
-                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Button Text</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedPlan.buttonText || "-"}</p>
+                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Duration</p>
+                  <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedPlan.durationDays || 0} days</p>
                 </div>
                 <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Status</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedPlan.isActive ? "Active" : "Inactive"} | Sort {selectedPlan.sortOrder ?? 0}</p>
+                  <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedPlan.isActive ? "Active" : "Inactive"} - Sort {selectedPlan.sortOrder ?? 0}</p>
+                </div>
+                {selectedPlan.planType === "match_pass" && selectedPlan.matchId && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/20 md:col-span-2">
+                    <p className="text-xs uppercase tracking-wide text-amber-600">Linked Match</p>
+                    <p className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">
+                      {(selectedPlan.matchId)}
+                    </p>
+                  </div>
+                )}
+                {selectedPlan.planType === "team_pass" && selectedPlan.teamId && (
+                  <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-900 dark:bg-rose-950/20 md:col-span-2">
+                    <p className="text-xs uppercase tracking-wide text-rose-600">Team</p>
+                    <p className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">{(selectedPlan.teamId)}</p>
+                  </div>
+                )}
+                {selectedPlan.planType === "series_pass" && selectedPlan.seriesId && (
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900 dark:bg-emerald-950/20 md:col-span-2">
+                    <p className="text-xs uppercase tracking-wide text-emerald-600">Linked Series</p>
+                    <p className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">
+                      {(selectedPlan.seriesId)}
+                    </p>
+                  </div>
+                )}
+                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Button Text</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{selectedPlan.buttonText || "-"}</p>
                 </div>
               </div>
 
@@ -640,15 +742,14 @@ function Plans() {
                 <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
                   {(selectedPlan.features || []).length ? (
                     selectedPlan.features.map((feature) => (
-                      <li key={feature} className="rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-800">
-                        {feature}
-                      </li>
+                      <li key={feature} className="rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-800">{feature}</li>
                     ))
                   ) : (
                     <li className="text-slate-400">No features added.</li>
                   )}
                 </ul>
               </div>
+
             </motion.div>
           </motion.div>
         ) : null}

@@ -3,12 +3,16 @@ import AdminLayout from "./layout/AdminLayout";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Players from "./pages/Players";
+import Teams from "./pages/Teams";
+import Series from "./pages/Series";
 import Plans from "./pages/Plans";
 import Matches from "./pages/Matches";
 import Sports from "./pages/Sports";
+import Banners from "./pages/Banners";
 import UserPlans from "./pages/UserPlans";
 import Streams from "./pages/Streams";
 import LiveTV from "./pages/LiveTV";
+import ActivateTV from "./pages/ActivateTV";
 import Notifications from "./pages/Notifications";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
@@ -84,12 +88,16 @@ function App() {
         <Route path={DASHBOARD_ROUTE.slice(1)} element={<Dashboard />} />
         <Route path="users" element={<Users />} />
         <Route path="players" element={<Players />} />
+        <Route path="teams" element={<Teams />} />
+        <Route path="series" element={<Series />} />
         <Route path="plans" element={<Plans />} />
         <Route path="user-plans" element={<UserPlans />} />
         <Route path="matches" element={<Matches />} />
         <Route path="sports" element={<Sports />} />
+        <Route path="banners" element={<Banners />} />
         <Route path="streams" element={<Streams />} />
         <Route path="livetv" element={<LiveTV />} />
+        <Route path="activate-tv" element={<ActivateTV />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="reports" element={<Reports />} />
         <Route path="legal" element={<Legal />} />

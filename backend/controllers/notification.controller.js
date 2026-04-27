@@ -223,3 +223,42 @@ exports.deleteNotification = async (req, res) => {
     });
   }
 };
+
+exports.getReadCount = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const notifications = await Notification.find({
+      isActive: true,
+      $or: [
+        { targetUser: userId },
+        { targetUser: null }
+      ],
+      "deletedBy.user": { $ne: userId }
+    });
+
+    let readCount = 0;
+
+    notifications.forEach((item) => {
+      if (item.targetUser) {
+        if (item.isRead) readCount++;
+      } else {
+        const read = item.readBy.some(
+          (r) => r.user.toString() === userId.toString()
+        );
+
+        if (read) readCount++;
+      }
+    });
+
+    res.json({
+      success: true,
+      readCount
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

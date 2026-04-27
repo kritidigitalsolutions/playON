@@ -14,6 +14,39 @@ const subscriptionSchema = new mongoose.Schema(
       required: true
     },
 
+    // WHAT USER BOUGHT
+    accessType: {
+  type: String,
+  enum: [
+    "match_pass",
+    "team_pass",
+    "series_pass",
+    "monthly_pass",
+    "yearly_pass",
+    "ad_free"
+  ],
+  required: true
+},
+
+    // OPTIONAL RELATIONS
+    teamId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Team",
+      default: null
+    },
+
+    matchId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Match",
+      default: null
+    },
+
+    seriesId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Series",
+      default: null
+    },
+
     status: {
       type: String,
       enum: ["active", "expired", "cancelled"],

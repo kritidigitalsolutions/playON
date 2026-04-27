@@ -14,13 +14,13 @@ const {
 router.put("/complete-profile", isAuth, completeProfile);
 router.get("/profile", isAuth, getProfile);
 
-router.put(
+router.patch(
   "/update-profile",
   isAuth,
   upload.single("profileImage"),
   updateProfile
 );
 
-router.put("/fcm-token", isAuth, saveFcmToken);
+router.patch("/fcm-token", isAuth, saveFcmToken);
 
 module.exports = router;

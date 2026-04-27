@@ -7,12 +7,10 @@ import { LOGIN_ROUTE } from "../utils/appPaths";
 import { clearAdminSession } from "../utils/auth";
 import { PAGE_TITLES } from "../utils/constants";
 import { buildBreadcrumbs } from "../utils/helpers";
-import { recentActivities } from "../utils/adminFallbackData";
 
 function AdminLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [search, setSearch] = useState("");
   const { isDark, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
@@ -39,17 +37,14 @@ function AdminLayout() {
         <Topbar
           title={title}
           breadcrumbs={breadcrumbs}
-          search={search}
-          onSearch={setSearch}
           isDark={isDark}
           onThemeToggle={toggleTheme}
           onMenuClick={() => setIsMobileOpen(true)}
-          notifications={recentActivities}
           onLogout={handleLogout}
         />
 
         <main>
-          <Outlet context={{ search }} />
+          <Outlet />
         </main>
       </div>
     </div>
