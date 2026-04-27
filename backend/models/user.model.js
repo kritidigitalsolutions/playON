@@ -16,9 +16,8 @@ const userSchema = new mongoose.Schema(
 
   email: {
     type: String,
-    default: "",
+    default: null,
     trim: true,
-    unique: true,
     lowercase: true
   },
 
@@ -83,7 +82,6 @@ const userSchema = new mongoose.Schema(
     default: []
   },
 
-  // AD FREE ACCESS
   adsDisabled: {
     type: Boolean,
     default: false
@@ -104,12 +102,24 @@ const userSchema = new mongoose.Schema(
 { timestamps: true }
 );
 
+// Unique mobile for active users only
 userSchema.index(
   { mobile: 1 },
   {
     unique: true,
     partialFilterExpression: {
       isDeleted: false
+    }
+  }
+);
+
+// Unique email only when email exists
+userSchema.index(
+  { email: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      email: { $type: "string", $ne: "" }
     }
   }
 );

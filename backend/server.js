@@ -12,12 +12,28 @@ const init = async () => {
 
   try {
     const indexes = await User.collection.indexes();
-    const oldIndex = indexes.find((item) => item.name === "mobile_1");
 
-    if (oldIndex) {
+    const oldMobile = indexes.find(
+      (item) => item.name === "mobile_1"
+    );
+
+    const oldEmail = indexes.find(
+      (item) => item.name === "email_1"
+    );
+
+    if (oldMobile) {
       await User.collection.dropIndex("mobile_1");
       console.log("Old mobile_1 index removed");
     }
+
+    if (oldEmail) {
+      await User.collection.dropIndex("email_1");
+      console.log("Old email_1 index removed");
+    }
+
+    await User.syncIndexes();
+    console.log("Indexes synced");
+
   } catch (error) {
     console.log("Index check skipped:", error.message);
   }
@@ -29,11 +45,16 @@ if (!process.env.VERCEL) {
   initPromise
     .then(() => {
       app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+        console.log(
+          `Server running on port ${PORT}`
+        );
       });
     })
     .catch((error) => {
-      console.log("Startup Error:", error.message);
+      console.log(
+        "Startup Error:",
+        error.message
+      );
       process.exit(1);
     });
 }

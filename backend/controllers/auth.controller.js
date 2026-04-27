@@ -105,16 +105,16 @@ exports.sendOtp = async (req, res) => {
     }
 
     const response = {
-      success: true,
-      message: "OTP sent successfully",
-      isNewUser
-    };
+  success: true,
+  message: "OTP sent successfully",
+  isNewUser
+};
 
-    if (process.env.NODE_ENV !== "production") {
-      response.otp = otp;
-    }
+if (process.env.NODE_ENV !== "production") {
+  response.otp = otp;
+}
 
-    res.json(response);
+res.json(response);
 
   } catch (error) {
     res.status(500).json({
