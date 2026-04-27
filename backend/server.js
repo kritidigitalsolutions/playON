@@ -7,34 +7,38 @@ const User = require("./models/user.model");
 
 const PORT = process.env.PORT || 8000;
 
-const startServer = async () => {
+const init = async () => {
+  await connectDB();
+
   try {
-    await connectDB();
+    const indexes = await User.collection.indexes();
+    const oldIndex = indexes.find((item) => item.name === "mobile_1");
 
-    // Remove old unique index if it exists
-    try {
-      const indexes = await User.collection.indexes();
-
-      const oldIndex = indexes.find(
-        (item) => item.name === "mobile_1"
-      );
-
-      if (oldIndex) {
-        await User.collection.dropIndex("mobile_1");
-        console.log("Old mobile_1 index removed");
-      }
-    } catch (error) {
-      console.log("Index check skipped:", error.message);
+    if (oldIndex) {
+      await User.collection.dropIndex("mobile_1");
+      console.log("Old mobile_1 index removed");
     }
-
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-
   } catch (error) {
-    console.log("Startup Error:", error.message);
-    process.exit(1);
+    console.log("Index check skipped:", error.message);
   }
 };
 
-startServer();
+let initPromise = init();
+
+if (!process.env.VERCEL) {
+  initPromise
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+      });
+    })
+    .catch((error) => {
+      console.log("Startup Error:", error.message);
+      process.exit(1);
+    });
+}
+
+module.exports = async (req, res) => {
+  await initPromise;
+  return app(req, res);
+};

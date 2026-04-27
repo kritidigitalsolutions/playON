@@ -1,5 +1,6 @@
 const Subscription = require("../models/subscription.model");
 const Plan = require("../models/plan.model");
+const User = require("../models/user.model");
 
 // Buy Subscription (fallback/manual)
 exports.buyPlan = async (userId, planId) => {
@@ -11,6 +12,7 @@ exports.buyPlan = async (userId, planId) => {
 
   const now = new Date();
   const endDate = new Date(now);
+
   endDate.setDate(
     endDate.getDate() + plan.durationDays
   );
@@ -67,16 +69,30 @@ exports.getHistory = async (userId) => {
     .sort({ createdAt: -1 });
 };
 
-// Cancel
+// Cancel Subscription (FIXED)
 exports.cancelSubscription = async (
   userId,
   id
 ) => {
-  return await Subscription.findOneAndUpdate(
-    { _id: id, userId },
-    { status: "cancelled" },
-    { new: true }
-  ).populate("planId");
+  const subscription =
+    await Subscription.findOneAndUpdate(
+      { _id: id, userId },
+      { status: "cancelled" },
+      { new: true }
+    ).populate("planId");
+
+  if (!subscription) return null;
+
+  // If cancelled plan is Ad-Free, restore ads
+  if (subscription.accessType === "ad_free") {
+    await User.findByIdAndUpdate(userId, {
+      adsDisabled: false,
+      adsExpiry: null,
+      adFreePurchaseType: "none"
+    });
+  }
+
+  return subscription;
 };
 
 // Generic Access Check
@@ -186,6 +202,7 @@ exports.getSubscriptions = async (
   } = query;
 
   const filter = {};
+
   if (status) filter.status = status;
 
   const skip =
@@ -217,6 +234,7 @@ exports.getSubscriptions = async (
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(Number(limit)),
+
       Subscription.countDocuments(filter)
     ]);
 
@@ -283,12 +301,15 @@ async () => {
     expired
   ] = await Promise.all([
     Subscription.countDocuments(),
+
     Subscription.countDocuments({
       status: "active"
     }),
+
     Subscription.countDocuments({
       status: "cancelled"
     }),
+
     Subscription.countDocuments({
       status: "expired"
     })
