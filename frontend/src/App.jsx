@@ -14,6 +14,7 @@ import Streams from "./pages/Streams";
 import LiveTV from "./pages/LiveTV";
 import ActivateTV from "./pages/ActivateTV";
 import Notifications from "./pages/Notifications";
+import Promo from "./pages/Promo";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Legal from "./pages/Legal";
@@ -99,6 +100,7 @@ function App() {
         <Route path="livetv" element={<LiveTV />} />
         <Route path="activate-tv" element={<ActivateTV />} />
         <Route path="notifications" element={<Notifications />} />
+        <Route path="promo" element={<Promo />} />
         <Route path="reports" element={<Reports />} />
         <Route path="legal" element={<Legal />} />
         <Route path="settings" element={<Settings />} />

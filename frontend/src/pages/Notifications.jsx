@@ -162,7 +162,7 @@ function Notifications() {
     }
   };
 
-  const archiveNotification = async () => {
+  const deleteNotification = async () => {
     if (!deleteTarget?._id) return;
 
     try {
@@ -179,7 +179,7 @@ function Notifications() {
         setUnreadCount((prev) => Math.max(0, prev - 1));
       }
     } catch (apiError) {
-      setError(apiError?.response?.data?.message || "Unable to archive notification.");
+      setError(apiError?.response?.data?.message || "Unable to delete notification.");
     } finally {
       setDeleting(false);
     }
@@ -369,11 +369,11 @@ function Notifications() {
 
       <ConfirmModal
         open={Boolean(deleteTarget)}
-        title="Archive notification?"
-        message={`This will archive "${deleteTarget?.title || "this notification"}" from the admin history.`}
+        title="Delete notification?"
+        message={`This will delete "${deleteTarget?.title || "this notification"}" from the admin history.`}
         onCancel={() => setDeleteTarget(null)}
-        onConfirm={archiveNotification}
-        confirmLabel={deleting ? "Archiving..." : "Archive"}
+        onConfirm={deleteNotification}
+        confirmLabel={deleting ? "Deleting..." : "Delete"}
       />
     </div>
   );

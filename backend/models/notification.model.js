@@ -70,27 +70,34 @@ const notificationSchema = new mongoose.Schema(
         }
       }
     ],
+metadata: {
+  matchId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Match"
+  },
 
-    metadata: {
-      matchId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Match"
-      },
-      streamId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Stream"
-      },
-      channelId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Channel"
-      },
-      planId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Plan"
-      },
-      actionUrl: String
-    },
+  streamId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Stream"
+  },
 
+  channelId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Channel"
+  },
+
+  planId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Plan"
+  },
+
+  actionUrl: String,
+
+  image: {
+    type: String,
+    default: ""
+  }
+},
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin"

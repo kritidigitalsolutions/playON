@@ -16,19 +16,11 @@ const channelSchema = new mongoose.Schema(
     },
 
     category: {
-      type: String,
-      enum: [
-        "cricket",
-        "football",
-        "basketball",
-        "tennis",
-        "kabaddi",
-        "news",
-        "multi",
-        "other"
-      ],
-      default: "other"
-    },
+  type: String,
+  default: "other",
+  lowercase: true,
+  trim: true
+},
 
     description: {
       type: String,

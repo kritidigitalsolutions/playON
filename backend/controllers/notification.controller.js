@@ -16,18 +16,20 @@ exports.getMyNotifications = async (req, res) => {
       }).sort({ createdAt: -1 });
 
     const result = notifications.map((item) => {
-      const obj = item.toObject();
+  const obj = item.toObject();
 
-      if (!obj.targetUser) {
-        obj.isRead = item.readBy.some(
-          (r) =>
-            r.user.toString() ===
-            userId.toString()
-        );
-      }
+  if (!obj.targetUser) {
+    obj.isRead = item.readBy.some(
+      (r) =>
+        r.user.toString() ===
+        userId.toString()
+    );
+  }
 
-      return obj;
-    });
+  obj.image = obj.metadata?.image || "";
+
+  return obj;
+});
 
     res.json({
       success: true,

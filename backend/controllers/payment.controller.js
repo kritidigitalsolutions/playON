@@ -4,6 +4,10 @@ const razorpay = require("../config/razorpay");
 const Plan = require("../models/plan.model");
 const Subscription = require("../models/subscription.model");
 const User = require("../models/user.model");
+const PromoCode = require("../models/promoCode.model");
+const PromoUsage = require("../models/promoUsage.model");
+
+const promoService = require("../services/promoCode.service");
 
 // Create Razorpay Order
 exports.createOrder = async (req, res) => {
@@ -12,7 +16,8 @@ exports.createOrder = async (req, res) => {
       planId,
       teamId,
       matchId,
-      seriesId
+      seriesId,
+      promoCode
     } = req.body;
 
     if (!planId) {
@@ -61,8 +66,26 @@ exports.createOrder = async (req, res) => {
       });
     }
 
+    let payableAmount = plan.price;
+    let discount = 0;
+    let appliedPromo = null;
+
+    if (promoCode) {
+      const result =
+        await promoService.validatePromo({
+          code: promoCode,
+          userId: req.user.userId,
+          planId: plan._id,
+          amount: plan.price
+        });
+
+      payableAmount = result.finalAmount;
+      discount = result.discount;
+      appliedPromo = result.promo.code;
+    }
+
     const order = await razorpay.orders.create({
-      amount: plan.price * 100,
+      amount: payableAmount * 100,
       currency: plan.currency || "INR",
       receipt: "plan_" + Date.now(),
       notes: {
@@ -70,7 +93,10 @@ exports.createOrder = async (req, res) => {
         planId: plan._id.toString(),
         teamId: teamId || "",
         matchId: matchId || "",
-        seriesId: seriesId || ""
+        seriesId: seriesId || "",
+        promoCode: appliedPromo || "",
+        discount: discount || 0,
+        finalAmount: payableAmount
       }
     });
 
@@ -79,16 +105,22 @@ exports.createOrder = async (req, res) => {
       key: process.env.RAZORPAY_KEY_ID,
       order: {
         id: order.id,
-        amount: plan.price,
+        amount: payableAmount,
         currency: plan.currency || "INR",
         receipt: order.receipt,
         status: order.status
       },
-      plan
+      plan,
+      pricing: {
+        originalAmount: plan.price,
+        discount,
+        finalAmount: payableAmount,
+        promoCode: appliedPromo
+      }
     });
 
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       success: false,
       message: error.message
     });
@@ -105,7 +137,8 @@ exports.verifyPayment = async (req, res) => {
       planId,
       teamId,
       matchId,
-      seriesId
+      seriesId,
+      promoCode
     } = req.body;
 
     if (
@@ -166,6 +199,24 @@ exports.verifyPayment = async (req, res) => {
       });
     }
 
+    let amountPaid = plan.price;
+    let discount = 0;
+    let appliedPromo = null;
+
+    if (promoCode) {
+      const result =
+        await promoService.validatePromo({
+          code: promoCode,
+          userId,
+          planId: plan._id,
+          amount: plan.price
+        });
+
+      amountPaid = result.finalAmount;
+      discount = result.discount;
+      appliedPromo = result.promo.code;
+    }
+
     const startDate = new Date();
     const endDate = new Date();
 
@@ -187,9 +238,36 @@ exports.verifyPayment = async (req, res) => {
         status: "active",
         startDate,
         endDate,
-        amountPaid: plan.price,
-        paymentId: razorpay_payment_id
+        amountPaid,
+        paymentId: razorpay_payment_id,
+
+        promoCode: appliedPromo || "",
+        discountAmount: discount || 0
       });
+
+    // Mark promo used after successful payment
+    if (appliedPromo) {
+      const promo =
+        await PromoCode.findOne({
+          code: appliedPromo
+        });
+
+      if (promo) {
+        await PromoCode.findByIdAndUpdate(
+          promo._id,
+          {
+            $inc: { usedCount: 1 }
+          }
+        );
+
+        await PromoUsage.create({
+          promoId: promo._id,
+          userId,
+          orderId: razorpay_order_id,
+          paymentId: razorpay_payment_id
+        });
+      }
+    }
 
     // AD FREE LOGIC
     if (plan.planType === "ad_free") {
@@ -203,12 +281,15 @@ exports.verifyPayment = async (req, res) => {
           user.adFreePurchaseType = "lifetime";
         } else {
           const expiryDate = new Date();
+
           expiryDate.setDate(
-            expiryDate.getDate() + plan.durationDays
+            expiryDate.getDate() +
+            plan.durationDays
           );
 
           user.adsExpiry = expiryDate;
-          user.adFreePurchaseType = "temporary";
+          user.adFreePurchaseType =
+            "temporary";
         }
 
         await user.save();
@@ -222,7 +303,7 @@ exports.verifyPayment = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       success: false,
       message: error.message
     });

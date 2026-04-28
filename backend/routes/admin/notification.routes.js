@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { isAdmin } = require("../../middlewares/admin.middleware");
+const upload = require("../../middlewares/upload.middleware");
 
 const {
   sendNotification,
@@ -14,8 +15,12 @@ const {
 // Protected admin routes
 router.use(isAdmin);
 
-// Send push + store
-router.post("/send", sendNotification);
+// Send push + store + image upload
+router.post(
+  "/send",
+  upload.single("image"),
+  sendNotification
+);
 
 // List all
 router.get("/", getNotifications);
@@ -26,7 +31,7 @@ router.get("/unread-count", getUnreadCount);
 // Mark read
 router.patch("/:id/read", markAsRead);
 
-// Archive
+// Delete
 router.delete("/:id", deleteNotification);
 
 module.exports = router;

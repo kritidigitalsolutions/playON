@@ -1,18 +1,19 @@
 const Notification = require("../../models/notification.model");
 const User = require("../../models/user.model");
 const sendNotification = require("../../utils/sendNotification");
+const uploadToFirebase = require("../../utils/uploadToFirebase");
 
 // Send notification
 exports.sendNotification = async (req, res) => {
   try {
-    const {
-      title,
-      message,
-      type,
-      sendTo,
-      targetUser,
-      metadata = {}
-    } = req.body;
+   const {
+  title,
+  message,
+  type,
+  sendTo,
+  targetUser,
+  metadata = {}
+} = req.body;
 
     if (!title || !message) {
       return res.status(400).json({
@@ -21,14 +22,26 @@ exports.sendNotification = async (req, res) => {
       });
     }
 
-    const payload = {
-      title,
-      message,
-      type: type || "GENERAL",
-      metadata,
-      createdBy: req.admin._id,
-      sentAt: new Date()
-    };
+    let image = "";
+
+if (req.file) {
+  image = await uploadToFirebase(
+    req.file,
+    "notifications"
+  );
+}
+
+  const payload = {
+  title,
+  message,
+  type: type || "GENERAL",
+  metadata: {
+    ...metadata,
+    image
+  },
+  createdBy: req.admin._id,
+  sentAt: new Date()
+};
 
     let users = [];
 
@@ -114,10 +127,8 @@ exports.getNotifications = async (req, res) => {
 exports.deleteNotification = async (req, res) => {
   try {
     const notification =
-      await Notification.findByIdAndUpdate(
-        req.params.id,
-        { isActive: false },
-        { new: true }
+      await Notification.findByIdAndDelete(
+        req.params.id
       );
 
     if (!notification) {
@@ -129,7 +140,7 @@ exports.deleteNotification = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Notification archived"
+      message: "Notification deleted"
     });
   } catch (error) {
     res.status(500).json({

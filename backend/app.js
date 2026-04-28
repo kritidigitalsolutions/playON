@@ -117,4 +117,16 @@ app.use("/api/sports", require("./routes/user/sport.routes"));
 app.use("/api/admin/banner-ads", require("./routes/admin/bannerAd.routes"));
 app.use("/api/banner-ads", require("./routes/user/bannerAd.routes"));
 
+//promo codes
+app.use(
+  "/api/admin/promos",
+  require("./routes/admin/promoCode.routes")
+);
+app.use(
+  "/api/promos",
+  require("./routes/user/promoCode.routes")
+);
+
+//channel categories
+app.use("/api/admin/channel-categories", require("./routes/admin/channelCategory.routes"));
 module.exports = app;

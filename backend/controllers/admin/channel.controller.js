@@ -74,8 +74,9 @@ exports.createChannel = async (req, res) => {
   message: `${channel.name} is now available.`,
   type: "CHANNEL",
   metadata: {
-    channelId: channel._id
-  }
+  channelId: channel._id,
+  image: channel.thumbnail || channel.logo || ""
+}
 });
 
     res.status(201).json({
@@ -256,9 +257,10 @@ exports.goLive = async (req, res) => {
   title: "Channel Live Now",
   message: `${channel.name} is live now.`,
   type: "CHANNEL",
-  metadata: {
-    channelId: channel._id
-  }
+metadata: {
+  channelId: channel._id,
+  image: channel.thumbnail || channel.logo || ""
+}
 });
 
     res.json({
@@ -290,8 +292,9 @@ exports.goOffline = async (req, res) => {
   message: `${channel.name} is now offline.`,
   type: "CHANNEL",
   metadata: {
-    channelId: channel._id
-  }
+  channelId: channel._id,
+  image: channel.thumbnail || channel.logo || ""
+}
 });
 
     res.json({

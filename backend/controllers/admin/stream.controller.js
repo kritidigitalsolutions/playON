@@ -170,8 +170,9 @@ exports.goLive = async (req, res) => {
   message: `${stream.title} is live now.`,
   type: "STREAM",
   metadata: {
-    streamId: stream._id
-  }
+  streamId: stream._id,
+  image: stream.thumbnail || ""
+}
 });
 
     res.json({

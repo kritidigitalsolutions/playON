@@ -12,6 +12,7 @@ import {
   Shield,
   ShieldCheck,
   Swords,
+  TicketPercent,
   LogOut,
   Trophy,
   UserRound,
@@ -38,6 +39,7 @@ const navItems = [
   { label: "Live TV", path: "/livetv", icon: Tv },
   { label: "Activate TV", path: "/activate-tv", icon: Tv },
   { label: "Notifications", path: "/notifications", icon: Bell },
+  { label: "Coupon Codes", path: "/promo", icon: TicketPercent },
   { label: "Legal", path: "/legal", icon: ScrollText },
   { label: "Settings", path: "/settings", icon: Settings }
 ];

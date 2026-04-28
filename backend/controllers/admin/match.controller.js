@@ -87,9 +87,10 @@ await autoNotify({
   title: "New Match Added",
   message: `${match.teamA} vs ${match.teamB} is now scheduled.`,
   type: "MATCH",
-  metadata: {
-    matchId: match._id
-  }
+ metadata: {
+  matchId: match._id,
+  image: match.banner || match.thumbnail || ""
+}
 });
     res.status(201).json({
       success: true,
@@ -276,8 +277,9 @@ await autoNotify({
   message: `${match.teamA} vs ${match.teamB} is live now.`,
   type: "MATCH",
   metadata: {
-    matchId: match._id
-  }
+  matchId: match._id,
+  image: match.banner || match.thumbnail || ""
+}
 });
     res.json({
       success: true,

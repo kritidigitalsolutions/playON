@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, Pencil, Play, Plus, RefreshCw, Square, Star, Trash2, Tv, X } from "lucide-react";
+import { FolderKanban, Eye, Pencil, Play, Plus, RefreshCw, Square, Star, Trash2, Tv, X } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
@@ -25,8 +25,21 @@ const defaultForm = {
   logoFile: null
 };
 
+const defaultCategoryForm = {
+  _id: "",
+  name: ""
+};
+
+const toTitleCase = (value = "") =>
+  value
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
 function LiveTV() {
   const [channels, setChannels] = useState([]);
+  const [channelCategories, setChannelCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -42,14 +55,24 @@ function LiveTV() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [watchData, setWatchData] = useState(null);
+  const [categoryForm, setCategoryForm] = useState(defaultCategoryForm);
+  const [categoryFormOpen, setCategoryFormOpen] = useState(false);
+  const [categorySubmitting, setCategorySubmitting] = useState(false);
+  const [categoryActionId, setCategoryActionId] = useState("");
+  const [categoryDeleteTarget, setCategoryDeleteTarget] = useState(null);
 
   const loadChannels = async () => {
     try {
       setLoading(true);
       setError("");
-      const response = await api.get("/admin/channels", { params: { page: 1, limit: 200 } });
-      const items = Array.isArray(response?.data?.channels) ? response.data.channels : [];
+      const [channelResponse, categoryResponse] = await Promise.all([
+        api.get("/admin/channels", { params: { page: 1, limit: 200 } }),
+        api.get("/admin/channel-categories")
+      ]);
+
+      const items = Array.isArray(channelResponse?.data?.channels) ? channelResponse.data.channels : [];
       setChannels(items);
+      setChannelCategories(Array.isArray(categoryResponse?.data?.categories) ? categoryResponse.data.categories : []);
     } catch (apiError) {
       setChannels([]);
       setError(apiError?.response?.data?.message || "Unable to load channels.");
@@ -98,11 +121,40 @@ function LiveTV() {
     });
   }, [channels, search, statusFilter, categoryFilter]);
 
-  const categories = useMemo(() => {
-    const fixed = ["cricket", "football", "basketball", "tennis", "kabaddi", "news", "multi", "other"];
+  const categoryOptions = useMemo(() => {
     const dynamic = channels.map((item) => (item.category || "").toLowerCase()).filter(Boolean);
-    return Array.from(new Set([...fixed, ...dynamic]));
-  }, [channels]);
+    const managed = channelCategories.map((item) => item.slug || item.name?.toLowerCase()).filter(Boolean);
+    return Array.from(new Set([...managed, ...dynamic]));
+  }, [channelCategories, channels]);
+
+  const categoryCards = useMemo(() => {
+    const counts = channels.reduce((acc, item) => {
+      const key = (item.category || "other").toLowerCase();
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const managedCards = channelCategories.map((item) => ({
+      _id: item._id,
+      name: item.name || toTitleCase(item.slug),
+      slug: item.slug || item.name?.toLowerCase(),
+      count: counts[item.slug] || 0,
+      managed: true
+    }));
+
+    const managedSlugs = new Set(managedCards.map((item) => item.slug));
+    const detectedCards = categoryOptions
+      .filter((slug) => !managedSlugs.has(slug))
+      .map((slug) => ({
+        _id: slug,
+        name: toTitleCase(slug),
+        slug,
+        count: counts[slug] || 0,
+        managed: false
+      }));
+
+    return [...managedCards, ...detectedCards].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }, [categoryOptions, channelCategories, channels]);
 
   const onFormChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -302,6 +354,93 @@ function LiveTV() {
     }
   };
 
+  const openAddCategory = () => {
+    setCategoryForm(defaultCategoryForm);
+    setCategoryFormOpen(true);
+    setError("");
+  };
+
+  const openEditCategory = (category) => {
+    if (!category?.managed) return;
+    setCategoryForm({
+      _id: category._id,
+      name: category.name || ""
+    });
+    setCategoryFormOpen(true);
+    setError("");
+  };
+
+  const closeCategoryForm = () => {
+    setCategoryForm(defaultCategoryForm);
+    setCategoryFormOpen(false);
+  };
+
+  const saveCategory = async (event) => {
+    event.preventDefault();
+
+    if (!categoryForm.name.trim()) {
+      setError("Category name is required.");
+      return;
+    }
+
+    try {
+      setCategorySubmitting(true);
+      setError("");
+
+      const payload = { name: categoryForm.name.trim() };
+      const response = categoryForm._id
+        ? await api.put(`/admin/channel-categories/${categoryForm._id}`, payload)
+        : await api.post("/admin/channel-categories", payload);
+
+      const saved = response?.data?.category;
+
+      if (saved?._id) {
+        setChannelCategories((prev) => {
+          const next = categoryForm._id
+            ? prev.map((item) => (item._id === saved._id ? saved : item))
+            : [...prev, saved];
+
+          return next.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        });
+        setCategoryFilter(saved.slug || "all");
+        setForm((prev) => ({ ...prev, category: saved.slug || prev.category }));
+      } else {
+        await loadChannels();
+      }
+
+      closeCategoryForm();
+    } catch (apiError) {
+      setError(apiError?.response?.data?.message || "Unable to save category.");
+    } finally {
+      setCategorySubmitting(false);
+    }
+  };
+
+  const deleteCategory = async () => {
+    if (!categoryDeleteTarget?._id) return;
+
+    try {
+      setCategoryActionId(categoryDeleteTarget._id);
+      setError("");
+
+      await api.delete(`/admin/channel-categories/${categoryDeleteTarget._id}`);
+      setChannelCategories((prev) => prev.filter((item) => item._id !== categoryDeleteTarget._id));
+
+      if (categoryFilter === categoryDeleteTarget.slug) {
+        setCategoryFilter("all");
+      }
+      if (form.category === categoryDeleteTarget.slug) {
+        setForm((prev) => ({ ...prev, category: "other" }));
+      }
+
+      setCategoryDeleteTarget(null);
+    } catch (apiError) {
+      setError(apiError?.response?.data?.message || "Unable to delete category.");
+    } finally {
+      setCategoryActionId("");
+    }
+  };
+
   return (
     <div>
       <PageHeader
@@ -352,30 +491,145 @@ function LiveTV() {
           className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
         >
           <option value="all">Category: All</option>
-          {categories.map((item) => (
+          {categoryOptions.map((item) => (
             <option key={item} value={item}>
-              Category: {item.charAt(0).toUpperCase() + item.slice(1)}
+              Category: {toTitleCase(item)}
             </option>
           ))}
         </select>
       </div>
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Channels</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.total}</p>
+      <div className="mb-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+              <FolderKanban size={16} className="text-slate-500" />
+            </div>
+            <div>
+              <h2 className="text-sm font-medium text-slate-900 dark:text-slate-100">Categories</h2>
+              <p className="text-xs text-slate-500">Filter and manage live TV categories</p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={openAddCategory}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            <Plus size={12} /> Add category
+          </button>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Live Now</p>
-          <p className="mt-2 text-2xl font-semibold text-rose-500">{stats.live}</p>
+
+        <AnimatePresence>
+          {categoryFormOpen && (
+            <motion.form
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              onSubmit={saveCategory}
+              className="mb-3 flex items-center gap-2 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800"
+            >
+              <input
+                value={categoryForm.name}
+                onChange={(event) => setCategoryForm((prev) => ({ ...prev, name: event.target.value }))}
+                placeholder="Category name..."
+                className="flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100"
+              />
+              <button type="submit" disabled={categorySubmitting} className="text-xs font-medium text-indigo-500 disabled:opacity-60">
+                {categorySubmitting ? "Saving..." : categoryForm._id ? "Update" : "Save"}
+              </button>
+              <button type="button" onClick={closeCategoryForm} className="text-xs text-slate-400 hover:text-slate-600">
+                Cancel
+              </button>
+            </motion.form>
+          )}
+        </AnimatePresence>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setCategoryFilter("all")}
+            className={`inline-flex h-8 items-center gap-2 rounded-full border px-3 text-xs transition ${
+              categoryFilter === "all"
+                ? "border-green-400 bg-green-50 text-green-700 dark:border-green-600 dark:bg-green-900/30 dark:text-green-400"
+                : "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300"
+            }`}
+          >
+            All
+            <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+              categoryFilter === "all"
+                ? "bg-green-200 text-green-700 dark:bg-green-700 dark:text-green-200"
+                : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+            }`}
+            >
+              {channels.length}
+            </span>
+          </button>
+
+          {categoryCards.map((category) => (
+            <div
+              key={category._id}
+              className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs transition ${
+                categoryFilter === category.slug
+                  ? "border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-900/30"
+                  : "border-slate-200 dark:border-slate-700"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => setCategoryFilter(category.slug)}
+                className={`flex items-center gap-2 ${
+                  categoryFilter === category.slug ? "font-medium text-green-700 dark:text-green-400" : "text-slate-600 dark:text-slate-300"
+                }`}
+              >
+                {category.name}
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+                  categoryFilter === category.slug
+                    ? "bg-green-200 text-green-700 dark:bg-green-700 dark:text-green-200"
+                    : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                }`}
+                >
+                  {category.count}
+                </span>
+              </button>
+
+              {category.managed ? (
+                <div className="flex items-center gap-0.5 border-l border-slate-200 pl-1.5 dark:border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => openEditCategory(category)}
+                    className="rounded p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    title="Edit category"
+                  >
+                    <Pencil size={11} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCategoryDeleteTarget(category)}
+                    disabled={categoryActionId === category._id}
+                    className="rounded p-0.5 text-slate-400 hover:text-rose-500 disabled:opacity-50"
+                    title="Delete category"
+                  >
+                    <Trash2 size={11} />
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ))}
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Offline</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.offline}</p>
-        </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Featured</p>
-          <p className="mt-2 text-2xl font-semibold text-amber-500">{stats.featured}</p>
+
+        <div className="mt-4 flex gap-2.5 border-t border-slate-100 pt-4 dark:border-slate-800">
+          {[
+            { label: "Total", value: stats.total, color: "text-slate-900 dark:text-slate-100" },
+            { label: "Live now", value: stats.live, color: "text-rose-500" },
+            { label: "Offline", value: stats.offline, color: "text-slate-900 dark:text-slate-100" },
+            { label: "Featured", value: stats.featured, color: "text-amber-500" }
+          ].map(({ label, value, color }) => (
+            <div key={label} className="flex-1 rounded-xl bg-slate-50 px-3 py-2.5 dark:bg-slate-800">
+              <p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p>
+              <p className={`mt-0.5 text-lg font-medium ${color}`}>{value}</p>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -502,9 +756,9 @@ function LiveTV() {
                       onChange={(e) => onFormChange("category", e.target.value)}
                       className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                     >
-                      {categories.map((item) => (
+                      {categoryOptions.map((item) => (
                         <option key={item} value={item}>
-                          {item}
+                          {toTitleCase(item)}
                         </option>
                       ))}
                     </select>
@@ -695,6 +949,15 @@ function LiveTV() {
         onCancel={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
         confirmLabel={deleting ? "Deleting..." : "Delete Channel"}
+      />
+
+      <ConfirmModal
+        open={Boolean(categoryDeleteTarget)}
+        title="Delete this category?"
+        message={`This will delete ${categoryDeleteTarget?.name || "this category"}. Categories used by channels cannot be removed.`}
+        onCancel={() => setCategoryDeleteTarget(null)}
+        onConfirm={deleteCategory}
+        confirmLabel={categoryActionId ? "Deleting..." : "Delete Category"}
       />
 
       <WatchModal isOpen={!!watchData} onClose={() => setWatchData(null)} watchData={watchData} />
