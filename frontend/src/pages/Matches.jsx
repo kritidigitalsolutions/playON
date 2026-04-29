@@ -42,11 +42,22 @@ const FALLBACK_MATCHES = [
     status: "upcoming",
     thumbnail: "",
     banner: "",
-    streamUrl: "https://test.com/live",
-    streamType: "HLS",
-    score: "0/0",
+    scoreSources: [
+      {
+        provider: "Mock Provider",
+        category: "manual",
+        url: "",
+        apiKey: "",
+        priority: 1,
+        isActive: true,
+        notes: "Fallback sample score source"
+      }
+    ],
+    seriesId: null,
     description: "High-intensity group stage clash.",
     isFeatured: true,
+    liveStartedAt: null,
+    liveEndedAt: null,
     createdAt: "2026-04-15T07:52:00.000Z",
     updatedAt: "2026-04-15T08:09:00.000Z"
   },
@@ -64,11 +75,12 @@ const FALLBACK_MATCHES = [
     status: "live",
     thumbnail: "",
     banner: "",
-    streamUrl: "https://test.com/live2",
-    streamType: "DASH",
-    score: "2 - 1",
+    scoreSources: [],
+    seriesId: null,
     description: "Knockout stage quarterfinal.",
     isFeatured: false,
+    liveStartedAt: "2026-04-16T16:00:00.000Z",
+    liveEndedAt: null,
     createdAt: "2026-04-14T10:00:00.000Z",
     updatedAt: "2026-04-15T11:15:00.000Z"
   }
@@ -79,6 +91,42 @@ const statusTheme = {
   upcoming: "border border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/15 dark:text-blue-300",
   completed: "border border-emerald-200 bg-emerald-100 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300",
   cancelled: "border border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-500/30 dark:bg-slate-500/15 dark:text-slate-300"
+};
+
+const scoreSourceCategories = [
+  "official_api",
+  "third_party_api",
+  "rapidapi",
+  "manual",
+  "web_scrape",
+  "rss_feed",
+  "json_feed",
+  "xml_feed",
+  "iframe",
+  "webview",
+  "socket",
+  "websocket",
+  "firebase",
+  "supabase",
+  "google_sheet",
+  "cms",
+  "admin_panel",
+  "cron_job",
+  "static_url",
+  "backup",
+  "ai_parser",
+  "custom_provider",
+  "other"
+];
+
+const emptyScoreSource = {
+  provider: "",
+  category: "third_party_api",
+  url: "",
+  apiKey: "",
+  priority: "1",
+  isActive: true,
+  notes: ""
 };
 
 const defaultForm = {
@@ -92,13 +140,18 @@ const defaultForm = {
   venue: "",
   matchDate: "",
   status: "upcoming",
-  score: "",
+  seriesId: "",
+  scoreSources: [],
   description: "",
   isFeatured: false,
   thumbnailFile: null,
   bannerFile: null,
+  teamALogoFile: null,
+  teamBLogoFile: null,
   thumbnailPreview: "",
-  bannerPreview: ""
+  bannerPreview: "",
+  teamALogoPreview: "",
+  teamBLogoPreview: ""
 };
 
 const classNames = (...parts) => parts.filter(Boolean).join(" ");
@@ -123,6 +176,21 @@ const formatDate = (value) => {
     minute: "2-digit"
   });
 };
+
+const normalizeScoreSource = (source = {}) => ({
+  ...emptyScoreSource,
+  ...source,
+  priority: String(source.priority ?? emptyScoreSource.priority),
+  isActive: source.isActive !== false
+});
+
+const hasScoreSourceValue = (source) =>
+  Boolean(
+    source?.provider?.trim() ||
+      source?.url?.trim() ||
+      source?.apiKey?.trim() ||
+      source?.notes?.trim()
+  );
 
 function Toasts({ toasts, onRemove }) {
   return (
@@ -154,6 +222,55 @@ function Toasts({ toasts, onRemove }) {
   );
 }
 
+function ImageUploadField({ label, preview, onChange, previewAlt, previewClassName = "object-cover" }) {
+  return (
+    <div className="block text-sm">
+      <span className="mb-1 block text-slate-500 dark:text-slate-400">{label}</span>
+      <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm transition hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600">
+        <Upload size={15} /> Upload
+        <input type="file" accept="image/*" className="hidden" onChange={(e) => onChange(e.target.files?.[0])} />
+      </label>
+      {preview ? (
+        <img
+          src={preview}
+          alt={previewAlt}
+          className={classNames("mt-3 h-24 w-full rounded-lg bg-slate-50 dark:bg-slate-950", previewClassName)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function DetailItem({ label, value, className }) {
+  const displayValue = value === true ? "Yes" : value === false ? "No" : value === null || value === undefined || value === "" ? "-" : value;
+
+  return (
+    <div className={classNames("rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950/60", className)}>
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="mt-1 break-words text-sm text-slate-800 dark:text-slate-100">{displayValue}</p>
+    </div>
+  );
+}
+
+function MediaPreview({ label, src, alt, fit = "object-cover" }) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+      <div className="border-b border-slate-200 px-3 py-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:text-slate-400">
+        {label}
+      </div>
+      {src ? (
+        <img src={src} alt={alt} className={classNames("h-36 w-full bg-slate-50 dark:bg-slate-950", fit)} />
+      ) : (
+        <div className="flex h-36 w-full items-center justify-center bg-slate-100 text-slate-400 dark:bg-slate-800">
+          <div className="flex items-center gap-2 text-sm">
+            <ImageIcon size={16} /> Not uploaded
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Matches() {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -169,6 +286,7 @@ function Matches() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [filters, setFilters] = useState({ status: "all", sport: "all", sort: "newest" });
   const [toasts, setToasts] = useState([]);
+  const [seriesOptions, setSeriesOptions] = useState([]);
 
   const debouncedSearch = useDebounce(search, 350);
 
@@ -199,8 +317,18 @@ function Matches() {
     }
   };
 
+  const loadSeriesOptions = async () => {
+    try {
+      const response = await api.get("/admin/series", { params: { page: 1, limit: 200 } });
+      setSeriesOptions(Array.isArray(response?.data?.series) ? response.data.series : []);
+    } catch {
+      setSeriesOptions([]);
+    }
+  };
+
   useEffect(() => {
     loadMatches();
+    loadSeriesOptions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const stats = useMemo(() => {
@@ -215,6 +343,19 @@ function Matches() {
     const dynamic = Array.from(new Set(matches.map((m) => (m.sport || "").toLowerCase()).filter(Boolean)));
     return Array.from(new Set([...fixed, ...dynamic]));
   }, [matches]);
+
+  const getSeriesId = (seriesValue) => {
+    if (!seriesValue) return "";
+    if (typeof seriesValue === "object") return seriesValue._id || "";
+    return seriesValue;
+  };
+
+  const getSeriesLabel = (seriesValue) => {
+    const seriesId = getSeriesId(seriesValue);
+    if (seriesValue && typeof seriesValue === "object") return seriesValue.title || seriesValue.name || seriesId;
+    const match = seriesOptions.find((item) => item._id === seriesId);
+    return match?.title || seriesId || "-";
+  };
 
   const filteredMatches = useMemo(() => {
     const q = debouncedSearch.trim().toLowerCase();
@@ -254,7 +395,21 @@ function Matches() {
   const openEdit = (match) => {
     setEditMode(true);
     setFormErrors({});
-    setForm({ ...defaultForm, ...match, matchDate: asDateTimeLocal(match.matchDate), thumbnailPreview: match.thumbnail || "", bannerPreview: match.banner || "", thumbnailFile: null, bannerFile: null });
+    setForm({
+      ...defaultForm,
+      ...match,
+      matchDate: asDateTimeLocal(match.matchDate),
+      seriesId: getSeriesId(match.seriesId),
+      scoreSources: Array.isArray(match.scoreSources) ? match.scoreSources.map(normalizeScoreSource) : [],
+      thumbnailPreview: match.thumbnail || "",
+      bannerPreview: match.banner || "",
+      teamALogoPreview: match.teamALogo || "",
+      teamBLogoPreview: match.teamBLogo || "",
+      thumbnailFile: null,
+      bannerFile: null,
+      teamALogoFile: null,
+      teamBLogoFile: null
+    });
     setModalOpen(true);
   };
 
@@ -328,6 +483,29 @@ const handleWatch = async (match) => {
     setForm((prev) => ({ ...prev, [field]: file, [previewField]: preview }));
   };
 
+  const onScoreSourceChange = (index, key, value) => {
+    setForm((prev) => ({
+      ...prev,
+      scoreSources: prev.scoreSources.map((source, sourceIndex) =>
+        sourceIndex === index ? { ...source, [key]: value } : source
+      )
+    }));
+  };
+
+  const addScoreSource = () => {
+    setForm((prev) => ({
+      ...prev,
+      scoreSources: [...prev.scoreSources, { ...emptyScoreSource }]
+    }));
+  };
+
+  const removeScoreSource = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      scoreSources: prev.scoreSources.filter((_, sourceIndex) => sourceIndex !== index)
+    }));
+  };
+
   const saveMatch = async (event) => {
     event.preventDefault();
     if (!validate()) return;
@@ -339,17 +517,31 @@ const handleWatch = async (match) => {
       payload.append("sport", form.sport);
       payload.append("teamA", form.teamA);
       payload.append("teamB", form.teamB);
-      payload.append("teamALogo", form.teamALogo || "");
-      payload.append("teamBLogo", form.teamBLogo || "");
+      if (!form.teamALogoFile) payload.append("teamALogo", form.teamALogo || "");
+      if (!form.teamBLogoFile) payload.append("teamBLogo", form.teamBLogo || "");
+      payload.append("seriesId", form.seriesId || "");
       payload.append("tournament", form.tournament || "");
       payload.append("venue", form.venue || "");
       payload.append("matchDate", new Date(form.matchDate).toISOString());
       payload.append("status", form.status);
-      payload.append("score", form.score || "");
       payload.append("description", form.description || "");
       payload.append("isFeatured", String(Boolean(form.isFeatured)));
       if (form.thumbnailFile) payload.append("thumbnail", form.thumbnailFile);
       if (form.bannerFile) payload.append("banner", form.bannerFile);
+      if (form.teamALogoFile) payload.append("teamALogo", form.teamALogoFile);
+      if (form.teamBLogoFile) payload.append("teamBLogo", form.teamBLogoFile);
+      const scoreSources = form.scoreSources
+        .filter(hasScoreSourceValue)
+        .map((source) => ({
+          provider: source.provider || "",
+          category: source.category || "third_party_api",
+          url: source.url || "",
+          apiKey: source.apiKey || "",
+          priority: Number(source.priority) || 1,
+          isActive: source.isActive !== false,
+          notes: source.notes || ""
+        }));
+      payload.append("scoreSources", JSON.stringify(scoreSources));
 
       let response;
       if (editMode && form._id) {
@@ -712,33 +904,122 @@ const handleWatch = async (match) => {
                     </select>
                   </label>
 
-                  <label className="block text-sm md:col-span-2">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Score</span>
-                    <input value={form.score} onChange={(e) => onFormChange("score", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                  <label className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Linked Series</span>
+                    <select value={form.seriesId} onChange={(e) => onFormChange("seriesId", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                      <option value="">No linked series</option>
+                      {seriesOptions.map((series) => (
+                        <option key={series._id} value={series._id}>
+                          {series.title || "Untitled Series"}
+                        </option>
+                      ))}
+                    </select>
                   </label>
+
+                  <div className="md:col-span-2">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <span className="text-sm text-slate-500 dark:text-slate-400">Score Sources</span>
+                      <button type="button" onClick={addScoreSource} className="admin-action-btn-sm">
+                        <Plus size={14} /> Add Source
+                      </button>
+                    </div>
+
+                    {form.scoreSources.length ? (
+                      <div className="space-y-3">
+                        {form.scoreSources.map((source, index) => (
+                          <div key={index} className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Source {index + 1}</p>
+                              <button type="button" onClick={() => removeScoreSource(index)} className="admin-action-btn-danger-square">
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                            <div className="grid gap-3 md:grid-cols-2">
+                              <label className="block text-sm">
+                                <span className="mb-1 block text-slate-500 dark:text-slate-400">Provider</span>
+                                <input value={source.provider} onChange={(e) => onScoreSourceChange(index, "provider", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                              </label>
+
+                              <label className="block text-sm">
+                                <span className="mb-1 block text-slate-500 dark:text-slate-400">Category</span>
+                                <select value={source.category} onChange={(e) => onScoreSourceChange(index, "category", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                                  {scoreSourceCategories.map((category) => (
+                                    <option key={category} value={category}>
+                                      {category.replace(/_/g, " ")}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+
+                              <label className="block text-sm md:col-span-2">
+                                <span className="mb-1 block text-slate-500 dark:text-slate-400">URL</span>
+                                <input value={source.url} onChange={(e) => onScoreSourceChange(index, "url", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" placeholder="https://..." />
+                              </label>
+
+                              <label className="block text-sm">
+                                <span className="mb-1 block text-slate-500 dark:text-slate-400">API Key</span>
+                                <input value={source.apiKey} onChange={(e) => onScoreSourceChange(index, "apiKey", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                              </label>
+
+                              <label className="block text-sm">
+                                <span className="mb-1 block text-slate-500 dark:text-slate-400">Priority</span>
+                                <input type="number" min="1" value={source.priority} onChange={(e) => onScoreSourceChange(index, "priority", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                              </label>
+
+                              <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                                <input type="checkbox" checked={source.isActive !== false} onChange={(e) => onScoreSourceChange(index, "isActive", e.target.checked)} className="h-4 w-4 rounded border-slate-300" />
+                                Active source
+                              </label>
+
+                              <label className="block text-sm md:col-span-2">
+                                <span className="mb-1 block text-slate-500 dark:text-slate-400">Notes</span>
+                                <textarea rows="2" value={source.notes} onChange={(e) => onScoreSourceChange(index, "notes", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                              </label>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                        No score source configured.
+                      </div>
+                    )}
+                  </div>
 
                   <label className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Description</span>
                     <textarea rows="3" value={form.description} onChange={(e) => onFormChange("description", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
-                  <label className="block text-sm">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Thumbnail</span>
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700">
-                      <Upload size={15} /> Upload
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => onFileChange("thumbnailFile", "thumbnailPreview", e.target.files?.[0])} />
-                    </label>
-                    {form.thumbnailPreview ? <img src={form.thumbnailPreview} alt="Thumbnail preview" className="mt-3 h-24 w-full rounded-lg object-cover" /> : null}
-                  </label>
+                  <ImageUploadField
+                    label="Team A Logo"
+                    preview={form.teamALogoPreview}
+                    previewAlt="Team A logo preview"
+                    previewClassName="object-contain p-2"
+                    onChange={(file) => onFileChange("teamALogoFile", "teamALogoPreview", file)}
+                  />
 
-                  <label className="block text-sm">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Banner</span>
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700">
-                      <Upload size={15} /> Upload
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => onFileChange("bannerFile", "bannerPreview", e.target.files?.[0])} />
-                    </label>
-                    {form.bannerPreview ? <img src={form.bannerPreview} alt="Banner preview" className="mt-3 h-24 w-full rounded-lg object-cover" /> : null}
-                  </label>
+                  <ImageUploadField
+                    label="Team B Logo"
+                    preview={form.teamBLogoPreview}
+                    previewAlt="Team B logo preview"
+                    previewClassName="object-contain p-2"
+                    onChange={(file) => onFileChange("teamBLogoFile", "teamBLogoPreview", file)}
+                  />
+
+                  <ImageUploadField
+                    label="Thumbnail"
+                    preview={form.thumbnailPreview}
+                    previewAlt="Thumbnail preview"
+                    onChange={(file) => onFileChange("thumbnailFile", "thumbnailPreview", file)}
+                  />
+
+                  <ImageUploadField
+                    label="Banner"
+                    preview={form.bannerPreview}
+                    previewAlt="Banner preview"
+                    onChange={(file) => onFileChange("bannerFile", "bannerPreview", file)}
+                  />
                 </div>
 
                 <div className="flex justify-end gap-3">
@@ -758,49 +1039,75 @@ const handleWatch = async (match) => {
       <AnimatePresence>
         {selectedMatch ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedMatch.title || `${selectedMatch.teamA} vs ${selectedMatch.teamB}`}</h2>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{selectedMatch.tournament || "Tournament TBD"}</p>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    {selectedMatch.tournament || "Tournament TBD"} • {(selectedMatch.sport || "other").toUpperCase()}
+                  </p>
                 </div>
                 <button type="button" onClick={() => setSelectedMatch(null)} className="text-slate-500 transition hover:text-slate-800 dark:hover:text-slate-200">
                   <X size={18} />
                 </button>
               </div>
 
-              <div className="mt-4 grid gap-4 md:grid-cols-[2fr,1fr]">
-                <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
-                  {selectedMatch.banner ? (
-                    <img src={selectedMatch.banner} alt={`${selectedMatch.title || "Match"} banner`} className="h-44 w-full object-cover md:h-56" />
-                  ) : (
-                    <div className="flex h-44 w-full items-center justify-center bg-slate-100 text-slate-400 dark:bg-slate-800 md:h-56">
-                      <div className="flex items-center gap-2 text-sm">
-                        <ImageIcon size={16} /> No banner uploaded
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
-                  {selectedMatch.thumbnail ? (
-                    <img src={selectedMatch.thumbnail} alt={`${selectedMatch.title || "Match"} thumbnail`} className="h-44 w-full object-cover md:h-56" />
-                  ) : (
-                    <div className="flex h-44 w-full items-center justify-center bg-slate-100 text-slate-400 dark:bg-slate-800 md:h-56">
-                      <div className="flex items-center gap-2 text-sm">
-                        <ImageIcon size={16} /> No thumbnail uploaded
-                      </div>
-                    </div>
-                  )}
-                </div>
+              <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <MediaPreview label="Team A Logo" src={selectedMatch.teamALogo} alt={`${selectedMatch.teamA || "Team A"} logo`} fit="object-contain p-3" />
+                <MediaPreview label="Team B Logo" src={selectedMatch.teamBLogo} alt={`${selectedMatch.teamB || "Team B"} logo`} fit="object-contain p-3" />
+                <MediaPreview label="Thumbnail" src={selectedMatch.thumbnail} alt={`${selectedMatch.title || "Match"} thumbnail`} />
+                <MediaPreview label="Banner" src={selectedMatch.banner} alt={`${selectedMatch.title || "Match"} banner`} />
               </div>
 
-              <div className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                <p><strong>Teams:</strong> {selectedMatch.teamA} vs {selectedMatch.teamB}</p>
-                <p><strong>Date:</strong> {formatDate(selectedMatch.matchDate)}</p>
-                <p><strong>Venue:</strong> {selectedMatch.venue || "Venue TBD"}</p>
-                <p><strong>Status:</strong> {selectedMatch.status || "upcoming"}</p>
-                <p><strong>Description:</strong> {selectedMatch.description || "No description added."}</p>
+              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <DetailItem label="Match ID" value={selectedMatch._id} />
+                <DetailItem label="Title" value={selectedMatch.title} />
+                <DetailItem label="Sport" value={selectedMatch.sport} />
+                <DetailItem label="Team A" value={selectedMatch.teamA} />
+                <DetailItem label="Team B" value={selectedMatch.teamB} />
+                <DetailItem label="Tournament" value={selectedMatch.tournament} />
+                <DetailItem label="Linked Series" value={getSeriesLabel(selectedMatch.seriesId)} />
+                <DetailItem label="Venue" value={selectedMatch.venue || "Venue TBD"} />
+                <DetailItem label="Date & Time" value={formatDate(selectedMatch.matchDate)} />
+                <DetailItem label="Status" value={selectedMatch.status || "upcoming"} />
+                <DetailItem label="Featured" value={Boolean(selectedMatch.isFeatured)} />
+                <DetailItem label="Live Started At" value={formatDate(selectedMatch.liveStartedAt)} />
+                <DetailItem label="Live Ended At" value={formatDate(selectedMatch.liveEndedAt)} />
+                <DetailItem label="Created At" value={formatDate(selectedMatch.createdAt)} />
+                <DetailItem label="Updated At" value={formatDate(selectedMatch.updatedAt)} />
+                <DetailItem label="Description" value={selectedMatch.description || "No description added."} className="md:col-span-2 xl:col-span-3" />
+              </div>
+
+              <div className="mt-4 rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Score Sources</h3>
+                  <span className="rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                    {selectedMatch.scoreSources?.length || 0}
+                  </span>
+                </div>
+                {selectedMatch.scoreSources?.length ? (
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {selectedMatch.scoreSources.map((source, index) => (
+                      <div key={index} className="rounded-xl bg-slate-50 p-3 text-sm dark:bg-slate-950/60">
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <p className="font-medium text-slate-800 dark:text-slate-100">{source.provider || `Source ${index + 1}`}</p>
+                          <span className={classNames("rounded-full px-2 py-0.5 text-xs", source.isActive !== false ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300")}>
+                            {source.isActive !== false ? "Active" : "Inactive"}
+                          </span>
+                        </div>
+                        <div className="space-y-1 text-slate-600 dark:text-slate-300">
+                          <p><strong>Category:</strong> {source.category || "-"}</p>
+                          <p><strong>Priority:</strong> {source.priority ?? "-"}</p>
+                          <p className="break-words"><strong>URL:</strong> {source.url || "-"}</p>
+                          <p className="break-words"><strong>API Key:</strong> {source.apiKey || "-"}</p>
+                          <p><strong>Notes:</strong> {source.notes || "-"}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No score sources configured.</p>
+                )}
               </div>
             </motion.div>
           </motion.div>

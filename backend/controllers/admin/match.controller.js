@@ -9,6 +9,35 @@ const parseBoolean = (value) => {
   return false;
 };
 
+const parseScoreSources = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  return [];
+};
+
+const normalizeMatchBody = (body = {}) => {
+  const data = { ...body };
+
+  delete data.score;
+  data.scoreSources = parseScoreSources(body.scoreSources);
+
+  if (body.seriesId === "") {
+    data.seriesId = null;
+  }
+
+  return data;
+};
+
 const fileUrl = (req, filePath) => {
   if (!filePath) return "";
 
@@ -73,7 +102,7 @@ if (req.files?.teamBLogo?.[0]) {
 }
 
 const data = {
-  ...req.body,
+  ...normalizeMatchBody(req.body),
   isFeatured: parseBoolean(req.body.isFeatured),
   thumbnail,
   banner,
@@ -150,9 +179,7 @@ exports.getSingleMatch = async (req, res) => {
 // Update
 exports.updateMatch = async (req, res) => {
   try {
-    const data = {
-      ...req.body
-    };
+    const data = normalizeMatchBody(req.body);
 
     if (req.body.isFeatured !== undefined) {
       data.isFeatured = parseBoolean(req.body.isFeatured);

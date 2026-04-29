@@ -32,7 +32,7 @@ const navItems = [
 
   { label: "Players", path: "/players", icon: UserRound },
   { label: "Teams", path: "/teams", icon: Shield },
-  { label: "Series", path: "/series", icon: Film },
+  { label: "Tours & Series", path: "/series", icon: Film },
   { label: "Subscribed Users", path: "/user-plans", icon: Wallet },
   { label: "Subscription Plans", path: "/plans", icon: Layers3 },
   { label: "Matches", path: "/matches", icon: Swords },

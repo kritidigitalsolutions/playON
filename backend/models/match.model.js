@@ -1,5 +1,71 @@
 const mongoose = require("mongoose");
 
+const scoreSourceSchema = new mongoose.Schema(
+  {
+    provider: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+
+    category: {
+      type: String,
+      enum: [
+        "official_api",
+        "third_party_api",
+        "rapidapi",
+        "manual",
+        "web_scrape",
+        "rss_feed",
+        "json_feed",
+        "xml_feed",
+        "iframe",
+        "webview",
+        "socket",
+        "websocket",
+        "firebase",
+        "supabase",
+        "google_sheet",
+        "cms",
+        "admin_panel",
+        "cron_job",
+        "static_url",
+        "backup",
+        "ai_parser",
+        "custom_provider",
+        "other"
+      ],
+      default: "third_party_api"
+    },
+
+    url: {
+      type: String,
+      default: ""
+    },
+
+    apiKey: {
+      type: String,
+      default: ""
+    },
+
+    priority: {
+      type: Number,
+      default: 1
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+
+    notes: {
+      type: String,
+      default: ""
+    }
+  },
+  { _id: false }
+);
+
 const matchSchema = new mongoose.Schema(
   {
     title: {
@@ -80,27 +146,21 @@ const matchSchema = new mongoose.Schema(
       default: ""
     },
 
-    // streamUrl: {
+    // score: {
     //   type: String,
     //   default: ""
     // },
 
-    // streamType: {
-    //   type: String,
-    //   enum: ["hls", "youtube", "iframe", "other"],
-    //   default: "other"
-    // },
-
-    score: {
-      type: String,
-      default: ""
+    scoreSources: {
+      type: [scoreSourceSchema],
+      default: []
     },
 
     seriesId: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "Series",
-  default: null
-},
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Series",
+      default: null
+    },
 
     description: {
       type: String,
