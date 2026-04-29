@@ -106,15 +106,24 @@ if (req.file) {
 // Get all notifications
 exports.getNotifications = async (req, res) => {
   try {
-    const notifications =
-      await Notification.find()
-        .sort({ createdAt: -1 });
+    const notifications = await Notification.find()
+      .sort({ createdAt: -1 });
+
+    const formatted = notifications.map((item) => {
+      const obj = item.toObject();
+
+      return {
+        ...obj,
+        image: obj.metadata?.image || ""
+      };
+    });
 
     res.json({
       success: true,
-      count: notifications.length,
-      notifications
+      count: formatted.length,
+      notifications: formatted
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -122,7 +131,6 @@ exports.getNotifications = async (req, res) => {
     });
   }
 };
-
 // Delete / archive
 exports.deleteNotification = async (req, res) => {
   try {

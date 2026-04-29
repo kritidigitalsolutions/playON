@@ -38,6 +38,7 @@ const autoNotify = async ({
         token: user.fcmToken,
         title,
         body: message,
+        image: metadata?.image || "",
         data: {
           notificationId: notification._id,
           type
