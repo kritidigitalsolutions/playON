@@ -170,7 +170,7 @@ function Banners() {
     }
   };
 
-  const fieldCls = "h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100";
+  const fieldCls = "h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100";
 
   return (
     <div>
@@ -200,7 +200,7 @@ function Banners() {
       {loading ? (
         <Loader lines={5} />
       ) : banners.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-12 text-center dark:bg-slate-900">
           <ImageIcon size={48} className="mx-auto mb-4 text-slate-300" />
           <p className="text-slate-500">No banners found. Create one to show ads in the app.</p>
         </div>
@@ -212,7 +212,7 @@ function Banners() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
-              className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-slate-700 dark:bg-slate-900"
+              className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md dark:bg-slate-900"
             >
               <div className="relative aspect-[16/7] overflow-hidden bg-slate-100 dark:bg-slate-800">
                 <img 
@@ -310,15 +310,15 @@ function Banners() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+                  <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Total Clicks</p>
                     <p className="mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">{selectedBanner.clicks || 0}</p>
                   </div>
-                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+                  <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Sort Order</p>
                     <p className="mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">{selectedBanner.sortOrder || 0}</p>
                   </div>
-                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+                  <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Created At</p>
                     <p className="mt-1 text-sm font-bold text-slate-900 dark:text-slate-100">
                       {new Date(selectedBanner.createdAt).toLocaleDateString()}
@@ -333,7 +333,7 @@ function Banners() {
                       href={selectedBanner.link} 
                       target="_blank" 
                       rel="noreferrer" 
-                      className="flex items-center justify-between rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 text-sm text-indigo-600 transition hover:bg-indigo-50 dark:border-indigo-900/30 dark:bg-indigo-900/10 dark:text-indigo-400"
+                      className="flex items-center justify-between rounded-xl bg-indigo-50/50 p-3 text-sm text-indigo-600 transition hover:bg-indigo-50 dark:bg-indigo-900/10 dark:text-indigo-400"
                     >
                       <span className="truncate">{selectedBanner.link}</span>
                       <ExternalLink size={16} className="shrink-0" />
@@ -371,7 +371,7 @@ function Banners() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-              className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900 pretty-scroll">
+              className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900 pretty-scroll">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -432,7 +432,7 @@ function Banners() {
                   </div>
                 </label>
 
-                <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm dark:border-slate-700">
+                <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm">
                   <input 
                     type="checkbox" 
                     checked={form.isActive} 
@@ -444,7 +444,7 @@ function Banners() {
 
                 <div className="block text-sm">
                   <span className="mb-1 block text-slate-500 dark:text-slate-400">Banner Image {editMode ? "(Leave empty to keep current)" : "*"}</span>
-                  <div className="group relative aspect-[16/6] w-full overflow-hidden rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 transition-colors hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-950">
+                  <div className="group relative aspect-[16/6] w-full overflow-hidden rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 transition-colors hover:border-indigo-400 dark:bg-slate-950">
                     {form.imagePreview ? (
                       <>
                         <img src={form.imagePreview} alt="Preview" className="h-full w-full object-cover" />

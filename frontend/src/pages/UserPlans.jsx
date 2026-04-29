@@ -251,19 +251,19 @@ useEffect(() => {
 
       {stats && (
         <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
             <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Subscriptions</p>
             <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.total || 0}</p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
             <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Active</p>
             <p className="mt-2 text-2xl font-semibold text-emerald-500">{stats.active || 0}</p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
             <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Cancelled</p>
             <p className="mt-2 text-2xl font-semibold text-amber-500">{stats.cancelled || 0}</p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
             <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Expired</p>
             <p className="mt-2 text-2xl font-semibold text-rose-500">{stats.expired || 0}</p>
           </div>
@@ -331,7 +331,7 @@ useEffect(() => {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+              className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900"
             >
               <div className="mb-4 flex items-start justify-between">
                 <div>
@@ -344,27 +344,27 @@ useEffect(() => {
               </div>
 
               <div className="mt-5 grid gap-3 text-sm">
-                <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                <div className="rounded-xl p-3">
                   <p className="text-slate-500 dark:text-slate-400">User</p>
                   <p className="font-medium text-slate-800 dark:text-slate-100">{selectedSub.userId?.fullName || "-"}</p>
                   <p className="text-slate-600 dark:text-slate-300">{selectedSub.userId?.email || selectedSub.userId?.mobile}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                <div className="rounded-xl p-3">
                   <p className="text-slate-500 dark:text-slate-400">Plan</p>
                   <p className="font-medium text-slate-800 dark:text-slate-100">{selectedSub.planId?.title || "-"}</p>
                   <p className="text-slate-600 dark:text-slate-300">{formatMoney(selectedSub.amountPaid)} / {selectedSub.planId?.billingType}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                  <div className="rounded-xl p-3">
                     <p className="text-slate-500 dark:text-slate-400">Start Date</p>
                     <p className="font-medium text-slate-800 dark:text-slate-100">{formatDate(selectedSub.startDate)}</p>
                   </div>
-                  <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                  <div className="rounded-xl p-3">
                     <p className="text-slate-500 dark:text-slate-400">End Date</p>
                     <p className="font-medium text-slate-800 dark:text-slate-100">{formatDate(selectedSub.endDate)}</p>
                   </div>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                <div className="rounded-xl p-3">
                   <p className="text-slate-500 dark:text-slate-400">Status</p>
                   <p className="font-medium capitalize text-slate-800 dark:text-slate-100">{selectedSub.status}</p>
                 </div>

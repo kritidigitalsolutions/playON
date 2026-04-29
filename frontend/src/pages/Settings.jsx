@@ -184,7 +184,7 @@ function Settings() {
       {success ? <p className="mb-4 rounded-xl bg-emerald-500/10 p-3 text-sm text-emerald-500">{success}</p> : null}
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <section className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900">
           <div className="flex items-start gap-3">
             <div className="rounded-2xl bg-sky-500/10 p-3 text-sky-500">
               <Mail size={18} />
@@ -203,7 +203,7 @@ function Settings() {
               <input
                 value={emailForm.oldEmail}
                 onChange={(event) => handleEmailChange("oldEmail", event.target.value)}
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
               />
             </label>
 
@@ -213,7 +213,7 @@ function Settings() {
                 value={emailForm.newEmail}
                 onChange={(event) => handleEmailChange("newEmail", event.target.value)}
                 placeholder="Enter new admin email"
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
               />
             </label>
 
@@ -239,7 +239,7 @@ function Settings() {
                 value={emailForm.otp}
                 onChange={(event) => handleEmailChange("otp", event.target.value)}
                 placeholder="Enter OTP"
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
               />
             </label>
 
@@ -253,7 +253,7 @@ function Settings() {
           </form>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <section className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900">
           <div className="flex items-start gap-3">
             <div className="rounded-2xl bg-amber-500/10 p-3 text-amber-500">
               <KeyRound size={18} />
@@ -274,7 +274,7 @@ function Settings() {
                 value={passwordForm.oldPassword}
                 onChange={(event) => handlePasswordChange("oldPassword", event.target.value)}
                 placeholder="Enter current password"
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
               />
             </label>
 
@@ -285,7 +285,7 @@ function Settings() {
                 value={passwordForm.newPassword}
                 onChange={(event) => handlePasswordChange("newPassword", event.target.value)}
                 placeholder="Enter new password"
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
               />
             </label>
 
@@ -296,7 +296,7 @@ function Settings() {
                 value={passwordForm.confirmPassword}
                 onChange={(event) => handlePasswordChange("confirmPassword", event.target.value)}
                 placeholder="Re-enter new password"
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
               />
             </label>
 
@@ -322,7 +322,7 @@ function Settings() {
                 value={passwordForm.otp}
                 onChange={(event) => handlePasswordChange("otp", event.target.value)}
                 placeholder="Enter OTP"
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
               />
             </label>
 

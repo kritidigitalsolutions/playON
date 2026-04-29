@@ -187,7 +187,7 @@ function GlobalSearch({ className = "", placeholder = "Search everything... (Ctr
           }}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white/90 pl-9 pr-20 text-sm text-slate-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-900"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white/90 pl-9 pr-20 text-sm text-slate-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-900"
         />
         <div className="absolute right-3 flex items-center gap-1.5">
           {loading && <Loader2 size={14} className="animate-spin text-slate-400" />}
@@ -201,7 +201,7 @@ function GlobalSearch({ className = "", placeholder = "Search everything... (Ctr
             </button>
           )}
           {!query && (
-            <kbd className="hidden rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-400 dark:border-slate-700 dark:bg-slate-800 sm:inline">
+            <kbd className="hidden rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-400 dark:bg-slate-800 sm:inline">
               Ctrl+K
             </kbd>
           )}
@@ -210,7 +210,7 @@ function GlobalSearch({ className = "", placeholder = "Search everything... (Ctr
 
       {/* Results Dropdown */}
       {showDropdown && (
-        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-[200] max-h-[480px] overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl pretty-scroll dark:border-slate-700 dark:bg-slate-900">
+        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-[200] max-h-[480px] overflow-y-auto rounded-2xl bg-white shadow-2xl pretty-scroll dark:bg-slate-900">
           {loading && (
             <div className="flex items-center justify-center gap-2 py-8 text-sm text-slate-400">
               <Loader2 size={16} className="animate-spin" />

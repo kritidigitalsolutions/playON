@@ -358,19 +358,19 @@ const handleWatch = async (stream) => {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search streams by title, provider, match, team, status..."
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
           {loading ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+            <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
               Loading streams...
             </div>
           ) : null}
 
           {!loading && !filteredStreams.length ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+            <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
               No streams found for your search.
             </div>
           ) : null}
@@ -381,7 +381,7 @@ const handleWatch = async (stream) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.06 }}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+              className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900"
             >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -447,7 +447,7 @@ const handleWatch = async (stream) => {
       <AnimatePresence>
         {modalOpen ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{editMode ? "Edit Stream" : "Create Stream"}</h2>
@@ -465,7 +465,7 @@ const handleWatch = async (stream) => {
                     <select
                       value={form.matchId}
                       onChange={(e) => onFormChange("matchId", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     >
                       <option value="">Select match</option>
                       {matches.map((match) => (
@@ -479,28 +479,28 @@ const handleWatch = async (stream) => {
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Title</span>
-                    <input value={form.title} onChange={(e) => onFormChange("title", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.title} onChange={(e) => onFormChange("title", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Provider</span>
-                    <input value={form.provider} onChange={(e) => onFormChange("provider", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.provider} onChange={(e) => onFormChange("provider", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
                   <label className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Stream URL</span>
-                    <input value={form.streamUrl} onChange={(e) => onFormChange("streamUrl", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.streamUrl} onChange={(e) => onFormChange("streamUrl", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.streamUrl ? <span className="mt-1 block text-xs text-rose-500">{formErrors.streamUrl}</span> : null}
                   </label>
 
                   <label className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Backup URL</span>
-                    <input value={form.backupUrl} onChange={(e) => onFormChange("backupUrl", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.backupUrl} onChange={(e) => onFormChange("backupUrl", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Stream Type</span>
-                    <select value={form.streamType} onChange={(e) => onFormChange("streamType", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                    <select value={form.streamType} onChange={(e) => onFormChange("streamType", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
                       <option value="hls">hls</option>
                       <option value="youtube">youtube</option>
                       <option value="iframe">iframe</option>
@@ -511,7 +511,7 @@ const handleWatch = async (stream) => {
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Quality</span>
-                    <select value={form.quality} onChange={(e) => onFormChange("quality", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                    <select value={form.quality} onChange={(e) => onFormChange("quality", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
                       <option value="auto">auto</option>
                       <option value="1080p">1080p</option>
                       <option value="720p">720p</option>
@@ -523,7 +523,7 @@ const handleWatch = async (stream) => {
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Status</span>
-                    <select value={form.status} onChange={(e) => onFormChange("status", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                    <select value={form.status} onChange={(e) => onFormChange("status", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
                       <option value="scheduled">scheduled</option>
                       <option value="live">live</option>
                       <option value="offline">offline</option>
@@ -534,17 +534,17 @@ const handleWatch = async (stream) => {
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Scheduled At</span>
-                    <input type="datetime-local" value={form.scheduledAt} onChange={(e) => onFormChange("scheduledAt", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input type="datetime-local" value={form.scheduledAt} onChange={(e) => onFormChange("scheduledAt", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
                   <label className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Thumbnail</span>
-                    <input type="file" accept="image/*" onChange={(e) => onFormChange("thumbnailFile", e.target.files?.[0] || null)} className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input type="file" accept="image/*" onChange={(e) => onFormChange("thumbnailFile", e.target.files?.[0] || null)} className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
                   <label className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Notes</span>
-                    <textarea rows="3" value={form.notes} onChange={(e) => onFormChange("notes", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <textarea rows="3" value={form.notes} onChange={(e) => onFormChange("notes", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
                 </div>
 
@@ -565,7 +565,7 @@ const handleWatch = async (stream) => {
       <AnimatePresence>
         {selectedStream ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{getStreamTitle(selectedStream)}</h2>
@@ -576,7 +576,7 @@ const handleWatch = async (stream) => {
                 </button>
               </div>
 
-              <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+              <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
                 {selectedStream.thumbnail ? (
                   <img src={selectedStream.thumbnail} alt={getStreamTitle(selectedStream)} className="h-44 w-full object-cover" />
                 ) : (

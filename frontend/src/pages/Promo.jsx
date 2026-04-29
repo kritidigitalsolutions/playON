@@ -399,12 +399,12 @@ function Promo() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search by code, title, plan..."
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         />
         <select
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         >
           <option value="all">Status: All</option>
           <option value="active">Status: Active</option>
@@ -413,26 +413,26 @@ function Promo() {
       </div>
 
       <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Promos</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.total}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Active</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-500">{stats.active}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Inactive</p>
           <p className="mt-2 text-2xl font-semibold text-slate-500">{stats.inactive}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Discount Types</p>
           <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{stats.percent} percent / {stats.flat} flat</p>
         </div>
       </div>
 
       {loading ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+        <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
           Loading promo codes...
         </div>
       ) : (
@@ -448,7 +448,7 @@ function Promo() {
       <AnimatePresence>
         {modalOpen ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{editMode ? "Edit Promo" : "Create Promo"}</h2>
@@ -463,18 +463,18 @@ function Promo() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Code</span>
-                    <input value={form.code} onChange={(event) => onFormChange("code", event.target.value.toUpperCase())} className="h-11 w-full rounded-xl border border-slate-200 px-3 uppercase outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.code} onChange={(event) => onFormChange("code", event.target.value.toUpperCase())} className="h-11 w-full rounded-xl border border-slate-200 px-3 uppercase outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.code ? <span className="mt-1 block text-xs text-rose-500">{formErrors.code}</span> : null}
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Title</span>
-                    <input value={form.title} onChange={(event) => onFormChange("title", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.title} onChange={(event) => onFormChange("title", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Discount Type</span>
-                    <select value={form.discountType} onChange={(event) => onFormChange("discountType", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                    <select value={form.discountType} onChange={(event) => onFormChange("discountType", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
                       <option value="percent">Percent</option>
                       <option value="flat">Flat</option>
                     </select>
@@ -482,55 +482,55 @@ function Promo() {
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Discount Value</span>
-                    <input type="number" min="1" value={form.discountValue} onChange={(event) => onFormChange("discountValue", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input type="number" min="1" value={form.discountValue} onChange={(event) => onFormChange("discountValue", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.discountValue ? <span className="mt-1 block text-xs text-rose-500">{formErrors.discountValue}</span> : null}
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Minimum Amount</span>
-                    <input type="number" min="0" value={form.minAmount} onChange={(event) => onFormChange("minAmount", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input type="number" min="0" value={form.minAmount} onChange={(event) => onFormChange("minAmount", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.minAmount ? <span className="mt-1 block text-xs text-rose-500">{formErrors.minAmount}</span> : null}
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Maximum Discount</span>
-                    <input type="number" min="0" value={form.maxDiscount} onChange={(event) => onFormChange("maxDiscount", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input type="number" min="0" value={form.maxDiscount} onChange={(event) => onFormChange("maxDiscount", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.maxDiscount ? <span className="mt-1 block text-xs text-rose-500">{formErrors.maxDiscount}</span> : null}
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Usage Limit</span>
-                    <input type="number" min="0" value={form.usageLimit} onChange={(event) => onFormChange("usageLimit", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input type="number" min="0" value={form.usageLimit} onChange={(event) => onFormChange("usageLimit", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.usageLimit ? <span className="mt-1 block text-xs text-rose-500">{formErrors.usageLimit}</span> : null}
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Per User Limit</span>
-                    <input type="number" min="1" value={form.perUserLimit} onChange={(event) => onFormChange("perUserLimit", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input type="number" min="1" value={form.perUserLimit} onChange={(event) => onFormChange("perUserLimit", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.perUserLimit ? <span className="mt-1 block text-xs text-rose-500">{formErrors.perUserLimit}</span> : null}
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Valid From</span>
-                    <input type="date" value={form.validFrom} onChange={(event) => onFormChange("validFrom", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input type="date" value={form.validFrom} onChange={(event) => onFormChange("validFrom", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Valid Till</span>
-                    <input type="date" value={form.validTill} onChange={(event) => onFormChange("validTill", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input type="date" value={form.validTill} onChange={(event) => onFormChange("validTill", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.validTill ? <span className="mt-1 block text-xs text-rose-500">{formErrors.validTill}</span> : null}
                   </label>
 
-                  <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm dark:border-slate-700">
+                  <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm">
                     <input type="checkbox" checked={form.isActive} onChange={(event) => onFormChange("isActive", event.target.checked)} className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
                     <span className="text-slate-700 dark:text-slate-200">Promo is active</span>
                   </label>
 
                   <div className="md:col-span-2">
                     <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">Applicable Plans</p>
-                    <div className="grid max-h-52 gap-2 overflow-y-auto rounded-xl border border-slate-200 p-3 dark:border-slate-700 sm:grid-cols-2">
+                    <div className="grid max-h-52 gap-2 overflow-y-auto rounded-xl p-3 sm:grid-cols-2">
                       {plans.length ? plans.map((plan) => (
-                        <label key={plan._id} className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700">
+                        <label key={plan._id} className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm">
                           <input
                             type="checkbox"
                             checked={form.applicablePlans.includes(plan._id)}
@@ -563,7 +563,7 @@ function Promo() {
       <AnimatePresence>
         {selectedPromo ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedPromo.code}</h2>
@@ -575,45 +575,45 @@ function Promo() {
               </div>
 
               <div className="mt-4 grid gap-3 md:grid-cols-2">
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Discount</p>
                   <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatDiscount(selectedPromo)}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Status</p>
                   <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedPromo.isActive ? "Active" : "Inactive"}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Minimum Amount</p>
                   <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">₹{selectedPromo.minAmount || 0}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Maximum Discount</p>
                   <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">₹{selectedPromo.maxDiscount || 0}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Usage</p>
                   <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{selectedPromo.usedCount || 0} / {selectedPromo.usageLimit || "Unlimited"}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Per User Limit</p>
                   <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{selectedPromo.perUserLimit || 1}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Valid From</p>
                   <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{formatDate(selectedPromo.validFrom)}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Valid Till</p>
                   <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{formatDate(selectedPromo.validTill)}</p>
                 </div>
               </div>
 
-              <div className="mt-4 rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+              <div className="mt-4 rounded-xl p-4">
                 <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Applicable Plans</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {(selectedPromo.applicablePlans || []).length ? selectedPromo.applicablePlans.map((plan) => (
-                    <span key={plan?._id || plan} className="rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                    <span key={plan?._id || plan} className="rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-600 dark:text-slate-300">
                       {plan?.title || plan?.slug || plan}
                     </span>
                   )) : (

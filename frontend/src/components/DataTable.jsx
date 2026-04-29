@@ -10,7 +10,7 @@ function DataTable({ columns, rows, emptyTitle, emptyMessage, rowKey = "id" }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900"
+      className="overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-slate-900"
     >
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">

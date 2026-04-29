@@ -265,12 +265,12 @@ function Players() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search by name, sport, team, country..."
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         />
         <select
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         >
           <option value="all">Status: All</option>
           <option value="active">Status: Active</option>
@@ -279,7 +279,7 @@ function Players() {
         <select
           value={sportFilter}
           onChange={(event) => setSportFilter(event.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         >
           <option value="all">Sport: All</option>
           {sports.map((item) => (
@@ -291,19 +291,19 @@ function Players() {
       </div>
 
       <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Players</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.total}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Active</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-500">{stats.active}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Inactive</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.inactive}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Featured</p>
           <p className="mt-2 text-2xl font-semibold text-amber-500">{stats.featured}</p>
         </div>
@@ -311,13 +311,13 @@ function Players() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {loading ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
             Loading players...
           </div>
         ) : null}
 
         {!loading && !filteredPlayers.length ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
             No players found for this filter.
           </div>
         ) : null}
@@ -328,11 +328,11 @@ function Players() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
-                <div className="h-12 w-12 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
+                <div className="h-12 w-12 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:bg-slate-800">
                   {player.image ? (
                     <img src={player.image} alt={player.name || "Player"} className="h-full w-full object-cover" />
                   ) : (
@@ -394,7 +394,7 @@ function Players() {
       <AnimatePresence>
         {modalOpen ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{editMode ? "Edit Player" : "Create Player"}</h2>
@@ -412,7 +412,7 @@ function Players() {
                     <input
                       value={form.name}
                       onChange={(e) => onFormChange("name", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                     {formErrors.name ? <span className="mt-1 block text-xs text-rose-500">{formErrors.name}</span> : null}
                   </label>
@@ -422,7 +422,7 @@ function Players() {
                     <select
                       value={form.sport}
                       onChange={(e) => onFormChange("sport", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     >
                       {sports.map((item) => (
                         <option key={item} value={item}>
@@ -438,7 +438,7 @@ function Players() {
                     <input
                       value={form.team}
                       onChange={(e) => onFormChange("team", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -447,7 +447,7 @@ function Players() {
                     <input
                       value={form.position}
                       onChange={(e) => onFormChange("position", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -456,7 +456,7 @@ function Players() {
                     <input
                       value={form.country}
                       onChange={(e) => onFormChange("country", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -465,7 +465,7 @@ function Players() {
                     <select
                       value={form.status}
                       onChange={(e) => onFormChange("status", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     >
                       <option value="active">active</option>
                       <option value="inactive">inactive</option>
@@ -478,7 +478,7 @@ function Players() {
                       type="file"
                       accept="image/*"
                       onChange={(e) => onFormChange("imageFile", e.target.files?.[0] || null)}
-                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -488,7 +488,7 @@ function Players() {
                       rows="3"
                       value={form.bio}
                       onChange={(e) => onFormChange("bio", e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
                 </div>
@@ -510,7 +510,7 @@ function Players() {
       <AnimatePresence>
         {selectedPlayer ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedPlayer.name || "Unnamed Player"}</h2>
@@ -521,7 +521,7 @@ function Players() {
                 </button>
               </div>
 
-              <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+              <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
                 {selectedPlayer.image ? (
                   <img src={selectedPlayer.image} alt={selectedPlayer.name || "Player"} className="h-56 w-full object-cover" />
                 ) : (

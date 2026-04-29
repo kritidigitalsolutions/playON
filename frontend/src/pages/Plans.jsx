@@ -409,12 +409,12 @@ function Plans() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search by title, plan type, badge..."
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         />
         <select
           value={planTypeFilter}
           onChange={(event) => setPlanTypeFilter(event.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         >
           <option value="all">Type: All</option>
           {PLAN_TYPE_OPTIONS.map(opt => (
@@ -424,7 +424,7 @@ function Plans() {
         <select
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         >
           <option value="all">Status: All</option>
           <option value="active">Status: Active</option>
@@ -433,19 +433,19 @@ function Plans() {
       </div>
 
       <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Plans</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.total}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Active</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-500">{stats.active}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Inactive</p>
           <p className="mt-2 text-2xl font-semibold text-slate-500">{stats.inactive}</p>
         </div>
-        <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-4 shadow-sm dark:border-indigo-900 dark:bg-indigo-950/30">
+        <div className="rounded-2xl bg-indigo-50 p-4 shadow-sm dark:bg-indigo-950/30">
           <p className="text-xs uppercase tracking-wide text-indigo-500">By Type</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {PLAN_TYPE_OPTIONS.map(opt => (
@@ -460,7 +460,7 @@ function Plans() {
       {loading ? (
         <Loader lines={6} />
       ) : !filteredPlans.length ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+        <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
           No plans found for this filter.
         </div>
       ) : (
@@ -471,7 +471,7 @@ function Plans() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.04 }}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+              className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -506,12 +506,12 @@ function Plans() {
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {(plan.features || []).slice(0, 3).map((feature) => (
-                  <span key={feature} className="rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                  <span key={feature} className="rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-600 dark:text-slate-300">
                     {feature}
                   </span>
                 ))}
                 {plan.features?.length > 3 ? (
-                  <span className="rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                  <span className="rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-500 dark:text-slate-400">
                     +{plan.features.length - 3} more
                   </span>
                 ) : null}
@@ -566,7 +566,7 @@ function Plans() {
       <AnimatePresence>
         {modalOpen ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{editMode ? "Edit Plan" : "Create Plan"}</h2>
@@ -581,30 +581,30 @@ function Plans() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Title</span>
-                    <input value={form.title} onChange={(event) => onFormChange("title", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.title} onChange={(event) => onFormChange("title", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.title ? <span className="mt-1 block text-xs text-rose-500">{formErrors.title}</span> : null}
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Slug</span>
-                    <input value={form.slug} onChange={(event) => onFormChange("slug", event.target.value)} placeholder="auto-generated if empty" className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.slug} onChange={(event) => onFormChange("slug", event.target.value)} placeholder="auto-generated if empty" className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Price</span>
-                    <input type="number" min="0" value={form.price} onChange={(event) => onFormChange("price", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input type="number" min="0" value={form.price} onChange={(event) => onFormChange("price", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.price ? <span className="mt-1 block text-xs text-rose-500">{formErrors.price}</span> : null}
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Currency</span>
-                    <input value={form.currency} onChange={(event) => onFormChange("currency", event.target.value.toUpperCase())} maxLength={3} className="h-11 w-full rounded-xl border border-slate-200 px-3 uppercase outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.currency} onChange={(event) => onFormChange("currency", event.target.value.toUpperCase())} maxLength={3} className="h-11 w-full rounded-xl border border-slate-200 px-3 uppercase outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.currency ? <span className="mt-1 block text-xs text-rose-500">{formErrors.currency}</span> : null}
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Plan Type</span>
-                    <select value={form.planType} onChange={(event) => onFormChange("planType", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                    <select value={form.planType} onChange={(event) => onFormChange("planType", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
                       {PLAN_TYPE_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
@@ -614,7 +614,7 @@ function Plans() {
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Duration Days</span>
-                    <input type="number" min="1" value={form.durationDays} onChange={(event) => onFormChange("durationDays", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input type="number" min="1" value={form.durationDays} onChange={(event) => onFormChange("durationDays", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.durationDays ? <span className="mt-1 block text-xs text-rose-500">{formErrors.durationDays}</span> : null}
                   </label>
 
@@ -622,7 +622,7 @@ function Plans() {
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Button Text</span>
-                    <select value={form.buttonText} onChange={(event) => onFormChange("buttonText", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                    <select value={form.buttonText} onChange={(event) => onFormChange("buttonText", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
                       <option value="Unlock Now">Unlock Now</option>
                       <option value="Choose The Match">Choose The Match</option>
                       <option value="Choose The Team">Choose The Team</option>
@@ -633,27 +633,27 @@ function Plans() {
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Badge</span>
-                    <input value={form.badge} onChange={(event) => onFormChange("badge", event.target.value)} placeholder="Popular, Best value..." className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.badge} onChange={(event) => onFormChange("badge", event.target.value)} placeholder="Popular, Best value..." className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Sort Order</span>
-                    <input type="number" value={form.sortOrder} onChange={(event) => onFormChange("sortOrder", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input type="number" value={form.sortOrder} onChange={(event) => onFormChange("sortOrder", event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
-                  <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm dark:border-slate-700">
+                  <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm">
                     <input type="checkbox" checked={form.isActive} onChange={(event) => onFormChange("isActive", event.target.checked)} className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
                     <span className="text-slate-700 dark:text-slate-200">Plan is active</span>
                   </label>
 
                   <label className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Description</span>
-                    <textarea rows="3" value={form.description} onChange={(event) => onFormChange("description", event.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <textarea rows="3" value={form.description} onChange={(event) => onFormChange("description", event.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
                   <label className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Features</span>
-                    <textarea rows="5" value={form.features} onChange={(event) => onFormChange("features", event.target.value)} placeholder={"One feature per line\nHD streaming\nAd-free playback"} className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <textarea rows="5" value={form.features} onChange={(event) => onFormChange("features", event.target.value)} placeholder={"One feature per line\nHD streaming\nAd-free playback"} className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
                 </div>
 
@@ -674,7 +674,7 @@ function Plans() {
       <AnimatePresence>
         {selectedPlan ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedPlan.title || "Untitled Plan"}</h2>
@@ -686,21 +686,21 @@ function Plans() {
               </div>
 
               <div className="mt-4 grid gap-3 md:grid-cols-2">
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Price</p>
                   <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatMoney(selectedPlan.price, selectedPlan.currency)}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Plan Type</p>
                   <span className={`mt-2 inline-block rounded-lg border px-2.5 py-1 text-sm font-semibold ${PLAN_TYPE_COLORS[selectedPlan.planType] || "text-slate-600"}`}>
                     {PLAN_TYPE_LABELS[selectedPlan.planType] || selectedPlan.planType || "-"}
                   </span>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Duration</p>
                   <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedPlan.durationDays || 0} days</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Status</p>
                   <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedPlan.isActive ? "Active" : "Inactive"} - Sort {selectedPlan.sortOrder ?? 0}</p>
                 </div>
@@ -713,7 +713,7 @@ function Plans() {
                   </div>
                 )}
                 {selectedPlan.planType === "team_pass" && selectedPlan.teamId && (
-                  <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-900 dark:bg-rose-950/20 md:col-span-2">
+                  <div className="rounded-xl bg-rose-50 p-4 dark:border-rose-900 dark:bg-rose-950/20 md:col-span-2">
                     <p className="text-xs uppercase tracking-wide text-rose-600">Team</p>
                     <p className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">{(selectedPlan.teamId)}</p>
                   </div>
@@ -726,18 +726,18 @@ function Plans() {
                     </p>
                   </div>
                 )}
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Button Text</p>
                   <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{selectedPlan.buttonText || "-"}</p>
                 </div>
               </div>
 
-              <div className="mt-4 rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+              <div className="mt-4 rounded-xl p-4">
                 <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Description</p>
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{selectedPlan.description || "-"}</p>
               </div>
 
-              <div className="mt-4 rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+              <div className="mt-4 rounded-xl p-4">
                 <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Features</p>
                 <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
                   {(selectedPlan.features || []).length ? (

@@ -25,6 +25,11 @@ const makeSlug = (text = "") => {
     .replace(/[^\w-]+/g, "");
 };
 
+const asArray = (value) => {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+};
+
 // CREATE SERIES
 exports.createSeries = async (req, res) => {
   try {
@@ -82,17 +87,9 @@ exports.createSeries = async (req, res) => {
       teamA: teamA || "",
       teamB: teamB || "",
 
-      teamAPlayers: teamAPlayers
-        ? Array.isArray(teamAPlayers)
-          ? teamAPlayers
-          : [teamAPlayers]
-        : [],
+      teamAPlayers: asArray(teamAPlayers),
 
-      teamBPlayers: teamBPlayers
-        ? Array.isArray(teamBPlayers)
-          ? teamBPlayers
-          : [teamBPlayers]
-        : [],
+      teamBPlayers: asArray(teamBPlayers),
 
       tourCountry: tourCountry || "",
 
@@ -107,9 +104,7 @@ exports.createSeries = async (req, res) => {
     let linkedMatches = 0;
 
     if (matchIds) {
-      const ids = Array.isArray(matchIds)
-        ? matchIds
-        : [matchIds];
+      const ids = asArray(matchIds);
 
       const updateResult = await Match.updateMany(
         { _id: { $in: ids } },
@@ -285,19 +280,11 @@ exports.updateSeries = async (req, res) => {
     }
 
     if (teamAPlayers !== undefined) {
-      series.teamAPlayers = Array.isArray(teamAPlayers)
-        ? teamAPlayers
-        : teamAPlayers
-        ? [teamAPlayers]
-        : [];
+      series.teamAPlayers = asArray(teamAPlayers);
     }
 
     if (teamBPlayers !== undefined) {
-      series.teamBPlayers = Array.isArray(teamBPlayers)
-        ? teamBPlayers
-        : teamBPlayers
-        ? [teamBPlayers]
-        : [];
+      series.teamBPlayers = asArray(teamBPlayers);
     }
 
     if (tourCountry !== undefined) {
@@ -337,11 +324,7 @@ exports.updateSeries = async (req, res) => {
     ]);
 
     if (matchIds !== undefined) {
-      const ids = Array.isArray(matchIds)
-        ? matchIds
-        : matchIds
-        ? [matchIds]
-        : [];
+      const ids = asArray(matchIds);
 
       await Match.updateMany(
         { seriesId: id },

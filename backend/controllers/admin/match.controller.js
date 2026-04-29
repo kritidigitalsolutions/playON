@@ -25,11 +25,19 @@ const parseScoreSources = (value) => {
   return [];
 };
 
+const normalizeStatusForMatchDate = (status, matchDate) => {
+  if (status !== "upcoming" || !matchDate) return status || "upcoming";
+  const date = new Date(matchDate);
+  if (Number.isNaN(date.getTime())) return status;
+  return date < new Date() ? "completed" : status;
+};
+
 const normalizeMatchBody = (body = {}) => {
   const data = { ...body };
 
   delete data.score;
   data.scoreSources = parseScoreSources(body.scoreSources);
+  data.status = normalizeStatusForMatchDate(body.status, body.matchDate);
 
   if (body.seriesId === "") {
     data.seriesId = null;

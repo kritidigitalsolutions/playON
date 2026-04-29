@@ -511,7 +511,7 @@ function SubAdmins() {
         <select
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         >
           <option value="all">Status: All</option>
           <option value="active">Status: Active</option>
@@ -520,19 +520,19 @@ function SubAdmins() {
       </div>
 
       <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Sub Admins</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.total}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Active</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-500">{stats.active}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Inactive</p>
           <p className="mt-2 text-2xl font-semibold text-slate-500">{stats.inactive}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Permission Grants</p>
           <p className="mt-2 text-2xl font-semibold text-indigo-500">{stats.totalGrants}</p>
         </div>
@@ -591,7 +591,7 @@ function SubAdmins() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+              className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900"
             >
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
@@ -620,7 +620,7 @@ function SubAdmins() {
                       autoComplete="off"
                       value={form.name}
                       onChange={(event) => updateFormField("name", event.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                     {formErrors.name ? <span className="mt-1 block text-xs text-rose-500">{formErrors.name}</span> : null}
                   </label>
@@ -636,7 +636,7 @@ function SubAdmins() {
                       value={form.email}
                       disabled={editMode}
                       onChange={(event) => updateFormField("email", event.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 disabled:bg-slate-100 disabled:text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:disabled:bg-slate-800"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 disabled:bg-slate-100 disabled:text-slate-500 dark:bg-slate-950 dark:text-slate-100 dark:disabled:bg-slate-800"
                     />
                     {formErrors.email ? <span className="mt-1 block text-xs text-rose-500">{formErrors.email}</span> : null}
                   </label>
@@ -651,7 +651,7 @@ function SubAdmins() {
                         autoComplete="new-password"
                         value={form.password}
                         onChange={(event) => updateFormField("password", event.target.value)}
-                        className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                        className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                       />
                       {formErrors.password ? <span className="mt-1 block text-xs text-rose-500">{formErrors.password}</span> : null}
                     </label>
@@ -671,7 +671,7 @@ function SubAdmins() {
                         value={permissionSearch}
                         onChange={(event) => setPermissionSearch(event.target.value)}
                         placeholder="Find module..."
-                        className="h-9 w-44 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 outline-none transition focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                        className="h-9 w-44 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 outline-none transition focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                       />
                       <button
                         type="button"
@@ -690,7 +690,7 @@ function SubAdmins() {
                     </div>
                   </div>
 
-                  <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700">
+                  <div className="overflow-x-auto rounded-2xl">
                     <table className="min-w-full text-left text-sm">
                       <thead className="bg-slate-100/80 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-800/80 dark:text-slate-400">
                         <tr>
@@ -785,7 +785,7 @@ function SubAdmins() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+              className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -798,17 +798,17 @@ function SubAdmins() {
               </div>
 
               <div className="mt-4 grid gap-3 md:grid-cols-3">
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Status</p>
                   <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs ${statusClass(selectedAdmin.isActive)}`}>
                     {selectedAdmin.isActive ? "Active" : "Inactive"}
                   </span>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Created</p>
                   <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{formatDate(selectedAdmin.createdAt)}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Permissions</p>
                   <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {getPermissionCount(selectedAdmin)} / {getTotalPermissionCount()} granted
@@ -816,14 +816,14 @@ function SubAdmins() {
                 </div>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+              <div className="mt-4 rounded-2xl p-4">
                 <p className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-200">Permission Details</p>
                 <div className="grid gap-3 md:grid-cols-2">
                   {MODULES.map((moduleItem) => {
                     const grantedActions = ACTIONS.filter((action) => selectedAdmin?.permissions?.[moduleItem.key]?.[action.key]);
 
                     return (
-                      <div key={moduleItem.key} className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                      <div key={moduleItem.key} className="rounded-xl p-3">
                         <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{moduleItem.label}</p>
                         <div className="mt-2 flex flex-wrap gap-2">
                           {grantedActions.length ? grantedActions.map((action) => (

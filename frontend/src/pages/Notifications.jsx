@@ -270,19 +270,19 @@ function Notifications() {
       {success ? <p className="mb-3 rounded-xl bg-emerald-500/10 p-3 text-sm text-emerald-500">{success}</p> : null}
 
       <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Active</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{activeNotifications.length}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Unread</p>
           <p className="mt-2 text-2xl font-semibold text-amber-500">{unreadCount}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Last Sent</p>
           <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{formatDate(activeNotifications[0]?.sentAt || activeNotifications[0]?.createdAt)}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Last Report</p>
           <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
             {lastReport ? `${lastReport.sent} sent / ${lastReport.failed} failed` : "-"}
@@ -292,7 +292,7 @@ function Notifications() {
 
       <form
         onSubmit={submit}
-        className="mb-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+        className="mb-5 rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900"
       >
         <div className="grid gap-4 md:grid-cols-2">
           <label className="block text-sm">
@@ -301,7 +301,7 @@ function Notifications() {
               value={form.title}
               onChange={(event) => onFormChange("title", event.target.value)}
               placeholder="Notification title"
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
             />
           </label>
 
@@ -310,7 +310,7 @@ function Notifications() {
             <select
               value={form.type}
               onChange={(event) => onFormChange("type", event.target.value)}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
             >
               {notificationTypes.map((type) => (
                 <option key={type} value={type}>{type}</option>
@@ -326,7 +326,7 @@ function Notifications() {
               value={form.actionUrl}
               onChange={(event) => onFormChange("actionUrl", event.target.value)}
               placeholder="Optional deep link or route"
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
             />
           </label>
 
@@ -337,7 +337,7 @@ function Notifications() {
               value={form.message}
               onChange={(event) => onFormChange("message", event.target.value)}
               placeholder="Write your notification message"
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
             />
           </label>
         </div>
@@ -354,7 +354,7 @@ function Notifications() {
       </form>
 
       {loading ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+        <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
           Loading notifications...
         </div>
       ) : (

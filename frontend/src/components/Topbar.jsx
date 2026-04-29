@@ -71,7 +71,7 @@ function Topbar({
 
   return (
     <>
-      <header className="sticky top-0 z-30 mb-6 rounded-2xl border border-slate-200/70 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/70">
+      <header className="sticky top-0 z-30 mb-6 rounded-2xl bg-white/80 p-4 shadow-sm backdrop-blur dark:bg-slate-900/70">
         <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="mb-1 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
@@ -88,7 +88,7 @@ function Topbar({
             <button
               type="button"
               onClick={onMenuClick}
-              className="rounded-lg border border-slate-200 p-2 text-slate-600 lg:hidden dark:border-slate-700 dark:text-slate-300"
+              className="rounded-lg border border-slate-200 p-2 text-slate-600 lg:hidden dark:text-slate-300"
             >
               <Menu size={16} />
             </button>
@@ -104,7 +104,7 @@ function Topbar({
             <button
               type="button"
               onClick={() => setOpenProfileMenu((prev) => !prev)}
-              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white/80 p-1 pr-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/70"
+              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white/80 p-1 pr-2 shadow-sm dark:bg-slate-900/70"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 text-xs font-semibold text-white">
                 {getInitials(adminName)}
@@ -117,7 +117,7 @@ function Topbar({
             </button>
 
             {openProfileMenu ? (
-              <div className="absolute right-0 z-40 mt-2 w-52 rounded-xl border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+              <div className="absolute right-0 z-40 mt-2 w-52 rounded-xl border border-slate-200 bg-white p-2 shadow-lg dark:bg-slate-900">
                 <div className="mb-1 rounded-lg px-3 py-2">
                   <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">{adminName}</p>
                   <p className="truncate text-xs text-slate-500 dark:text-slate-400">{adminEmail || adminRole}</p>

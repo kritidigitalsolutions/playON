@@ -25,6 +25,67 @@ const defaultForm = {
   matchIds: []
 };
 
+const scoreSourceCategories = [
+  "official_api",
+  "third_party_api",
+  "rapidapi",
+  "manual",
+  "web_scrape",
+  "rss_feed",
+  "json_feed",
+  "xml_feed",
+  "iframe",
+  "webview",
+  "socket",
+  "websocket",
+  "firebase",
+  "supabase",
+  "google_sheet",
+  "cms",
+  "admin_panel",
+  "cron_job",
+  "static_url",
+  "backup",
+  "ai_parser",
+  "custom_provider",
+  "other"
+];
+
+const emptyScoreSource = {
+  provider: "",
+  category: "third_party_api",
+  url: "",
+  apiKey: "",
+  priority: "1",
+  isActive: true,
+  notes: ""
+};
+
+const defaultNewMatch = {
+  title: "",
+  sport: "cricket",
+  teamA: "",
+  teamB: "",
+  teamALogoFile: null,
+  teamBLogoFile: null,
+  tournament: "",
+  venue: "",
+  matchDate: "",
+  status: "upcoming",
+  thumbnailFile: null,
+  bannerFile: null,
+  scoreSources: [],
+  description: "",
+  isFeatured: false
+};
+
+const getStatusForMatchDate = (status, matchDate) => {
+  if (status !== "upcoming" || !matchDate) return status || "upcoming";
+  const date = new Date(matchDate);
+  if (Number.isNaN(date.getTime())) return status;
+  return date < new Date() ? "completed" : status;
+};
+
 function Series() {
   const [seriesList, setSeriesList] = useState([]);
   const [players, setPlayers] = useState([]);
@@ -46,6 +107,10 @@ function Series() {
   const [selectedMatches, setSelectedMatches] = useState([]);
   const [allMatches, setAllMatches] = useState([]);
   const [tempMatch, setTempMatch] = useState("");
+  const [showNewMatchForm, setShowNewMatchForm] = useState(false);
+  const [creatingMatch, setCreatingMatch] = useState(false);
+  const [newMatchForm, setNewMatchForm] = useState(defaultNewMatch);
+  const [newMatchError, setNewMatchError] = useState("");
 
   const loadSeries = async () => {
     try {
@@ -148,6 +213,13 @@ function Series() {
   const getPlayerObj = (id) => players.find(p => String(p._id) === String(id));
   const getMatchObj = (id) => allMatches.find(m => String(m._id) === String(id));
 
+  const getSeriesMatchIds = (series) => {
+    if (Array.isArray(series?.matchIds)) return series.matchIds.map((item) => (typeof item === "object" ? item._id : item));
+    return allMatches
+      .filter((match) => String(match.seriesId?._id || match.seriesId || "") === String(series?._id || ""))
+      .map((match) => match._id);
+  };
+
   const addMatch = (matchId) => {
     if (!matchId) return;
     setForm(prev => {
@@ -163,12 +235,132 @@ function Series() {
     }));
   };
 
+  const onNewMatchChange = (key, value) => {
+    setNewMatchForm((prev) => ({ ...prev, [key]: value }));
+    if (newMatchError) setNewMatchError("");
+  };
+
+  const onNewMatchFileChange = (key, file) => {
+    setNewMatchForm((prev) => ({ ...prev, [key]: file || null }));
+  };
+
+  const onNewMatchScoreSourceChange = (index, key, value) => {
+    setNewMatchForm((prev) => ({
+      ...prev,
+      scoreSources: prev.scoreSources.map((source, sourceIndex) =>
+        sourceIndex === index ? { ...source, [key]: value } : source
+      )
+    }));
+  };
+
+  const addNewMatchScoreSource = () => {
+    setNewMatchForm((prev) => ({
+      ...prev,
+      scoreSources: [...prev.scoreSources, { ...emptyScoreSource }]
+    }));
+  };
+
+  const removeNewMatchScoreSource = (index) => {
+    setNewMatchForm((prev) => ({
+      ...prev,
+      scoreSources: prev.scoreSources.filter((_, sourceIndex) => sourceIndex !== index)
+    }));
+  };
+
+  const openNewMatchModal = () => {
+    setNewMatchForm({
+      ...defaultNewMatch,
+      sport: form.sport || "cricket",
+      teamA: form.teamA || "",
+      teamB: form.teamB || "",
+      tournament: form.title || ""
+    });
+    setNewMatchError("");
+    setShowNewMatchForm(true);
+  };
+
+  const createNewMatch = async () => {
+    if (!newMatchForm.teamA.trim() || !newMatchForm.teamB.trim() || !newMatchForm.matchDate) {
+      setNewMatchError("Team A, Team B, and match date are required.");
+      return;
+    }
+
+    try {
+      setCreatingMatch(true);
+      setNewMatchError("");
+
+      const payload = new FormData();
+      const resolvedStatus = getStatusForMatchDate(newMatchForm.status, newMatchForm.matchDate);
+      const scoreSources = newMatchForm.scoreSources
+        .filter((source) => source.provider?.trim() || source.url?.trim() || source.apiKey?.trim() || source.notes?.trim())
+        .map((source) => ({
+          provider: source.provider || "",
+          category: source.category || "third_party_api",
+          url: source.url || "",
+          apiKey: source.apiKey || "",
+          priority: Number(source.priority) || 1,
+          isActive: source.isActive !== false,
+          notes: source.notes || ""
+        }));
+
+      payload.append("title", newMatchForm.title || `${newMatchForm.teamA} vs ${newMatchForm.teamB}`);
+      payload.append("sport", newMatchForm.sport || form.sport || "cricket");
+      payload.append("teamA", newMatchForm.teamA);
+      payload.append("teamB", newMatchForm.teamB);
+      payload.append("tournament", newMatchForm.tournament || form.title || "");
+      payload.append("venue", newMatchForm.venue || "");
+      payload.append("matchDate", new Date(newMatchForm.matchDate).toISOString());
+      payload.append("status", resolvedStatus);
+      payload.append("description", newMatchForm.description || "");
+      payload.append("isFeatured", String(Boolean(newMatchForm.isFeatured)));
+      payload.append("scoreSources", JSON.stringify(scoreSources));
+      if (newMatchForm.teamALogoFile) payload.append("teamALogo", newMatchForm.teamALogoFile);
+      if (newMatchForm.teamBLogoFile) payload.append("teamBLogo", newMatchForm.teamBLogoFile);
+      if (newMatchForm.thumbnailFile) payload.append("thumbnail", newMatchForm.thumbnailFile);
+      if (newMatchForm.bannerFile) payload.append("banner", newMatchForm.bannerFile);
+      if (editMode && form._id) payload.append("seriesId", form._id);
+
+      const response = await api.post("/admin/matches/create", payload, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      const created = response?.data?.match;
+      if (!created?._id) {
+        setNewMatchError("Match created, but the API did not return match details.");
+        return;
+      }
+
+      setAllMatches((prev) => [created, ...prev.filter((match) => String(match._id) !== String(created._id))]);
+      setForm((prev) => ({
+        ...prev,
+        matchIds: prev.matchIds.some((id) => String(id) === String(created._id))
+          ? prev.matchIds
+          : [...prev.matchIds, created._id]
+      }));
+      setNewMatchForm({
+        ...defaultNewMatch,
+        sport: form.sport || "cricket",
+        teamA: form.teamA || "",
+        teamB: form.teamB || "",
+        tournament: form.title || ""
+      });
+      setShowNewMatchForm(false);
+    } catch (apiError) {
+      setNewMatchError(apiError?.response?.data?.message || "Unable to create match.");
+    } finally {
+      setCreatingMatch(false);
+    }
+  };
+
   const openCreate = () => {
     setEditMode(false);
     setForm(defaultForm);
     setFormErrors({});
     setTempPlayerA("");
     setTempPlayerB("");
+    setTempMatch("");
+    setNewMatchForm(defaultNewMatch);
+    setShowNewMatchForm(false);
+    setNewMatchError("");
     setModalOpen(true);
   };
 
@@ -190,11 +382,14 @@ function Series() {
       status: series?.status || "upcoming",
       isFeatured: Boolean(series?.isFeatured),
       imageFile: null,
-      matchIds: series?.matchIds || []
+      matchIds: getSeriesMatchIds(series)
     });
     setTempPlayerA("");
     setTempPlayerB("");
     setTempMatch("");
+    setNewMatchForm(defaultNewMatch);
+    setShowNewMatchForm(false);
+    setNewMatchError("");
     setModalOpen(true);
   };
 
@@ -203,6 +398,10 @@ function Series() {
     setEditMode(false);
     setForm(defaultForm);
     setFormErrors({});
+    setTempMatch("");
+    setNewMatchForm(defaultNewMatch);
+    setShowNewMatchForm(false);
+    setNewMatchError("");
   };
 
   const validate = () => {
@@ -231,6 +430,7 @@ function Series() {
       form.teamAPlayers.forEach(id => payload.append("teamAPlayers", id));
       form.teamBPlayers.forEach(id => payload.append("teamBPlayers", id));
       form.matchIds.forEach(id => payload.append("matchIds", id));
+      if (editMode && form.matchIds.length === 0) payload.append("matchIds", "");
       if (form.startDate) payload.append("startDate", form.startDate);
       if (form.endDate) payload.append("endDate", form.endDate);
       payload.append("status", form.status || "upcoming");
@@ -329,12 +529,12 @@ function Series() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search by title, sport..."
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         />
         <select
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         >
           <option value="all">Status: All</option>
           <option value="upcoming">Status: Upcoming</option>
@@ -345,7 +545,7 @@ function Series() {
         <select
           value={sportFilter}
           onChange={(event) => setSportFilter(event.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         >
           <option value="all">Sport: All</option>
           {sports.map((item) => (
@@ -357,23 +557,23 @@ function Series() {
       </div>
 
       <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Total</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.total}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Live</p>
           <p className="mt-2 text-2xl font-semibold text-rose-500">{stats.live}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Upcoming</p>
           <p className="mt-2 text-2xl font-semibold text-blue-500">{stats.upcoming}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Completed</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-500">{stats.completed}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Featured</p>
           <p className="mt-2 text-2xl font-semibold text-amber-500">{stats.featured}</p>
         </div>
@@ -381,13 +581,13 @@ function Series() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {loading ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
             Loading series...
           </div>
         ) : null}
 
         {!loading && !filteredSeries.length ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
             No series found for this filter.
           </div>
         ) : null}
@@ -398,11 +598,11 @@ function Series() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
-                <div className="h-12 w-12 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
+                <div className="h-12 w-12 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:bg-slate-800">
                   {series.banner ? (
                     <img src={series.banner} alt={series.title || "Series"} className="h-full w-full object-cover" />
                   ) : (
@@ -460,7 +660,7 @@ function Series() {
       <AnimatePresence>
         {modalOpen ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{editMode ? "Edit Series" : "Create Series"}</h2>
@@ -478,7 +678,7 @@ function Series() {
                     <input
                       value={form.title}
                       onChange={(e) => onFormChange("title", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                     {formErrors.title ? <span className="mt-1 block text-xs text-rose-500">{formErrors.title}</span> : null}
                   </label>
@@ -488,7 +688,7 @@ function Series() {
                     <select
                       value={form.sport}
                       onChange={(e) => onFormChange("sport", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     >
                       {sports.map((item) => (
                         <option key={item} value={item}>
@@ -504,7 +704,7 @@ function Series() {
                     <input
                       value={form.teamA}
                       onChange={(e) => onFormChange("teamA", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -513,7 +713,7 @@ function Series() {
                     <input
                       value={form.teamB}
                       onChange={(e) => onFormChange("teamB", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -522,7 +722,7 @@ function Series() {
                     <input
                       value={form.tourCountry}
                       onChange={(e) => onFormChange("tourCountry", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -532,7 +732,7 @@ function Series() {
                       type="date"
                       value={form.startDate}
                       onChange={(e) => onFormChange("startDate", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -542,7 +742,7 @@ function Series() {
                       type="date"
                       value={form.endDate}
                       onChange={(e) => onFormChange("endDate", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -551,7 +751,7 @@ function Series() {
                     <select
                       value={form.status}
                       onChange={(e) => onFormChange("status", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     >
                       <option value="upcoming">upcoming</option>
                       <option value="live">live</option>
@@ -560,7 +760,7 @@ function Series() {
                     </select>
                   </label>
 
-                  <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm dark:border-slate-700">
+                  <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm">
                     <input
                       type="checkbox"
                       checked={form.isFeatured}
@@ -576,7 +776,7 @@ function Series() {
                       type="file"
                       accept="image/*"
                       onChange={(e) => onFormChange("imageFile", e.target.files?.[0] || null)}
-                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -586,7 +786,7 @@ function Series() {
                       <select
                         value={tempPlayerA}
                         onChange={(e) => setTempPlayerA(e.target.value)}
-                        className="h-11 flex-1 rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                        className="h-11 flex-1 rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                       >
                         <option value="">Select Player</option>
                         {teamAPlayersList.map((p) => (
@@ -610,7 +810,7 @@ function Series() {
                       {form.teamAPlayers.map((id) => {
                         const p = getPlayerObj(id);
                         return (
-                          <div key={id} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-800">
+                          <div key={id} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs dark:bg-slate-800">
                             <span className="text-slate-700 dark:text-slate-200">{p?.name || "Player"}</span>
                             <button type="button" onClick={() => removePlayer("teamAPlayers", id)} className="text-rose-500 hover:text-rose-600">
                               <X size={14} />
@@ -627,7 +827,7 @@ function Series() {
                       <select
                         value={tempPlayerB}
                         onChange={(e) => setTempPlayerB(e.target.value)}
-                        className="h-11 flex-1 rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                        className="h-11 flex-1 rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                       >
                         <option value="">Select Player</option>
                         {teamBPlayersList.map((p) => (
@@ -651,7 +851,7 @@ function Series() {
                       {form.teamBPlayers.map((id) => {
                         const p = getPlayerObj(id);
                         return (
-                          <div key={id} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-800">
+                          <div key={id} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs dark:bg-slate-800">
                             <span className="text-slate-700 dark:text-slate-200">{p?.name || "Player"}</span>
                             <button type="button" onClick={() => removePlayer("teamBPlayers", id)} className="text-rose-500 hover:text-rose-600">
                               <X size={14} />
@@ -662,13 +862,13 @@ function Series() {
                     </div>
                   </label>
 
-                  <label className="block text-sm md:col-span-2">
+                  <div className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Link Matches</span>
-                    <div className="flex gap-2">
+                    <div className="grid gap-2 md:grid-cols-[minmax(0,1fr),auto,auto]">
                       <select
                         value={tempMatch}
                         onChange={(e) => setTempMatch(e.target.value)}
-                        className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                        className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                       >
                         <option value="">Select Match</option>
                         {allMatches.map((m) => (
@@ -687,12 +887,20 @@ function Series() {
                       >
                         Add
                       </button>
+                      <button
+                        type="button"
+                        onClick={openNewMatchModal}
+                        className="flex h-11 items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25"
+                      >
+                        <Plus size={14} /> Create New Match
+                      </button>
                     </div>
+
                     <div className="mt-3 flex flex-wrap gap-2">
                       {form.matchIds.map((id) => {
                         const m = getMatchObj(id);
                         return (
-                          <div key={id} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-800">
+                          <div key={id} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs dark:bg-slate-800">
                             <span className="text-slate-700 dark:text-slate-200">{m ? `${m.teamA} vs ${m.teamB}` : "Match"}</span>
                             <button type="button" onClick={() => removeMatch(id)} className="text-rose-500 hover:text-rose-600">
                               <X size={14} />
@@ -701,7 +909,7 @@ function Series() {
                         );
                       })}
                     </div>
-                  </label>
+                  </div>
 
                   <label className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Description</span>
@@ -709,7 +917,7 @@ function Series() {
                       rows="3"
                       value={form.description}
                       onChange={(e) => onFormChange("description", e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
                 </div>
@@ -723,6 +931,162 @@ function Series() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showNewMatchForm ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl dark:bg-slate-900">
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Create New Match</h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Create a match through the match API, then add it to this series.</p>
+                </div>
+                <button type="button" onClick={() => setShowNewMatchForm(false)} className="text-slate-500 transition hover:text-slate-800 dark:hover:text-slate-200">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block text-sm">
+                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Match Title</span>
+                  <input value={newMatchForm.title} onChange={(e) => onNewMatchChange("title", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
+                </label>
+
+                <label className="block text-sm">
+                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Sport</span>
+                  <select value={newMatchForm.sport} onChange={(e) => onNewMatchChange("sport", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
+                    {sports.map((item) => (
+                      <option key={item} value={item}>{item}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block text-sm">
+                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Team A</span>
+                  <input value={newMatchForm.teamA} onChange={(e) => onNewMatchChange("teamA", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
+                </label>
+
+                <label className="block text-sm">
+                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Team B</span>
+                  <input value={newMatchForm.teamB} onChange={(e) => onNewMatchChange("teamB", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
+                </label>
+
+                <label className="block text-sm">
+                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Tournament</span>
+                  <input value={newMatchForm.tournament} onChange={(e) => onNewMatchChange("tournament", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
+                </label>
+
+                <label className="block text-sm">
+                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Venue</span>
+                  <input value={newMatchForm.venue} onChange={(e) => onNewMatchChange("venue", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
+                </label>
+
+                <label className="block text-sm">
+                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Match Date & Time</span>
+                  <input type="datetime-local" value={newMatchForm.matchDate} onChange={(e) => onNewMatchChange("matchDate", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
+                </label>
+
+                <label className="block text-sm">
+                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Status</span>
+                  <select value={newMatchForm.status} onChange={(e) => onNewMatchChange("status", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
+                    <option value="upcoming">upcoming</option>
+                    <option value="live">live</option>
+                    <option value="completed">completed</option>
+                    <option value="cancelled">cancelled</option>
+                  </select>
+                  {getStatusForMatchDate(newMatchForm.status, newMatchForm.matchDate) !== newMatchForm.status ? (
+                    <span className="mt-1 block text-xs text-amber-600 dark:text-amber-300">Past upcoming match will be saved as completed.</span>
+                  ) : null}
+                </label>
+
+                <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm">
+                  <input type="checkbox" checked={newMatchForm.isFeatured} onChange={(e) => onNewMatchChange("isFeatured", e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
+                  <span className="text-slate-700 dark:text-slate-200">Is Featured</span>
+                </label>
+
+                <label className="block text-sm">
+                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Team A Logo</span>
+                  <input type="file" accept="image/*" onChange={(e) => onNewMatchFileChange("teamALogoFile", e.target.files?.[0])} className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100" />
+                </label>
+
+                <label className="block text-sm">
+                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Team B Logo</span>
+                  <input type="file" accept="image/*" onChange={(e) => onNewMatchFileChange("teamBLogoFile", e.target.files?.[0])} className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100" />
+                </label>
+
+                <label className="block text-sm">
+                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Thumbnail</span>
+                  <input type="file" accept="image/*" onChange={(e) => onNewMatchFileChange("thumbnailFile", e.target.files?.[0])} className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100" />
+                </label>
+
+                <label className="block text-sm">
+                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Banner</span>
+                  <input type="file" accept="image/*" onChange={(e) => onNewMatchFileChange("bannerFile", e.target.files?.[0])} className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100" />
+                </label>
+
+                <div className="md:col-span-2">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <span className="text-sm text-slate-500 dark:text-slate-400">Score Sources</span>
+                    <button type="button" onClick={addNewMatchScoreSource} className="admin-action-btn-sm">
+                      <Plus size={14} /> Add Source
+                    </button>
+                  </div>
+                  {newMatchForm.scoreSources.length ? (
+                    <div className="space-y-3">
+                      {newMatchForm.scoreSources.map((source, index) => (
+                        <div key={index} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-950/60">
+                          <div className="mb-3 flex items-center justify-between gap-3">
+                            <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Source {index + 1}</p>
+                            <button type="button" onClick={() => removeNewMatchScoreSource(index)} className="admin-action-btn-danger-square">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <input value={source.provider} onChange={(e) => onNewMatchScoreSourceChange(index, "provider", e.target.value)} placeholder="Provider" className="h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
+                            <select value={source.category} onChange={(e) => onNewMatchScoreSourceChange(index, "category", e.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
+                              {scoreSourceCategories.map((category) => (
+                                <option key={category} value={category}>{category.replace(/_/g, " ")}</option>
+                              ))}
+                            </select>
+                            <input value={source.url} onChange={(e) => onNewMatchScoreSourceChange(index, "url", e.target.value)} placeholder="URL" className="h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100 md:col-span-2" />
+                            <input value={source.apiKey} onChange={(e) => onNewMatchScoreSourceChange(index, "apiKey", e.target.value)} placeholder="API Key" className="h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
+                            <input type="number" min="1" value={source.priority} onChange={(e) => onNewMatchScoreSourceChange(index, "priority", e.target.value)} placeholder="Priority" className="h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
+                            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                              <input type="checkbox" checked={source.isActive !== false} onChange={(e) => onNewMatchScoreSourceChange(index, "isActive", e.target.checked)} className="h-4 w-4 rounded border-slate-300" />
+                              Active source
+                            </label>
+                            <textarea rows="2" value={source.notes} onChange={(e) => onNewMatchScoreSourceChange(index, "notes", e.target.value)} placeholder="Notes" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100 md:col-span-2" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-950/60 dark:text-slate-400">
+                      No score source configured.
+                    </div>
+                  )}
+                </div>
+
+                <label className="block text-sm md:col-span-2">
+                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Description</span>
+                  <textarea rows="3" value={newMatchForm.description} onChange={(e) => onNewMatchChange("description", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
+                </label>
+              </div>
+
+              {newMatchError ? <p className="mt-3 text-sm text-rose-500">{newMatchError}</p> : null}
+
+              <div className="mt-5 flex justify-end gap-3">
+                <button type="button" onClick={() => setShowNewMatchForm(false)} className="admin-secondary-btn">
+                  Cancel
+                </button>
+                <button type="button" onClick={createNewMatch} disabled={creatingMatch} className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-70">
+                  {creatingMatch ? "Creating..." : "Create & Add Match"}
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         ) : null}
@@ -842,7 +1206,7 @@ function Series() {
                         
                         <div className="grid gap-6 sm:grid-cols-2">
                           {/* Team A */}
-                          <div className="rounded-2xl border border-white/5 bg-white/5 p-4">
+                          <div className="rounded-2xl bg-white/5 p-4">
                             <div className="mb-3 flex items-center justify-between">
                               <span className="text-xs font-bold uppercase tracking-widest text-indigo-400">{selectedSeries.teamA || "Team A"}</span>
                               <span className="rounded-md bg-indigo-500/10 px-2 py-0.5 text-[10px] text-indigo-400">
@@ -863,7 +1227,7 @@ function Series() {
                           </div>
 
                           {/* Team B */}
-                          <div className="rounded-2xl border border-white/5 bg-white/5 p-4">
+                          <div className="rounded-2xl bg-white/5 p-4">
                             <div className="mb-3 flex items-center justify-between">
                               <span className="text-xs font-bold uppercase tracking-widest text-rose-400">{selectedSeries.teamB || "Team B"}</span>
                               <span className="rounded-md bg-rose-500/10 px-2 py-0.5 text-[10px] text-rose-400">
@@ -902,7 +1266,7 @@ function Series() {
                     <div className="space-y-4">
                       {selectedMatches.length > 0 ? (
                         selectedMatches.map((match) => (
-                          <div key={match._id} className="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/5 p-4 transition hover:bg-white/10">
+                          <div key={match._id} className="group relative overflow-hidden rounded-2xl bg-white/5 p-4 transition hover:bg-white/10">
                             <div className="flex items-center justify-between mb-2">
                               <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${getBadgeClass(match.status, STATUS_STYLES)}`}>
                                 {match.status}
@@ -923,14 +1287,6 @@ function Series() {
                                 <p className="text-xs font-bold text-slate-200 line-clamp-1">{match.teamB}</p>
                               </div>
                             </div>
-
-                            {match.score && (
-                              <div className="mt-3 text-center">
-                                <span className="rounded-lg bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-400">
-                                  {match.score}
-                                </span>
-                              </div>
-                            )}
 
                             <div className="mt-2 text-center">
                               <p className="text-[10px] text-slate-500 line-clamp-1 italic">{match.title}</p>

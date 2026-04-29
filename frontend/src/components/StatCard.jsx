@@ -12,7 +12,7 @@ function StatCard({ title, value, growth, trend, index = 0, currency = false }) 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08 }}
       whileHover={{ y: -3 }}
-      className="rounded-2xl border border-slate-200/70 bg-white/90 p-5 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80"
+      className="rounded-2xl bg-white/90 p-5 shadow-sm backdrop-blur dark:bg-slate-900/80"
     >
       <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
       <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{displayValue}</p>

@@ -165,7 +165,7 @@ function Sports() {
     }
   };
 
-  const fieldCls = "h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100";
+  const fieldCls = "h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100";
 
   return (
     <div>
@@ -197,14 +197,14 @@ function Sports() {
           value={search} 
           onChange={e => setSearch(e.target.value)}
           placeholder="Search sports by name..."
-          className="h-11 w-full max-w-md rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" 
+          className="h-11 w-full max-w-md rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100" 
         />
       </div>
 
       {loading ? (
         <Loader lines={5} />
       ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-12 text-center dark:bg-slate-900">
           <Trophy size={48} className="mx-auto mb-4 text-slate-300" />
           <p className="text-slate-500">No sports found. Add one to get started.</p>
         </div>
@@ -219,7 +219,7 @@ function Sports() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.06 }}
-                className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-slate-700 dark:bg-slate-900"
+                className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-sm transition-all hover:shadow-md dark:bg-slate-900"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -266,7 +266,7 @@ function Sports() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-              className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -289,7 +289,7 @@ function Sports() {
                   {formErrors.name && <span className="mt-1 block text-xs text-rose-500">{formErrors.name}</span>}
                 </label>
 
-                <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm dark:border-slate-700">
+                <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm">
                   <input 
                     type="checkbox" 
                     checked={form.isActive} 
@@ -321,7 +321,7 @@ function Sports() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-              className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Sport Details</h2>
                 <button type="button" onClick={() => setSelectedSport(null)} className="text-slate-500 hover:text-slate-800"><X size={18} /></button>
@@ -341,11 +341,11 @@ function Sports() {
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-4">
-                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+                <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
                   <p className="text-[10px] uppercase tracking-wide text-slate-400">Total Matches</p>
                   <p className="mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">{selectedSport.matchCount || 0}</p>
                 </div>
-                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+                <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
                   <p className="text-[10px] uppercase tracking-wide text-slate-400">Status</p>
                   <p className={`mt-1 text-sm font-bold ${selectedSport.isActive ? "text-emerald-500" : "text-amber-500"}`}>
                     {selectedSport.isActive ? "ACTIVE" : "INACTIVE"}

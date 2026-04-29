@@ -473,12 +473,12 @@ function LiveTV() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search by channel, slug, status, stream URL..."
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         />
         <select
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         >
           <option value="all">Status: All</option>
           <option value="live">Status: Live</option>
@@ -488,7 +488,7 @@ function LiveTV() {
         <select
           value={categoryFilter}
           onChange={(event) => setCategoryFilter(event.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         >
           <option value="all">Category: All</option>
           {categoryOptions.map((item) => (
@@ -502,7 +502,7 @@ function LiveTV() {
       <div className="mb-6">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white dark:bg-slate-900">
               <FolderKanban size={16} className="text-slate-500" />
             </div>
             <div>
@@ -527,7 +527,7 @@ function LiveTV() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               onSubmit={saveCategory}
-              className="mb-3 flex items-center gap-2 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800"
+              className="mb-3 flex items-center gap-2 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:bg-slate-800"
             >
               <input
                 value={categoryForm.name}
@@ -552,7 +552,7 @@ function LiveTV() {
             className={`inline-flex h-8 items-center gap-2 rounded-full border px-3 text-xs transition ${
               categoryFilter === "all"
                 ? "border-green-400 bg-green-50 text-green-700 dark:border-green-600 dark:bg-green-900/30 dark:text-green-400"
-                : "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300"
+                : "border-slate-200 text-slate-600 hover:border-slate-300 dark:text-slate-300"
             }`}
           >
             All
@@ -572,7 +572,7 @@ function LiveTV() {
               className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs transition ${
                 categoryFilter === category.slug
                   ? "border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-900/30"
-                  : "border-slate-200 dark:border-slate-700"
+                  : "border-slate-200"
               }`}
             >
               <button
@@ -594,7 +594,7 @@ function LiveTV() {
               </button>
 
               {category.managed ? (
-                <div className="flex items-center gap-0.5 border-l border-slate-200 pl-1.5 dark:border-slate-700">
+                <div className="flex items-center gap-0.5 border-l border-slate-200 pl-1.5">
                   <button
                     type="button"
                     onClick={() => openEditCategory(category)}
@@ -635,13 +635,13 @@ function LiveTV() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {loading ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
             Loading channels...
           </div>
         ) : null}
 
         {!loading && !filteredChannels.length ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
             No channels found for this filter.
           </div>
         ) : null}
@@ -652,7 +652,7 @@ function LiveTV() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -726,7 +726,7 @@ function LiveTV() {
       <AnimatePresence>
         {modalOpen ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{editMode ? "Edit Channel" : "Create Channel"}</h2>
@@ -744,7 +744,7 @@ function LiveTV() {
                     <input
                       value={form.name}
                       onChange={(e) => onFormChange("name", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                     {formErrors.name ? <span className="mt-1 block text-xs text-rose-500">{formErrors.name}</span> : null}
                   </label>
@@ -754,7 +754,7 @@ function LiveTV() {
                     <select
                       value={form.category}
                       onChange={(e) => onFormChange("category", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     >
                       {categoryOptions.map((item) => (
                         <option key={item} value={item}>
@@ -769,7 +769,7 @@ function LiveTV() {
                     <input
                       value={form.streamUrl}
                       onChange={(e) => onFormChange("streamUrl", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                     {formErrors.streamUrl ? <span className="mt-1 block text-xs text-rose-500">{formErrors.streamUrl}</span> : null}
                   </label>
@@ -779,7 +779,7 @@ function LiveTV() {
                     <input
                       value={form.backupUrl}
                       onChange={(e) => onFormChange("backupUrl", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -789,7 +789,7 @@ function LiveTV() {
                       value={form.rtmpUrl}
                       onChange={(e) => onFormChange("rtmpUrl", e.target.value)}
                       placeholder="rtmp://..."
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -799,7 +799,7 @@ function LiveTV() {
                       value={form.srtUrl}
                       onChange={(e) => onFormChange("srtUrl", e.target.value)}
                       placeholder="srt://..."
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -808,7 +808,7 @@ function LiveTV() {
                     <select
                       value={form.streamType}
                       onChange={(e) => onFormChange("streamType", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     >
                       <option value="hls">hls</option>
                       <option value="youtube">youtube</option>
@@ -824,7 +824,7 @@ function LiveTV() {
                     <select
                       value={form.quality}
                       onChange={(e) => onFormChange("quality", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     >
                       <option value="auto">auto</option>
                       <option value="1080p">1080p</option>
@@ -840,7 +840,7 @@ function LiveTV() {
                     <select
                       value={form.status}
                       onChange={(e) => onFormChange("status", e.target.value)}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     >
                       <option value="offline">offline</option>
                       <option value="live">live</option>
@@ -854,7 +854,7 @@ function LiveTV() {
                       type="file"
                       accept="image/*"
                       onChange={(e) => onFormChange("thumbnailFile", e.target.files?.[0] || null)}
-                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -864,7 +864,7 @@ function LiveTV() {
                       type="file"
                       accept="image/*"
                       onChange={(e) => onFormChange("logoFile", e.target.files?.[0] || null)}
-                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
 
@@ -874,7 +874,7 @@ function LiveTV() {
                       rows="3"
                       value={form.description}
                       onChange={(e) => onFormChange("description", e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
                 </div>
@@ -896,7 +896,7 @@ function LiveTV() {
       <AnimatePresence>
         {selectedChannel ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedChannel.name || "Untitled Channel"}</h2>
@@ -908,14 +908,14 @@ function LiveTV() {
               </div>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="overflow-hidden rounded-xl border border-slate-200">
                   {selectedChannel.thumbnail ? (
                     <img src={selectedChannel.thumbnail} alt={`${selectedChannel.name || "Channel"} thumbnail`} className="h-36 w-full object-cover" />
                   ) : (
                     <div className="flex h-36 items-center justify-center bg-slate-100 text-sm text-slate-400 dark:bg-slate-800">No thumbnail</div>
                   )}
                 </div>
-                <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="overflow-hidden rounded-xl border border-slate-200">
                   {selectedChannel.logo ? (
                     <img src={selectedChannel.logo} alt={`${selectedChannel.name || "Channel"} logo`} className="h-36 w-full object-contain bg-slate-50 dark:bg-slate-950" />
                   ) : (

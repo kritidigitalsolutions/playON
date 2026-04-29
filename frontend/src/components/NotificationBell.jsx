@@ -93,7 +93,7 @@ function NotificationBell() {
       <button
         type="button"
         onClick={toggleDropdown}
-        className="relative rounded-xl border border-slate-200 bg-white/80 p-2.5 text-slate-600 shadow-sm transition hover:text-indigo-500 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300"
+        className="relative rounded-xl border border-slate-200 bg-white/80 p-2.5 text-slate-600 shadow-sm transition hover:text-indigo-500 dark:bg-slate-900/70 dark:text-slate-300"
         aria-label="Notifications"
       >
         <Bell size={18} />
@@ -111,7 +111,7 @@ function NotificationBell() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 z-50 mt-3 w-80 sm:w-96 origin-top-right overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+            className="absolute right-0 z-50 mt-3 w-80 sm:w-96 origin-top-right overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-900"
           >
             <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/50">
               <h3 className="font-semibold text-slate-800 dark:text-slate-100">Notifications</h3>

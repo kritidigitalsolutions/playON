@@ -1,6 +1,6 @@
 function Loader({ lines = 4 }) {
   return (
-    <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+    <div className="space-y-3 rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
       {Array.from({ length: lines }).map((_, index) => (
         <div
           key={index}

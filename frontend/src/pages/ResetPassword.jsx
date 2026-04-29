@@ -71,7 +71,7 @@ function ResetPassword() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-indigo-100 to-violet-100 p-4 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-md rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/85"
+        className="w-full max-w-md rounded-3xl bg-white/90 p-6 shadow-xl backdrop-blur dark:bg-slate-900/85"
       >
         <Link to={FORGOT_PASSWORD_ROUTE} className="inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-indigo-500">
           <ArrowLeft size={16} /> Back
@@ -89,7 +89,7 @@ function ResetPassword() {
             value={form.newPassword}
             onChange={(event) => setForm((prev) => ({ ...prev, newPassword: event.target.value }))}
             placeholder="New password"
-            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-900"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-900"
           />
         </label>
 
@@ -100,7 +100,7 @@ function ResetPassword() {
             value={form.confirmPassword}
             onChange={(event) => setForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
             placeholder="Confirm password"
-            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-900"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-indigo-400 dark:bg-slate-900"
           />
         </label>
 

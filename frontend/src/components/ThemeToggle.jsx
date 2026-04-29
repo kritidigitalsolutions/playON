@@ -6,7 +6,7 @@ function ThemeToggle({ isDark, onToggle }) {
     <button
       type="button"
       onClick={onToggle}
-      className="relative flex h-10 w-20 items-center rounded-full border border-slate-200/70 bg-white/80 p-1 shadow-sm transition dark:border-slate-700 dark:bg-slate-900/70"
+      className="relative flex h-10 w-20 items-center rounded-full border border-slate-200/70 bg-white/80 p-1 shadow-sm transition dark:bg-slate-900/70"
       aria-label="Toggle theme"
     >
       <motion.span

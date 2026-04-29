@@ -87,7 +87,7 @@ const FALLBACK_MATCHES = [
 ];
 
 const statusTheme = {
-  live: "border border-rose-200 bg-rose-100 text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-300",
+  live: "border border-rose-200 bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300",
   upcoming: "border border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/15 dark:text-blue-300",
   completed: "border border-emerald-200 bg-emerald-100 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300",
   cancelled: "border border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-500/30 dark:bg-slate-500/15 dark:text-slate-300"
@@ -226,7 +226,7 @@ function ImageUploadField({ label, preview, onChange, previewAlt, previewClassNa
   return (
     <div className="block text-sm">
       <span className="mb-1 block text-slate-500 dark:text-slate-400">{label}</span>
-      <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm transition hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600">
+      <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm transition hover:border-slate-300 dark:hover:border-slate-600">
         <Upload size={15} /> Upload
         <input type="file" accept="image/*" className="hidden" onChange={(e) => onChange(e.target.files?.[0])} />
       </label>
@@ -245,7 +245,7 @@ function DetailItem({ label, value, className }) {
   const displayValue = value === true ? "Yes" : value === false ? "No" : value === null || value === undefined || value === "" ? "-" : value;
 
   return (
-    <div className={classNames("rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950/60", className)}>
+    <div className={classNames("rounded-xl border border-slate-200 bg-slate-50 p-3 dark:bg-slate-950/60", className)}>
       <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
       <p className="mt-1 break-words text-sm text-slate-800 dark:text-slate-100">{displayValue}</p>
     </div>
@@ -254,8 +254,8 @@ function DetailItem({ label, value, className }) {
 
 function MediaPreview({ label, src, alt, fit = "object-cover" }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
-      <div className="border-b border-slate-200 px-3 py-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:text-slate-400">
+    <div className="overflow-hidden rounded-xl border border-slate-200">
+      <div className="border-b border-slate-200 px-3 py-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
         {label}
       </div>
       {src ? (
@@ -645,7 +645,7 @@ const handleWatch = async (match) => {
         ].map((chip) => {
           const Icon = chip.icon;
           return (
-            <div key={chip.label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+            <div key={chip.label} className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
               <div className="flex items-center justify-between">
                 <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{chip.label}</p>
                 <Icon size={16} className={chip.tone} />
@@ -656,7 +656,7 @@ const handleWatch = async (match) => {
         })}
       </motion.section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <section className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,2fr),repeat(3,minmax(0,1fr)),auto]">
           <label className="relative block">
             <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -664,14 +664,14 @@ const handleWatch = async (match) => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by title, teams, tournament, venue..."
-              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-950 dark:text-slate-100"
             />
           </label>
 
           <select
             value={filters.status}
             onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
-            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-950 dark:text-slate-100"
           >
             <option value="all">Status: All</option>
             <option value="live">Status: Live</option>
@@ -683,7 +683,7 @@ const handleWatch = async (match) => {
           <select
             value={filters.sport}
             onChange={(e) => setFilters((prev) => ({ ...prev, sport: e.target.value }))}
-            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-950 dark:text-slate-100"
           >
             <option value="all">Sport: All</option>
             {sportOptions.map((sport) => (
@@ -696,7 +696,7 @@ const handleWatch = async (match) => {
           <select
             value={filters.sort}
             onChange={(e) => setFilters((prev) => ({ ...prev, sort: e.target.value }))}
-            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-950 dark:text-slate-100"
           >
             <option value="newest">Sort: Newest</option>
             <option value="oldest">Sort: Oldest</option>
@@ -713,8 +713,8 @@ const handleWatch = async (match) => {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
+      <section className="rounded-2xl bg-white shadow-sm dark:bg-slate-900">
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <div>
             <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Match Directory</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">{filteredMatches.length} total after filters</p>
@@ -819,7 +819,7 @@ const handleWatch = async (match) => {
           </div>
         )}
 
-        <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3 dark:border-slate-700">
+        <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3">
           <p className="text-xs text-slate-500 dark:text-slate-400">Showing {pageData.length} of {filteredMatches.length} matches</p>
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={page === 1} className="admin-action-btn-square">
@@ -836,7 +836,7 @@ const handleWatch = async (match) => {
       <AnimatePresence>
         {modalOpen ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{editMode ? "Edit Match" : "Create Match"}</h2>
@@ -851,13 +851,13 @@ const handleWatch = async (match) => {
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Match Title</span>
-                    <input value={form.title} onChange={(e) => onFormChange("title", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.title} onChange={(e) => onFormChange("title", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.title ? <span className="mt-1 block text-xs text-rose-500">{formErrors.title}</span> : null}
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Sport</span>
-                    <select value={form.sport} onChange={(e) => onFormChange("sport", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                    <select value={form.sport} onChange={(e) => onFormChange("sport", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
                       {sportOptions.map((sport) => (
                         <option key={sport} value={sport}>
                           {sport.charAt(0).toUpperCase() + sport.slice(1)}
@@ -868,35 +868,35 @@ const handleWatch = async (match) => {
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Team A</span>
-                    <input value={form.teamA} onChange={(e) => onFormChange("teamA", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.teamA} onChange={(e) => onFormChange("teamA", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.teamA ? <span className="mt-1 block text-xs text-rose-500">{formErrors.teamA}</span> : null}
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Team B</span>
-                    <input value={form.teamB} onChange={(e) => onFormChange("teamB", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.teamB} onChange={(e) => onFormChange("teamB", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.teamB ? <span className="mt-1 block text-xs text-rose-500">{formErrors.teamB}</span> : null}
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Tournament</span>
-                    <input value={form.tournament} onChange={(e) => onFormChange("tournament", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.tournament} onChange={(e) => onFormChange("tournament", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Venue</span>
-                    <input value={form.venue} onChange={(e) => onFormChange("venue", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input value={form.venue} onChange={(e) => onFormChange("venue", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Match Date & Time</span>
-                    <input type="datetime-local" value={form.matchDate} onChange={(e) => onFormChange("matchDate", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <input type="datetime-local" value={form.matchDate} onChange={(e) => onFormChange("matchDate", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                     {formErrors.matchDate ? <span className="mt-1 block text-xs text-rose-500">{formErrors.matchDate}</span> : null}
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Status</span>
-                    <select value={form.status} onChange={(e) => onFormChange("status", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                    <select value={form.status} onChange={(e) => onFormChange("status", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
                       <option value="upcoming">Upcoming</option>
                       <option value="live">Live</option>
                       <option value="completed">Completed</option>
@@ -906,7 +906,7 @@ const handleWatch = async (match) => {
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Linked Series</span>
-                    <select value={form.seriesId} onChange={(e) => onFormChange("seriesId", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                    <select value={form.seriesId} onChange={(e) => onFormChange("seriesId", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
                       <option value="">No linked series</option>
                       {seriesOptions.map((series) => (
                         <option key={series._id} value={series._id}>
@@ -927,7 +927,7 @@ const handleWatch = async (match) => {
                     {form.scoreSources.length ? (
                       <div className="space-y-3">
                         {form.scoreSources.map((source, index) => (
-                          <div key={index} className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                          <div key={index} className="rounded-xl p-3">
                             <div className="mb-3 flex items-center justify-between gap-3">
                               <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Source {index + 1}</p>
                               <button type="button" onClick={() => removeScoreSource(index)} className="admin-action-btn-danger-square">
@@ -937,12 +937,12 @@ const handleWatch = async (match) => {
                             <div className="grid gap-3 md:grid-cols-2">
                               <label className="block text-sm">
                                 <span className="mb-1 block text-slate-500 dark:text-slate-400">Provider</span>
-                                <input value={source.provider} onChange={(e) => onScoreSourceChange(index, "provider", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                                <input value={source.provider} onChange={(e) => onScoreSourceChange(index, "provider", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                               </label>
 
                               <label className="block text-sm">
                                 <span className="mb-1 block text-slate-500 dark:text-slate-400">Category</span>
-                                <select value={source.category} onChange={(e) => onScoreSourceChange(index, "category", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                                <select value={source.category} onChange={(e) => onScoreSourceChange(index, "category", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
                                   {scoreSourceCategories.map((category) => (
                                     <option key={category} value={category}>
                                       {category.replace(/_/g, " ")}
@@ -953,17 +953,17 @@ const handleWatch = async (match) => {
 
                               <label className="block text-sm md:col-span-2">
                                 <span className="mb-1 block text-slate-500 dark:text-slate-400">URL</span>
-                                <input value={source.url} onChange={(e) => onScoreSourceChange(index, "url", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" placeholder="https://..." />
+                                <input value={source.url} onChange={(e) => onScoreSourceChange(index, "url", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" placeholder="https://..." />
                               </label>
 
                               <label className="block text-sm">
                                 <span className="mb-1 block text-slate-500 dark:text-slate-400">API Key</span>
-                                <input value={source.apiKey} onChange={(e) => onScoreSourceChange(index, "apiKey", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                                <input value={source.apiKey} onChange={(e) => onScoreSourceChange(index, "apiKey", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                               </label>
 
                               <label className="block text-sm">
                                 <span className="mb-1 block text-slate-500 dark:text-slate-400">Priority</span>
-                                <input type="number" min="1" value={source.priority} onChange={(e) => onScoreSourceChange(index, "priority", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                                <input type="number" min="1" value={source.priority} onChange={(e) => onScoreSourceChange(index, "priority", e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                               </label>
 
                               <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
@@ -973,14 +973,14 @@ const handleWatch = async (match) => {
 
                               <label className="block text-sm md:col-span-2">
                                 <span className="mb-1 block text-slate-500 dark:text-slate-400">Notes</span>
-                                <textarea rows="2" value={source.notes} onChange={(e) => onScoreSourceChange(index, "notes", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                                <textarea rows="2" value={source.notes} onChange={(e) => onScoreSourceChange(index, "notes", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                               </label>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                      <div className="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-500 dark:text-slate-400">
                         No score source configured.
                       </div>
                     )}
@@ -988,7 +988,7 @@ const handleWatch = async (match) => {
 
                   <label className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Description</span>
-                    <textarea rows="3" value={form.description} onChange={(e) => onFormChange("description", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                    <textarea rows="3" value={form.description} onChange={(e) => onFormChange("description", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
                   </label>
 
                   <ImageUploadField
@@ -1039,7 +1039,7 @@ const handleWatch = async (match) => {
       <AnimatePresence>
         {selectedMatch ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedMatch.title || `${selectedMatch.teamA} vs ${selectedMatch.teamB}`}</h2>
@@ -1078,10 +1078,10 @@ const handleWatch = async (match) => {
                 <DetailItem label="Description" value={selectedMatch.description || "No description added."} className="md:col-span-2 xl:col-span-3" />
               </div>
 
-              <div className="mt-4 rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+              <div className="mt-4 rounded-xl p-4">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Score Sources</h3>
-                  <span className="rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                  <span className="rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-500 dark:text-slate-400">
                     {selectedMatch.scoreSources?.length || 0}
                   </span>
                 </div>
@@ -1117,7 +1117,7 @@ const handleWatch = async (match) => {
       <AnimatePresence>
         {deleteTarget ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Delete match?</h2>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 This will remove {deleteTarget.title || `${deleteTarget.teamA} vs ${deleteTarget.teamB}`} from the admin list.

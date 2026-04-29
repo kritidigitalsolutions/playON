@@ -151,7 +151,7 @@ function Teams() {
     finally { setDeleting(false); }
   };
 
-  const fieldCls = "h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100";
+  const fieldCls = "h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100";
 
   return (
     <div>
@@ -178,14 +178,14 @@ function Teams() {
       <div className="mb-4 grid gap-3 lg:grid-cols-[minmax(0,2fr),180px,180px]">
         <input value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Search by name, short name, country..."
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100" />
         <select value={sportFilter} onChange={e => setSportFilter(e.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none dark:bg-slate-900 dark:text-slate-100">
           <option value="all">Sport: All</option>
           {SPORTS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
         </select>
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none dark:bg-slate-900 dark:text-slate-100">
           <option value="all">Status: All</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
@@ -194,19 +194,19 @@ function Teams() {
 
       {/* Stats */}
       <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500">Total Teams</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.total}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500">Active</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-500">{stats.active}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500">Inactive</p>
           <p className="mt-2 text-2xl font-semibold text-slate-500">{stats.inactive}</p>
         </div>
-        <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-4 shadow-sm dark:border-indigo-900 dark:bg-indigo-950/30">
+        <div className="rounded-2xl bg-indigo-50 p-4 shadow-sm dark:bg-indigo-950/30">
           <p className="text-xs uppercase tracking-wide text-indigo-500">By Sport</p>
           <div className="mt-2 flex flex-wrap gap-1">
             {SPORTS.filter(s => stats[s] > 0).map(s => (
@@ -220,7 +220,7 @@ function Teams() {
 
       {/* Grid */}
       {loading ? <Loader lines={6} /> : !filtered.length ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-8 text-center text-sm text-slate-500 dark:bg-slate-900">
           No teams found.
         </div>
       ) : (
@@ -228,11 +228,11 @@ function Teams() {
           {filtered.map((team, i) => (
             <motion.div key={team._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                   {team.logo ? (
-                    <img src={team.logo} alt={team.name} className="h-12 w-12 rounded-xl border border-slate-200 object-cover dark:border-slate-700" />
+                    <img src={team.logo} alt={team.name} className="h-12 w-12 rounded-xl border border-slate-200 object-cover" />
                   ) : (
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
                       <Shield size={20} />
@@ -285,7 +285,7 @@ function Teams() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-              className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900 pretty-scroll">
+              className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900 pretty-scroll">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{editMode ? "Edit Team" : "Create Team"}</h2>
@@ -335,7 +335,7 @@ function Teams() {
                     <input type="number" value={form.sortOrder} onChange={e => onFormChange("sortOrder", e.target.value)} className={fieldCls} />
                   </label>
 
-                  <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm dark:border-slate-700">
+                  <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm">
                     <input type="checkbox" checked={form.isActive} onChange={e => onFormChange("isActive", e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
                     <span className="text-slate-700 dark:text-slate-200">Team is active</span>
                   </label>
@@ -361,7 +361,7 @@ function Teams() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-              className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
               <div className="mb-4 flex items-start justify-between gap-4">
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Team Details</h2>
                 <button type="button" onClick={() => setSelectedTeam(null)} className="text-slate-500 hover:text-slate-800"><X size={18} /></button>
@@ -389,7 +389,7 @@ function Teams() {
                   { label: "Sort Order", value: selectedTeam.sortOrder ?? 0 },
                   { label: "Slug", value: selectedTeam.slug || "-" }
                 ].map(({ label, value }) => (
-                  <div key={label} className="rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+                  <div key={label} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p>
                     <p className="mt-0.5 truncate text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize">{String(value)}</p>
                   </div>

@@ -156,7 +156,7 @@ function ActivateTV() {
       />
 
       <div className="mb-5 grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <div className="flex items-center gap-3">
             <span className="rounded-xl bg-indigo-500/10 p-2 text-indigo-500">
               <UserRound size={18} />
@@ -167,7 +167,7 @@ function ActivateTV() {
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:col-span-2">
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900 md:col-span-2">
           <div className="flex items-center gap-3">
             <span className="rounded-xl bg-sky-500/10 p-2 text-sky-500">
               <Clock size={18} />

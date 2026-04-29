@@ -312,12 +312,12 @@ function Dashboard() {
               <motion.div
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+                className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900"
               >
                 <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Recent Activity</h3>
                 <div className="mt-4 space-y-3">
                   {data.activities.map((item) => (
-                    <div key={item.id} className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                    <div key={item.id} className="rounded-xl p-3">
                       <p className="text-sm text-slate-700 dark:text-slate-200">{item.text}</p>
                       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{item.time}</p>
                     </div>

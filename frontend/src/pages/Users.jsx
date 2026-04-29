@@ -253,7 +253,7 @@ function Users() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+              className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900"
             >
               <div className="mb-4 flex items-start justify-between">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">User Details</h3>
@@ -277,17 +277,17 @@ function Users() {
               </div>
 
               <div className="mt-5 grid gap-3 text-sm">
-                <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                <div className="rounded-xl p-3">
                   <p className="text-slate-500 dark:text-slate-400">Mobile</p>
                   <p className="font-medium text-slate-800 dark:text-slate-100">{selectedUser.mobile || "-"}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                <div className="rounded-xl p-3">
                   <p className="text-slate-500 dark:text-slate-400">Favorite Sports</p>
                   <p className="font-medium text-slate-800 dark:text-slate-100">
                     {selectedUser.favoriteSports?.length ? selectedUser.favoriteSports.join(", ") : "-"}
                   </p>
                 </div>
-                <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                <div className="rounded-xl p-3">
                   <p className="text-slate-500 dark:text-slate-400">Profile Status</p>
                   <span className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-xs ${selectedUserStatus.className}`}>
                     {selectedUserStatus.label}
@@ -295,19 +295,19 @@ function Users() {
                 </div>
                 {selectedUserDeleted ? (
                   <>
-                    <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 dark:border-rose-500/30 dark:bg-rose-500/10">
+                    <div className="rounded-xl bg-rose-50 p-3 dark:bg-rose-500/10">
                       <p className="text-rose-600 dark:text-rose-300">Deletion Reason</p>
                       <p className="mt-1 whitespace-pre-wrap font-medium text-slate-800 dark:text-slate-100">
                         {getDeleteReason(selectedUser)}
                       </p>
                     </div>
-                    <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                    <div className="rounded-xl p-3">
                       <p className="text-slate-500 dark:text-slate-400">Deleted On</p>
                       <p className="font-medium text-slate-800 dark:text-slate-100">{formatDate(selectedUser.deletedAt)}</p>
                     </div>
                   </>
                 ) : null}
-                <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                <div className="rounded-xl p-3">
                   <p className="text-slate-500 dark:text-slate-400">Joined On</p>
                   <p className="font-medium text-slate-800 dark:text-slate-100">{formatDate(selectedUser.createdAt)}</p>
                 </div>

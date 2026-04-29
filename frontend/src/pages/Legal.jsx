@@ -213,7 +213,7 @@ function Legal() {
 
   const getStatusBadge = (page) => {
     if (!page) {
-      return <span className="inline-flex rounded-full border border-slate-300/40 bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">Not Created</span>;
+      return <span className="inline-flex rounded-full border border-slate-300/40 bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">Not Created</span>;
     }
     if (page.isActive) {
       return <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">Published</span>;
@@ -257,7 +257,7 @@ function Legal() {
             return (
               <div 
                 key={type.id} 
-                className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-900"
+                className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm transition hover:shadow-md dark:bg-slate-900"
               >
                 <div className="flex-1 p-5 lg:p-6">
                   {/* Header / Title */}
@@ -346,7 +346,7 @@ function Legal() {
       <AnimatePresence>
         {editModal ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -372,7 +372,7 @@ function Legal() {
                     name="title"
                     value={form.title}
                     onChange={handleChange}
-                    className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500"
+                    className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-500 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500"
                   />
                 </div>
 
@@ -396,7 +396,7 @@ function Legal() {
                   </div>
 
                   {form.sections.map((section, index) => (
-                    <div key={index} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-950/40">
+                    <div key={index} className="rounded-2xl bg-slate-50/70 p-4 dark:bg-slate-950/40">
                       <div className="mb-4 flex items-center justify-between gap-3">
                         <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                           Section {index + 1}
@@ -422,7 +422,7 @@ function Legal() {
                             value={section.title}
                             onChange={(e) => handleSectionChange(index, "title", e.target.value)}
                             placeholder="Example: Information We Collect"
-                            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500"
+                            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 outline-none focus:border-indigo-500 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500"
                           />
                         </div>
 
@@ -436,7 +436,7 @@ function Legal() {
                             onChange={(e) => handleSectionChange(index, "content", e.target.value)}
                             rows={5}
                             placeholder="Write this section in plain text."
-                            className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm leading-relaxed outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500"
+                            className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm leading-relaxed outline-none focus:border-indigo-500 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500"
                           />
                         </div>
                       </div>
@@ -462,7 +462,7 @@ function Legal() {
       <AnimatePresence>
         {viewModal ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
               <div className="mb-6 flex items-start justify-between border-b border-slate-200 pb-4 dark:border-slate-800">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{viewModal.title}</h2>

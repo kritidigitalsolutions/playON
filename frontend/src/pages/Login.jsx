@@ -52,7 +52,7 @@ function Login() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-indigo-100 to-violet-100 p-4 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-md rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/85"
+        className="w-full max-w-md rounded-3xl bg-white/90 p-6 shadow-xl backdrop-blur dark:bg-slate-900/85"
       >
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">PlayON Admin Login</h1>
 
@@ -63,7 +63,7 @@ function Login() {
             value={form.email}
             onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
             placeholder="Email address"
-            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm dark:border-slate-700 dark:bg-slate-900"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm dark:bg-slate-900"
           />
         </label>
 
@@ -74,7 +74,7 @@ function Login() {
             value={form.password}
             onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
             placeholder="Password"
-            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-11 text-sm dark:border-slate-700 dark:bg-slate-900"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-11 text-sm dark:bg-slate-900"
           />
           <button
             type="button"
