@@ -103,7 +103,7 @@ function ForgotPassword() {
           type="button"
           onClick={sendOtp}
           disabled={sendingOtp}
-          className="mt-3 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 disabled:opacity-60 dark:border-slate-700 dark:text-slate-200"
+          className="admin-secondary-btn mt-3 w-full py-2.5"
         >
           {sendingOtp ? "Sending OTP..." : "Send OTP"}
         </button>

@@ -307,7 +307,7 @@ function Series() {
             <button
               type="button"
               onClick={loadSeries}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              className="admin-toolbar-btn"
             >
               <RefreshCw size={14} /> Refresh
             </button>
@@ -434,21 +434,21 @@ function Series() {
               <button
                 type="button"
                 onClick={() => openView(series)}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-300 px-3 py-2 text-sm dark:border-slate-700"
+                className="admin-action-btn"
               >
                 <Eye size={14} />
               </button>
               <button
                 type="button"
                 onClick={() => openEdit(series)}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-300 px-3 py-2 text-sm dark:border-slate-700"
+                className="admin-action-btn"
               >
                 <Pencil size={14} />
               </button>
               <button
                 type="button"
                 onClick={() => setDeleteTarget(series)}
-                className="inline-flex items-center gap-1 rounded-xl border border-rose-300 px-3 py-2 text-sm text-rose-500"
+                className="admin-action-btn-danger"
               >
                 <Trash2 size={14} />
               </button>
@@ -715,7 +715,7 @@ function Series() {
                 </div>
 
                 <div className="flex justify-end gap-3">
-                  <button type="button" onClick={closeModal} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                  <button type="button" onClick={closeModal} className="admin-secondary-btn">
                     Cancel
                   </button>
                   <button type="submit" disabled={submitting} className="rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-70">

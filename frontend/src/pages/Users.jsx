@@ -173,14 +173,14 @@ function Users() {
             <button
               type="button"
               onClick={() => setSelectedUser(row)}
-              className="flex items-center gap-1 rounded-lg border border-slate-300 px-2 py-1 text-xs dark:border-slate-700"
+              className="admin-action-btn-sm"
             >
               <Eye size={13} /> 
             </button>
             <button
               type="button"
               onClick={() => setUserToDelete(row)}
-              className="flex items-center gap-1 rounded-lg border border-rose-300 px-2 py-1 text-xs text-rose-500"
+              className="admin-action-btn-danger-sm"
             >
               <Trash2 size={13} />
             </button>
@@ -220,7 +220,7 @@ function Users() {
               <button
                 type="button"
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 disabled:opacity-50 dark:border-slate-700"
+                className="admin-page-btn"
                 disabled={page === 1}
               >
                 Prev
@@ -231,7 +231,7 @@ function Users() {
               <button
                 type="button"
                 onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 disabled:opacity-50 dark:border-slate-700"
+                className="admin-page-btn"
                 disabled={page === totalPages}
               >
                 Next

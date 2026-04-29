@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { isAdmin } = require("../../middlewares/admin.middleware");
+const { hasPermission } = require("../../middlewares/permission.middleware");
 const upload = require("../../middlewares/upload.middleware");
 
 const {
@@ -16,21 +17,53 @@ const {
 const playerUpload = upload.single("image");
 
 // Create
-router.post("/", isAdmin, playerUpload, createPlayer);
+router.post(
+  "/",
+  isAdmin,
+  hasPermission("matches", "create"),
+  playerUpload,
+  createPlayer
+);
 
 // List
-router.get("/", isAdmin, getPlayers);
+router.get(
+  "/",
+  isAdmin,
+  hasPermission("matches", "view"),
+  getPlayers
+);
 
 // Single
-router.get("/:id", isAdmin, getSinglePlayer);
+router.get(
+  "/:id",
+  isAdmin,
+  hasPermission("matches", "view"),
+  getSinglePlayer
+);
 
 // Update
-router.put("/:id", isAdmin, playerUpload, updatePlayer);
+router.put(
+  "/:id",
+  isAdmin,
+  hasPermission("matches", "edit"),
+  playerUpload,
+  updatePlayer
+);
 
 // Delete
-router.delete("/:id", isAdmin, deletePlayer);
+router.delete(
+  "/:id",
+  isAdmin,
+  hasPermission("matches", "delete"),
+  deletePlayer
+);
 
 // Toggle Featured
-router.patch("/:id/feature", isAdmin, toggleFeatured);
+router.patch(
+  "/:id/feature",
+  isAdmin,
+  hasPermission("matches", "edit"),
+  toggleFeatured
+);
 
 module.exports = router;

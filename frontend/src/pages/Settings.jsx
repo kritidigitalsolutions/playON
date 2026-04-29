@@ -222,7 +222,7 @@ function Settings() {
                 type="button"
                 onClick={sendEmailOtp}
                 disabled={loadingAction === "email-otp"}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 disabled:opacity-60 dark:border-slate-700 dark:text-slate-200"
+                className="admin-action-btn"
               >
                 <Send size={15} /> {loadingAction === "email-otp" ? "Sending..." : "Send OTP"}
               </button>
@@ -305,7 +305,7 @@ function Settings() {
                 type="button"
                 onClick={sendPasswordOtp}
                 disabled={loadingAction === "password-otp"}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 disabled:opacity-60 dark:border-slate-700 dark:text-slate-200"
+                className="admin-action-btn"
               >
                 <Send size={15} /> {loadingAction === "password-otp" ? "Sending..." : "Send OTP"}
               </button>

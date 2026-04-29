@@ -349,17 +349,17 @@ function Promo() {
             type="button"
             onClick={() => toggleStatus(row)}
             disabled={actionId === row._id}
-            className="inline-flex items-center gap-1 rounded-lg border border-indigo-300 px-2 py-1 text-xs text-indigo-600 disabled:opacity-60"
+            className="admin-action-btn-sm"
           >
             {row.isActive ? <ToggleRight size={13} /> : <ToggleLeft size={13} />}
           </button>
-          <button type="button" onClick={() => openView(row)} className="rounded-lg border border-slate-300 px-2 py-1 text-slate-600 dark:border-slate-700 dark:text-slate-300">
+          <button type="button" onClick={() => openView(row)} className="admin-action-btn-sm">
             <Eye size={13} />
           </button>
-          <button type="button" onClick={() => openEdit(row)} className="rounded-lg border border-slate-300 px-2 py-1 text-slate-600 dark:border-slate-700 dark:text-slate-300">
+          <button type="button" onClick={() => openEdit(row)} className="admin-action-btn-sm">
             <Pencil size={13} />
           </button>
-          <button type="button" onClick={() => setDeleteTarget(row)} className="rounded-lg border border-rose-300 px-2 py-1 text-rose-500">
+          <button type="button" onClick={() => setDeleteTarget(row)} className="admin-action-btn-danger-sm">
             <Trash2 size={13} />
           </button>
         </div>
@@ -377,7 +377,7 @@ function Promo() {
             <button
               type="button"
               onClick={loadPromos}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              className="admin-toolbar-btn"
             >
               <RefreshCw size={14} /> Refresh
             </button>
@@ -547,7 +547,7 @@ function Promo() {
                 </div>
 
                 <div className="flex justify-end gap-3">
-                  <button type="button" onClick={closeModal} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                  <button type="button" onClick={closeModal} className="admin-secondary-btn">
                     Cancel
                   </button>
                   <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-70">

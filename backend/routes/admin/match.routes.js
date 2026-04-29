@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { isAdmin } = require("../../middlewares/admin.middleware");
+const { hasPermission } = require("../../middlewares/permission.middleware");
 const upload = require("../../middlewares/upload.middleware");
 
 const {
@@ -16,7 +17,6 @@ const {
   watchMatch
 } = require("../../controllers/admin/match.controller");
 
-// shared upload fields
 const matchUploads = upload.fields([
   { name: "thumbnail", maxCount: 1 },
   { name: "banner", maxCount: 1 },
@@ -24,31 +24,69 @@ const matchUploads = upload.fields([
   { name: "teamBLogo", maxCount: 1 }
 ]);
 
-// Create
-router.post("/create", isAdmin, matchUploads, createMatch);
+router.post(
+  "/create",
+  isAdmin,
+  hasPermission("matches", "create"),
+  matchUploads,
+  createMatch
+);
 
-// List
-router.get("/", isAdmin, getAllMatches);
+router.get(
+  "/",
+  isAdmin,
+  hasPermission("matches", "view"),
+  getAllMatches
+);
 
-// Single
-router.get("/:id", isAdmin, getSingleMatch);
+router.get(
+  "/:id",
+  isAdmin,
+  hasPermission("matches", "view"),
+  getSingleMatch
+);
 
-// Update
-router.put("/:id", isAdmin, matchUploads, updateMatch);
+router.put(
+  "/:id",
+  isAdmin,
+  hasPermission("matches", "edit"),
+  matchUploads,
+  updateMatch
+);
 
-// Delete
-router.delete("/:id", isAdmin, deleteMatch);
+router.delete(
+  "/:id",
+  isAdmin,
+  hasPermission("matches", "delete"),
+  deleteMatch
+);
 
-// Toggle Featured
-router.patch("/:id/feature", isAdmin, toggleFeatured);
+router.patch(
+  "/:id/feature",
+  isAdmin,
+  hasPermission("matches", "edit"),
+  toggleFeatured
+);
 
-// Go Live
-router.patch("/:id/live", isAdmin, goLive);
+router.patch(
+  "/:id/live",
+  isAdmin,
+  hasPermission("matches", "edit"),
+  goLive
+);
 
-// End Live
-router.patch("/:id/end", isAdmin, endLive);
+router.patch(
+  "/:id/end",
+  isAdmin,
+  hasPermission("matches", "edit"),
+  endLive
+);
 
-
-router.get("/:id/watch", isAdmin, watchMatch);
+router.get(
+  "/:id/watch",
+  isAdmin,
+  hasPermission("matches", "view"),
+  watchMatch
+);
 
 module.exports = router;

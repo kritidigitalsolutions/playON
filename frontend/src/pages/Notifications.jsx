@@ -234,14 +234,14 @@ function Notifications() {
             type="button"
             onClick={() => markAsRead(row)}
             disabled={row.isRead || actionId === row._id}
-            className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 px-2 py-1 text-xs text-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="admin-action-btn-success"
           >
             <Check size={13} /> Read
           </button>
           <button
             type="button"
             onClick={() => setDeleteTarget(row)}
-            className="inline-flex items-center gap-1 rounded-lg border border-rose-300 px-2 py-1 text-xs text-rose-500"
+            className="admin-action-btn-danger-sm"
           >
             <Trash2 size={13} />
           </button>
@@ -259,7 +259,7 @@ function Notifications() {
           <button
             type="button"
             onClick={loadNotifications}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            className="admin-toolbar-btn"
           >
             <RefreshCw size={14} /> Refresh
           </button>

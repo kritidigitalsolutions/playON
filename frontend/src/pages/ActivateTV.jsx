@@ -146,7 +146,7 @@ function ActivateTV() {
           <button
             type="button"
             onClick={() => fetchConnections(debouncedQuery, true)}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+            className="admin-toolbar-btn"
             disabled={refreshing}
           >
             <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
@@ -208,7 +208,7 @@ function ActivateTV() {
               <button
                 type="button"
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 disabled:opacity-50 dark:border-slate-700"
+                className="admin-page-btn"
                 disabled={page === 1}
               >
                 Prev
@@ -219,7 +219,7 @@ function ActivateTV() {
               <button
                 type="button"
                 onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 disabled:opacity-50 dark:border-slate-700"
+                className="admin-page-btn"
                 disabled={page === totalPages}
               >
                 Next

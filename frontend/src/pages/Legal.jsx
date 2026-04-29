@@ -231,7 +231,7 @@ function Legal() {
             <button
               type="button"
               onClick={fetchPages}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              className="admin-toolbar-btn"
             >
               <RefreshCw size={14} /> Refresh
             </button>
@@ -291,7 +291,7 @@ function Legal() {
                           type="button"
                           onClick={() => setViewModal(existingPage)}
                           title="View Page"
-                          className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:text-white"
+                          className="admin-action-btn"
                         >
                           <Eye size={15} /> 
                         </button>
@@ -299,7 +299,7 @@ function Legal() {
                           type="button"
                           onClick={() => openEdit(type.id)}
                           title="Edit Page"
-                          className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:text-white"
+                          className="admin-action-btn"
                         >
                           <Pencil size={15} /> 
                         </button>
@@ -308,10 +308,10 @@ function Legal() {
                           onClick={() => handleToggleStatus(type.id)}
                           disabled={togglingType === type.id}
                           title={existingPage?.isActive ? "Unpublish Page" : "Publish Page"}
-                          className={`inline-flex h-9 items-center justify-center gap-2 rounded-xl border px-3 text-sm font-medium transition disabled:opacity-60 ${
+                          className={`${
                             existingPage?.isActive
-                              ? "border-amber-200 text-amber-600 hover:bg-amber-50 dark:border-amber-500/30 dark:text-amber-400 dark:hover:bg-amber-500/10"
-                              : "border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
+                              ? "admin-action-btn-warning"
+                              : "admin-action-btn-success"
                           }`}
                         >
                           {togglingType === type.id ? "Saving..." : existingPage?.isActive ? "Unpublish" : "Publish"}
@@ -320,7 +320,7 @@ function Legal() {
                           type="button"
                           onClick={() => setDeleteTarget(type.id)}
                           title="Delete Page"
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-rose-200 text-rose-500 transition hover:bg-rose-50 dark:border-rose-500/30 dark:hover:bg-rose-500/10"
+                          className="admin-action-btn-danger-square"
                         >
                           <Trash2 size={15} />
                         </button>
@@ -329,7 +329,7 @@ function Legal() {
                       <button
                         type="button"
                         onClick={() => openEdit(type.id)}
-                        className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 text-sm font-medium text-indigo-600 transition hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20"
+                        className="admin-action-btn w-full"
                       >
                         <Pencil size={15} /> Create Document
                       </button>
@@ -389,7 +389,7 @@ function Legal() {
                     <button
                       type="button"
                       onClick={addSection}
-                      className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 text-sm font-medium text-indigo-600 transition hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20"
+                      className="admin-action-btn"
                     >
                       <Plus size={15} /> Add Section
                     </button>
@@ -404,7 +404,7 @@ function Legal() {
                         <button
                           type="button"
                           onClick={() => removeSection(index)}
-                          className="inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-rose-200 px-2.5 text-xs font-medium text-rose-500 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-500/30 dark:hover:bg-rose-500/10"
+                          className="admin-action-btn-danger-sm h-8"
                           disabled={form.sections.length === 1 && !section.title && !section.content}
                         >
                           <Trash2 size={13} /> Remove
@@ -445,7 +445,7 @@ function Legal() {
                 </div>
 
                 <div className="mt-6 flex justify-end gap-3">
-                  <button type="button" onClick={closeEdit} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                  <button type="button" onClick={closeEdit} className="admin-secondary-btn">
                     Cancel
                   </button>
                   <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-70 dark:bg-indigo-500 dark:hover:bg-indigo-600">

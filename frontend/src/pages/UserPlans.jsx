@@ -229,14 +229,14 @@ useEffect(() => {
           <button
             type="button"
             onClick={() => setSelectedSub(row)}
-            className="flex items-center gap-1 rounded-lg border border-slate-300 px-2 py-1 text-xs dark:border-slate-700"
+            className="admin-action-btn-sm"
           >
             <Eye size={13} /> 
           </button>
           <button
             type="button"
             onClick={() => setSubToDelete(row)}
-            className="flex items-center gap-1 rounded-lg border border-rose-300 px-2 py-1 text-xs text-rose-500"
+            className="admin-action-btn-danger-sm"
           >
             <Trash2 size={13} />
           </button>
@@ -297,7 +297,7 @@ useEffect(() => {
                 <button
                   type="button"
                   onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 disabled:opacity-50 dark:border-slate-700"
+                  className="admin-page-btn"
                   disabled={page === 1}
                 >
                   Prev
@@ -308,7 +308,7 @@ useEffect(() => {
                 <button
                   type="button"
                   onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 disabled:opacity-50 dark:border-slate-700"
+                  className="admin-page-btn"
                   disabled={page === totalPages}
                 >
                   Next
@@ -375,7 +375,7 @@ useEffect(() => {
                   type="button"
                   onClick={() => handleUpdateStatus(selectedSub._id, "active")}
                   disabled={updating || selectedSub.status === "active"}
-                  className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 px-3 py-2 text-sm text-emerald-600 disabled:opacity-50"
+                  className="admin-action-btn-success"
                 >
                   <CheckCircle size={14} /> Mark Active
                 </button>
@@ -383,7 +383,7 @@ useEffect(() => {
                   type="button"
                   onClick={() => handleUpdateStatus(selectedSub._id, "cancelled")}
                   disabled={updating || selectedSub.status === "cancelled"}
-                  className="inline-flex items-center gap-1 rounded-lg border border-amber-300 px-3 py-2 text-sm text-amber-500 disabled:opacity-50"
+                  className="admin-action-btn-warning"
                 >
                   <XCircle size={14} /> Cancel Plan
                 </button>

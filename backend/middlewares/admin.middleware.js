@@ -1,8 +1,10 @@
 const jwt = require("jsonwebtoken");
+const Admin = require("../models/admin.model");
 
-exports.isAdmin = (req, res, next) => {
+exports.isAdmin = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
+    const authHeader =
+      req.headers.authorization;
 
     if (!authHeader) {
       return res.status(401).json({
@@ -18,14 +20,30 @@ exports.isAdmin = (req, res, next) => {
       process.env.JWT_SECRET
     );
 
-    if (decoded.role !== "admin") {
+    if (
+      !["super_admin", "sub_admin"].includes(
+        decoded.role
+      )
+    ) {
       return res.status(403).json({
         success: false,
         message: "Access denied"
       });
     }
 
-    req.admin = decoded;
+    const admin = await Admin.findById(
+      decoded.adminId
+    ).select("-password");
+
+    if (!admin || admin.isActive === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Account disabled"
+      });
+    }
+
+    req.admin = admin;
+
     next();
 
   } catch (error) {

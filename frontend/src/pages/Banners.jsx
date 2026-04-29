@@ -180,7 +180,7 @@ function Banners() {
         action={
           <div className="flex items-center gap-2">
             <button type="button" onClick={loadBanners}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+              className="admin-toolbar-btn">
               <RefreshCw size={14} /> Refresh
             </button>
             <button type="button" onClick={openCreate}
@@ -257,20 +257,20 @@ function Banners() {
                 <div className="mt-auto flex items-center gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
                   <button 
                     onClick={() => setSelectedBanner(banner)}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-50 text-slate-500 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-400"
+                    className="admin-action-btn-square"
                     title="View Details"
                   >
                     <Eye size={16} />
                   </button>
                   <button 
                     onClick={() => openEdit(banner)}
-                    className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-indigo-50 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400"
+                    className="admin-action-btn-sm flex-1 py-2"
                   >
                     <Pencil size={14} /> Edit
                   </button>
                   <button 
                     onClick={() => setDeleteTarget(banner)}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400"
+                    className="admin-action-btn-danger-square"
                     title="Delete Banner"
                   >
                     <Trash2 size={16} />
@@ -354,7 +354,7 @@ function Banners() {
                   </button>
                   <button 
                     onClick={() => setSelectedBanner(null)}
-                    className="flex-1 rounded-xl border border-slate-200 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="admin-secondary-btn flex-1 py-3"
                   >
                     Close
                   </button>
@@ -469,7 +469,7 @@ function Banners() {
 
                 <div className="flex justify-end gap-3 pt-2">
                   <button type="button" onClick={closeModal}
-                    className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                    className="admin-secondary-btn">
                     Cancel
                   </button>
                   <button type="submit" disabled={submitting}

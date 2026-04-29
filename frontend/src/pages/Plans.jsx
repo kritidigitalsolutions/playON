@@ -387,7 +387,7 @@ function Plans() {
             <button
               type="button"
               onClick={loadPlans}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              className="admin-toolbar-btn"
             >
               <RefreshCw size={14} /> Refresh
             </button>
@@ -522,7 +522,7 @@ function Plans() {
                   type="button"
                   onClick={() => toggleStatus(plan)}
                   disabled={actionPlanId === plan._id}
-                  className="inline-flex items-center gap-1 rounded-xl border border-indigo-300 px-3 py-2 text-sm text-indigo-600 disabled:opacity-70"
+                  className="admin-action-btn"
                 >
                   {plan.isActive ? <ToggleRight size={15} /> : <ToggleLeft size={15} />}
                   {plan.isActive ? "Deactivate" : "Activate"}
@@ -531,7 +531,7 @@ function Plans() {
                   type="button"
                   onClick={() => updateSortOrder(plan, (Number(plan.sortOrder) || 0) + 1)}
                   disabled={actionPlanId === plan._id}
-                  className="inline-flex items-center gap-1 rounded-xl border border-slate-300 px-3 py-2 text-sm dark:border-slate-700"
+                  className="admin-action-btn"
                 >
                   <ArrowDownUp size={14} />
                   Sort {plan.sortOrder ?? 0}
@@ -539,21 +539,21 @@ function Plans() {
                 <button
                   type="button"
                   onClick={() => openView(plan)}
-                  className="inline-flex items-center gap-1 rounded-xl border border-slate-300 px-3 py-2 text-sm dark:border-slate-700"
+                  className="admin-action-btn"
                 >
                   <Eye size={14} />
                 </button>
                 <button
                   type="button"
                   onClick={() => openEdit(plan)}
-                  className="inline-flex items-center gap-1 rounded-xl border border-slate-300 px-3 py-2 text-sm dark:border-slate-700"
+                  className="admin-action-btn"
                 >
                   <Pencil size={14} />
                 </button>
                 <button
                   type="button"
                   onClick={() => setDeleteTarget(plan)}
-                  className="inline-flex items-center gap-1 rounded-xl border border-rose-300 px-3 py-2 text-sm text-rose-500"
+                  className="admin-action-btn-danger"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -658,7 +658,7 @@ function Plans() {
                 </div>
 
                 <div className="flex justify-end gap-3">
-                  <button type="button" onClick={closeModal} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                  <button type="button" onClick={closeModal} className="admin-secondary-btn">
                     Cancel
                   </button>
                   <button type="submit" disabled={submitting} className="rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-70">

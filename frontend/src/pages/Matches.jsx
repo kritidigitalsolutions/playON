@@ -429,7 +429,7 @@ const handleWatch = async (match) => {
             <button
               type="button"
               onClick={loadMatches}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              className="admin-toolbar-btn"
             >
               <RefreshCw size={15} /> Refresh
             </button>
@@ -514,7 +514,7 @@ const handleWatch = async (match) => {
           <button
             type="button"
             onClick={() => setFilters({ status: "all", sport: "all", sort: "newest" })}
-            className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-300 px-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:text-slate-200"
+            className="admin-toolbar-btn"
           >
             Clear
           </button>
@@ -589,28 +589,28 @@ const handleWatch = async (match) => {
   type="button"
   onClick={() => handleWatch(match)}
   disabled={match.status !== "live"}
-  className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border transition
+  className={`admin-action-btn-square
     ${
       match.status === "live"
-        ? "border-indigo-200 text-indigo-600 hover:border-indigo-400 hover:bg-indigo-50"
-        : "cursor-not-allowed opacity-50 border-slate-300 text-slate-400"
+        ? ""
+        : "cursor-not-allowed opacity-50"
     }`}
 >
   <Play size={15} />
 </button>
-                        <button type="button" onClick={() => openView(match)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:text-white">
+                        <button type="button" onClick={() => openView(match)} className="admin-action-btn-square">
                           <Eye size={15} />
                         </button>
-                        <button type="button" onClick={() => openEdit(match)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:text-white">
+                        <button type="button" onClick={() => openEdit(match)} className="admin-action-btn-square">
                           <Pencil size={15} />
                         </button>
-                        <button type="button" onClick={() => toggleFeatured(match)} className={classNames("inline-flex h-9 w-9 items-center justify-center rounded-lg border transition", match.isFeatured ? "border-amber-400/40 text-amber-500" : "border-slate-200 text-slate-500 hover:border-amber-400/40 hover:text-amber-500 dark:border-slate-700")}>
+                        <button type="button" onClick={() => toggleFeatured(match)} className={classNames("admin-action-btn-square", match.isFeatured ? "bg-amber-100 text-amber-600 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-400 dark:hover:bg-amber-500/25" : "")}>
                           <Star size={15} className={match.isFeatured ? "fill-current" : ""} />
                         </button>
-                        <button type="button" onClick={() => updateStatus(match, match.status === "live" ? "completed" : "live")} className="rounded-lg border border-slate-200 px-3 text-xs font-medium text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:text-slate-300">
+                        <button type="button" onClick={() => updateStatus(match, match.status === "live" ? "completed" : "live")} className="admin-action-btn-sm">
                           {match.status === "live" ? "End" : "Go Live"}
                         </button>
-                        <button type="button" onClick={() => setDeleteTarget(match)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-300/40 text-rose-500 transition hover:bg-rose-500/10">
+                        <button type="button" onClick={() => setDeleteTarget(match)} className="admin-action-btn-danger-square">
                           <Trash2 size={15} />
                         </button>
                       </div>
@@ -630,11 +630,11 @@ const handleWatch = async (match) => {
         <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3 dark:border-slate-700">
           <p className="text-xs text-slate-500 dark:text-slate-400">Showing {pageData.length} of {filteredMatches.length} matches</p>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={page === 1} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 disabled:opacity-40 dark:border-slate-700 dark:text-slate-300">
+            <button type="button" onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={page === 1} className="admin-action-btn-square">
               <ChevronLeft size={15} />
             </button>
             <span className="min-w-[70px] text-center text-sm text-slate-600 dark:text-slate-300">{page} / {totalPages}</span>
-            <button type="button" onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))} disabled={page === totalPages} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 disabled:opacity-40 dark:border-slate-700 dark:text-slate-300">
+            <button type="button" onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))} disabled={page === totalPages} className="admin-action-btn-square">
               <ChevronRight size={15} />
             </button>
           </div>
@@ -742,7 +742,7 @@ const handleWatch = async (match) => {
                 </div>
 
                 <div className="flex justify-end gap-3">
-                  <button type="button" onClick={closeFormModal} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                  <button type="button" onClick={closeFormModal} className="admin-secondary-btn">
                     Cancel
                   </button>
                   <button type="submit" disabled={submitting} className="rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-70">
@@ -816,7 +816,7 @@ const handleWatch = async (match) => {
                 This will remove {deleteTarget.title || `${deleteTarget.teamA} vs ${deleteTarget.teamB}`} from the admin list.
               </p>
               <div className="mt-5 flex justify-end gap-3">
-                <button type="button" onClick={() => setDeleteTarget(null)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                <button type="button" onClick={() => setDeleteTarget(null)} className="admin-secondary-btn">
                   Cancel
                 </button>
                 <button type="button" onClick={confirmDelete} className="rounded-xl bg-rose-500 px-4 py-2 text-sm font-medium text-white">

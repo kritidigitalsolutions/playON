@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const startAutoLiveMatches = require("./jobs/autoLiveMatches");
 
 const app = express();
 
@@ -23,6 +24,10 @@ app.get("/", (req, res) => {
 app.use("/api/auth", require("./routes/user/auth.routes"));
 app.use("/api/user", require("./routes/user/user.routes"));
 app.use("/api/admin", require("./routes/admin/admin.routes"));
+app.use(
+  "/api/admin/sub-admins",
+  require("./routes/admin/subAdmin.routes")
+);
 
 //USER DELETE ITS ACCOUNT 
 app.use("/api/user", require("./routes/user/account.routes"));
@@ -129,4 +134,13 @@ app.use(
 
 //channel categories
 app.use("/api/admin/channel-categories", require("./routes/admin/channelCategory.routes"));
+
+app.use(
+  "/api/channel-categories",
+  require("./routes/user/channelCategory.routes")
+);
+
+startAutoLiveMatches();
+
 module.exports = app;
+

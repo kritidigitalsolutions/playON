@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { isAdmin } = require("../../middlewares/admin.middleware");
+const { hasPermission } = require("../../middlewares/permission.middleware");
 const upload = require("../../middlewares/upload.middleware");
 
 const {
@@ -12,10 +13,46 @@ const {
   deleteSeries
 } = require("../../controllers/admin/series.controller");
 
-router.post("/", isAdmin, upload.single("banner"), createSeries);
-router.get("/", isAdmin, getAllSeries);
-router.get("/:id", isAdmin, getSingleSeries);
-router.patch("/:id", isAdmin, upload.single("banner"), updateSeries);
-router.delete("/:id", isAdmin, deleteSeries);
+// Create
+router.post(
+  "/",
+  isAdmin,
+  hasPermission("matches", "create"),
+  upload.single("banner"),
+  createSeries
+);
+
+// List
+router.get(
+  "/",
+  isAdmin,
+  hasPermission("matches", "view"),
+  getAllSeries
+);
+
+// Single
+router.get(
+  "/:id",
+  isAdmin,
+  hasPermission("matches", "view"),
+  getSingleSeries
+);
+
+// Update
+router.patch(
+  "/:id",
+  isAdmin,
+  hasPermission("matches", "edit"),
+  upload.single("banner"),
+  updateSeries
+);
+
+// Delete
+router.delete(
+  "/:id",
+  isAdmin,
+  hasPermission("matches", "delete"),
+  deleteSeries
+);
 
 module.exports = router;

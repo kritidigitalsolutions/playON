@@ -175,7 +175,7 @@ function Sports() {
         action={
           <div className="flex items-center gap-2">
             <button type="button" onClick={loadSports}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+              className="admin-toolbar-btn">
               <RefreshCw size={14} /> Refresh
             </button>
             <button type="button" onClick={openCreate}
@@ -237,19 +237,19 @@ function Sports() {
                 <div className="mt-5 flex items-center gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
                   <button 
                     onClick={() => setSelectedSport(sport)}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-50 text-slate-500 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-400"
+                    className="admin-action-btn-square h-8 w-8"
                   >
                     <Eye size={14} />
                   </button>
                   <button 
                     onClick={() => openEdit(sport)}
-                    className="flex-1 flex h-8 items-center justify-center gap-1.5 rounded-lg bg-slate-50 text-xs font-medium text-slate-500 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-400"
+                    className="admin-action-btn-sm h-8 flex-1"
                   >
                     <Pencil size={14} /> Edit
                   </button>
                   <button 
                     onClick={() => setDeleteTarget(sport)}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400"
+                    className="admin-action-btn-danger-square h-8 w-8"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -301,7 +301,7 @@ function Sports() {
 
                 <div className="flex justify-end gap-3 pt-2">
                   <button type="button" onClick={closeModal}
-                    className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                    className="admin-secondary-btn">
                     Cancel
                   </button>
                   <button type="submit" disabled={submitting}
@@ -368,7 +368,7 @@ function Sports() {
                 <button 
                   type="button" 
                   onClick={() => setSelectedSport(null)}
-                  className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300"
+                  className="admin-secondary-btn flex-1 py-2.5"
                 >
                   Close
                 </button>

@@ -37,6 +37,7 @@ function Topbar({
     "/user-plans": "Search user subscriptions...",
     "/notifications": "Search notifications...",
     "/legal": "Search legal documents...",
+    "/sub-admins": "Search sub admins...",
     "/settings": "Search settings..."
   };
 

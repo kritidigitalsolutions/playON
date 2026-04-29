@@ -3,6 +3,7 @@ const router = express.Router();
 
 const upload = require("../../middlewares/upload.middleware");
 const { isAdmin } = require("../../middlewares/admin.middleware");
+const { hasPermission } = require("../../middlewares/permission.middleware");
 
 const {
   createChannel,
@@ -27,15 +28,62 @@ router.get("/live", getLiveChannels);
 router.get("/slug/:slug", getChannelBySlug);
 
 // Admin
-router.post("/", isAdmin, channelUploads, createChannel);
-router.get("/", isAdmin, getChannels);
-router.get("/:id", isAdmin, getSingleChannel);
-router.put("/:id", isAdmin, channelUploads, updateChannel);
-router.delete("/:id", isAdmin, deleteChannel);
-router.patch("/:id/live", isAdmin, goLive);
-router.patch("/:id/offline", isAdmin, goOffline);
-router.patch("/:id/feature", isAdmin, toggleFeatured);
+router.post(
+  "/",
+  isAdmin,
+  hasPermission("channels", "create"),
+  channelUploads,
+  createChannel
+);
+router.get(
+  "/",
+  isAdmin,
+  hasPermission("channels", "view"),
+  getChannels
+);
+router.get(
+  "/:id",
+  isAdmin,
+  hasPermission("channels", "view"),
+  getSingleChannel
+);
+router.put(
+  "/:id",
+  isAdmin,
+  hasPermission("channels", "edit"),
+  channelUploads,
+  updateChannel
+);
+router.delete(
+  "/:id",
+  isAdmin,
+  hasPermission("channels", "delete"),
+  deleteChannel
+);
+router.patch(
+  "/:id/live",
+  isAdmin,
+  hasPermission("channels", "edit"),
+  goLive
+);
+router.patch(
+  "/:id/offline",
+  isAdmin,
+  hasPermission("channels", "edit"),
+  goOffline
+);
+router.patch(
+  "/:id/feature",
+  isAdmin,
+  hasPermission("channels", "edit"),
+  toggleFeatured
+);
 
-router.get("/:id/watch", isAdmin, watchChannel);
+router.get(
+  "/:id/watch",
+  isAdmin,
+  hasPermission("channels", "view"),
+  watchChannel
+);
 
 module.exports = router;

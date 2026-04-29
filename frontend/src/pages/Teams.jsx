@@ -161,7 +161,7 @@ function Teams() {
         action={
           <div className="flex items-center gap-2">
             <button type="button" onClick={loadTeams}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+              className="admin-toolbar-btn">
               <RefreshCw size={14} /> Refresh
             </button>
             <button type="button" onClick={openCreate}
@@ -257,20 +257,20 @@ function Teams() {
 
               <div className="mt-4 flex flex-wrap gap-2">
                 <button type="button" onClick={() => toggleStatus(team)} disabled={actionId === team._id}
-                  className="inline-flex items-center gap-1 rounded-xl border border-indigo-300 px-3 py-2 text-xs text-indigo-600 disabled:opacity-60 dark:border-indigo-700 dark:text-indigo-400">
+                  className="admin-action-btn-sm">
                   {team.isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                   {team.isActive ? "Deactivate" : "Activate"}
                 </button>
                 <button type="button" onClick={() => setSelectedTeam(team)}
-                  className="inline-flex items-center gap-1 rounded-xl border border-slate-300 px-3 py-2 text-xs dark:border-slate-700">
+                  className="admin-action-btn-sm">
                   <Eye size={14} />
                 </button>
                 <button type="button" onClick={() => openEdit(team)}
-                  className="inline-flex items-center gap-1 rounded-xl border border-slate-300 px-3 py-2 text-xs dark:border-slate-700">
+                  className="admin-action-btn-sm">
                   <Pencil size={14} />
                 </button>
                 <button type="button" onClick={() => setDeleteTarget(team)}
-                  className="inline-flex items-center gap-1 rounded-xl border border-rose-300 px-3 py-2 text-xs text-rose-500">
+                  className="admin-action-btn-danger-sm">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -343,7 +343,7 @@ function Teams() {
 
                 <div className="flex justify-end gap-3 pt-2">
                   <button type="button" onClick={closeModal}
-                    className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">Cancel</button>
+                    className="admin-secondary-btn">Cancel</button>
                   <button type="submit" disabled={submitting}
                     className="rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2 text-sm font-medium text-white disabled:opacity-70">
                     {submitting ? "Saving..." : editMode ? "Save Changes" : "Create Team"}
@@ -398,9 +398,9 @@ function Teams() {
 
               <div className="mt-4 flex gap-2">
                 <button type="button" onClick={() => { setSelectedTeam(null); openEdit(selectedTeam); }}
-                  className="flex-1 rounded-xl border border-slate-300 py-2 text-sm font-medium dark:border-slate-700">Edit</button>
+                  className="admin-secondary-btn flex-1">Edit</button>
                 <button type="button" onClick={() => { setSelectedTeam(null); setDeleteTarget(selectedTeam); }}
-                  className="flex-1 rounded-xl border border-rose-300 py-2 text-sm font-medium text-rose-500">Delete</button>
+                  className="admin-action-btn-danger flex-1">Delete</button>
               </div>
             </motion.div>
           </motion.div>

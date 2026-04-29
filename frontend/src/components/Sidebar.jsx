@@ -23,10 +23,13 @@ import {
   Image as ImageIcon
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { getAdminProfile } from "../utils/auth";
 
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+   { label: "Sub Admins", path: "/sub-admins", icon: ShieldCheck, superOnly: true },
   { label: "Users", path: "/users", icon: Users },
+
   { label: "Players", path: "/players", icon: UserRound },
   { label: "Teams", path: "/teams", icon: Shield },
   { label: "Series", path: "/series", icon: Film },
@@ -41,10 +44,13 @@ const navItems = [
   { label: "Notifications", path: "/notifications", icon: Bell },
   { label: "Coupon Codes", path: "/promo", icon: TicketPercent },
   { label: "Legal", path: "/legal", icon: ScrollText },
+ 
   { label: "Settings", path: "/settings", icon: Settings }
 ];
 
 function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onCloseMobile, onLogout }) {
+  const adminRole = getAdminProfile()?.role;
+  const visibleNavItems = navItems.filter((item) => !item.superOnly || adminRole === "super_admin");
   const sidebarClasses = `
     fixed inset-y-0 left-0 z-40 flex h-screen flex-col border-r border-indigo-200/30
     bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 text-slate-100 backdrop-blur
@@ -65,7 +71,7 @@ function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onCloseMobile, o
         </div>
 
         <nav className="mt-3 flex-1 space-y-2 px-3 overflow-y-auto pretty-scroll">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink
@@ -115,7 +121,7 @@ function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onCloseMobile, o
           </button>
         </div>
         <nav className="flex-1 space-y-2 px-3 overflow-y-auto pretty-scroll">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink

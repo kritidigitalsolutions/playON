@@ -12,6 +12,7 @@ export const NAV_LINKS = [
   { label: "Notifications", path: "/notifications" },
   { label: "Reports", path: "/reports" },
   { label: "Legal", path: "/legal" },
+  { label: "Sub Admins", path: "/sub-admins" },
   { label: "Settings", path: "/settings" }
 ];
 
@@ -31,6 +32,7 @@ export const PAGE_TITLES = {
   "/notifications": "Notifications",
   "/reports": "Reports",
   "/legal": "Legal Pages",
+  "/sub-admins": "Sub Admins",
   "/settings": "Settings"
 };
 

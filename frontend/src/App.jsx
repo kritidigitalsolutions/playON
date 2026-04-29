@@ -17,6 +17,7 @@ import Notifications from "./pages/Notifications";
 import Promo from "./pages/Promo";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import SubAdmins from "./pages/SubAdmins";
 import Legal from "./pages/Legal";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -103,6 +104,7 @@ function App() {
         <Route path="promo" element={<Promo />} />
         <Route path="reports" element={<Reports />} />
         <Route path="legal" element={<Legal />} />
+        <Route path="sub-admins" element={<SubAdmins />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={hasAuthToken() ? <NotFound /> : <Navigate to={LOGIN_ROUTE} replace />} />

@@ -451,7 +451,7 @@ function LiveTV() {
             <button
               type="button"
               onClick={loadChannels}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              className="admin-toolbar-btn"
             >
               <RefreshCw size={14} /> Refresh
             </button>
@@ -514,7 +514,7 @@ function LiveTV() {
           <button
             type="button"
             onClick={openAddCategory}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="admin-action-btn-sm"
           >
             <Plus size={12} /> Add category
           </button>
@@ -685,7 +685,7 @@ function LiveTV() {
                 type="button"
                 onClick={() => toggleFeatured(channel)}
                 disabled={actionChannelId === channel._id}
-                className="inline-flex items-center gap-1 rounded-xl border border-amber-300 px-3 py-2 text-sm text-amber-600 disabled:opacity-70"
+                className="admin-action-btn-warning"
               >
                 <Star size={14} className={channel.featured ? "fill-current" : ""} />
                 {channel.featured ? "Featured" : "Feature"}
@@ -693,28 +693,28 @@ function LiveTV() {
               <button
                 type="button"
                 onClick={() => handleWatch(channel)}
-                className="inline-flex items-center gap-1 rounded-xl border border-indigo-200 px-3 py-2 text-sm text-indigo-600 transition hover:bg-indigo-50 dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                className="admin-action-btn"
               >
                 Watch
               </button>
               <button
                 type="button"
                 onClick={() => openView(channel)}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-300 px-3 py-2 text-sm dark:border-slate-700"
+                className="admin-action-btn"
               >
                 <Eye size={14} />
               </button>
               <button
                 type="button"
                 onClick={() => openEdit(channel)}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-300 px-3 py-2 text-sm dark:border-slate-700"
+                className="admin-action-btn"
               >
                 <Pencil size={14} />
               </button>
               <button
                 type="button"
                 onClick={() => setDeleteTarget(channel)}
-                className="inline-flex items-center gap-1 rounded-xl border border-rose-300 px-3 py-2 text-sm text-rose-500"
+                className="admin-action-btn-danger"
               >
                 <Trash2 size={14} />
               </button>
@@ -880,7 +880,7 @@ function LiveTV() {
                 </div>
 
                 <div className="flex justify-end gap-3">
-                  <button type="button" onClick={closeModal} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                  <button type="button" onClick={closeModal} className="admin-secondary-btn">
                     Cancel
                   </button>
                   <button type="submit" disabled={submitting} className="rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-70">
