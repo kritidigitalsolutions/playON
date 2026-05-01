@@ -81,6 +81,26 @@ const adminSchema = new mongoose.Schema(
       admins: {
         type: permissionSchema,
         default: () => ({})
+      },
+
+      settings: {
+        type: permissionSchema,
+        default: () => ({})
+      },
+
+      socialMedia: {
+        type: permissionSchema,
+        default: () => ({})
+      },
+
+      legal: {
+        type: permissionSchema,
+        default: () => ({})
+      },
+
+      podcasts: {
+        type: permissionSchema,
+        default: () => ({})
       }
     },
 

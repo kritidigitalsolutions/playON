@@ -19,6 +19,7 @@ const notificationSchema = new mongoose.Schema(
         "GENERAL",
         "MATCH",
         "STREAM",
+        "SERIES",
         "CHANNEL",
         "PLAN",
         "SUBSCRIPTION",

@@ -171,6 +171,15 @@ const matchSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    isTrending: {
+      type: Boolean,
+      default: false  
+    },
+
+    isPremium: {
+      type: Boolean,
+      default: false
+    },
 
     liveStartedAt: {
       type: Date,
@@ -198,6 +207,7 @@ matchSchema.index({ sport: 1 });
 matchSchema.index({ status: 1 });
 matchSchema.index({ matchDate: 1 });
 matchSchema.index({ isFeatured: 1 });
+matchSchema.index({ isPremium: 1 });
 matchSchema.index({ seriesId: 1 });
 
 module.exports = mongoose.model("Match", matchSchema);

@@ -1,37 +1,11 @@
 const Otp = require("../models/otp.model");
 const User = require("../models/user.model");
 const jwt = require("jsonwebtoken");
-// const axios = require("axios");
+const { OAuth2Client } = require("google-auth-library");
 
-// const sendSmsOtp = async (mobile, otp) => {
-//   try {
-//     const text = process.env.SMS_GH_OTP_TEXT.replace("{{otp}}", otp);
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-//     const url = "https://www.smsgatewayhub.com/api/mt/SendSMS";
-
-//     const response = await axios.get(url, {
-//       params: {
-//         APIKey: process.env.SMS_GH_API_KEY,
-//         senderid: process.env.SMS_GH_SENDER_ID,
-//         channel: 2,
-//         DCS: 0,
-//         flashsms: 0,
-//         number: `91${mobile}`,
-//         text: text,
-//         route: process.env.SMS_GH_ROUTE,
-//         EntityId: process.env.SMS_GH_ENTITY_ID,
-//         dlttemplateid: process.env.SMS_GH_DLT_TEMPLATE_ID
-//       }
-//     });
-
-//     console.log("SMS Response:", response.data);
-//     return true;
-//   } catch (error) {
-//     console.log("SMS Error:", error.response?.data || error.message);
-//     return false;
-//   }
-// };
-
+// DEV MODE SMS (console)
 const sendSmsOtp = async (mobile, otp) => {
   try {
     console.log("=================================");
@@ -45,7 +19,9 @@ const sendSmsOtp = async (mobile, otp) => {
   }
 };
 
+// =======================
 // SEND OTP
+// =======================
 exports.sendOtp = async (req, res) => {
   try {
     const { mobile } = req.body;
@@ -64,9 +40,20 @@ exports.sendOtp = async (req, res) => {
       });
     }
 
+    const recentOtp = await Otp.findOne({
+      mobile,
+      createdAt: { $gt: new Date(Date.now() - 60 * 1000) }
+    });
+
+    if (recentOtp) {
+      return res.status(429).json({
+        success: false,
+        message: "Please wait before requesting another OTP"
+      });
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // only active user check
     const existingUser = await User.findOne({
       mobile,
       isDeleted: false
@@ -87,13 +74,15 @@ exports.sendOtp = async (req, res) => {
       }
     }
 
-    await Otp.deleteMany({ mobile });
-
-    await Otp.create({
-      mobile,
-      otp,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000)
-    });
+    // 🔁 Replace delete+create with upsert (safer)
+    await Otp.findOneAndUpdate(
+      { mobile },
+      {
+        otp,
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000)
+      },
+      { upsert: true, new: true }
+    );
 
     const smsSent = await sendSmsOtp(mobile, otp);
 
@@ -104,14 +93,13 @@ exports.sendOtp = async (req, res) => {
       });
     }
 
-const response = {
-  success: true,
-  message: "OTP sent successfully",
-  isNewUser,
-  otp
-};
-
-res.json(response);
+    // ⚠️ REMOVE OTP in production
+    res.json({
+      success: true,
+      message: "OTP sent successfully",
+      isNewUser,
+      otp // keep for dev only
+    });
 
   } catch (error) {
     res.status(500).json({
@@ -121,7 +109,9 @@ res.json(response);
   }
 };
 
+// =======================
 // VERIFY OTP
+// =======================
 exports.verifyOtp = async (req, res) => {
   try {
     const { mobile, otp } = req.body;
@@ -133,45 +123,45 @@ exports.verifyOtp = async (req, res) => {
       });
     }
 
-    const record = await Otp.findOne({ mobile, otp });
+    const record = await Otp.findOne({
+      mobile,
+      otp,
+      expiresAt: { $gt: new Date() }
+    });
 
     if (!record) {
       return res.status(400).json({
         success: false,
-        message: "Invalid OTP"
+        message: "Invalid or expired OTP"
       });
     }
 
-    if (record.expiresAt < new Date()) {
-      return res.status(400).json({
-        success: false,
-        message: "OTP expired"
-      });
-    }
+    let user = await User.findOne({
+      mobile,
+      isDeleted: false
+    });
 
-    let user = await User.findOne({ mobile });
     let isNewUser = true;
 
     if (!user) {
-      // brand new user
-      user = await User.create({ mobile });
-
+      user = await User.create({
+        mobile,
+        authProvider: "mobile"
+      });
     } else if (user.isDeleted) {
-      // restore deleted account
       user.isDeleted = false;
       user.deletedAt = null;
       user.deleteReason = "";
       user.accountStatus = "active";
 
       user.fullName = "";
-      user.email = "";
+      user.email = null;
       user.profilePic = "";
       user.favoriteSports = [];
       user.isProfileComplete = false;
       user.fcmToken = "";
 
       await user.save();
-
     } else {
       if (user.fullName && user.isProfileComplete) {
         isNewUser = false;
@@ -179,7 +169,7 @@ exports.verifyOtp = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user._id },
+      { userId: user._id, provider: "mobile" },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -200,4 +190,89 @@ exports.verifyOtp = async (req, res) => {
       message: error.message
     });
   }
+};
+
+// =======================
+// GOOGLE LOGIN (FIXED)
+// =======================
+exports.googleLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+      return res.status(400).json({
+        success: false,
+        message: "idToken is required"
+      });
+    }
+
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+
+    const googleId = payload.sub;
+    const email = payload.email;
+    const fullName = payload.name;
+    const profilePic = payload.picture;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Google email not available"
+      });
+    }
+
+    // 🔥 FIX: prevent duplicate users
+    let user = await User.findOne({
+      $or: [{ googleId }, { email }],
+      isDeleted: false
+    });
+
+    let isNewUser = false;
+
+    if (user) {
+      // 🔗 Link google if not linked
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.authProvider = "google";
+        await user.save();
+      }
+    } else {
+      user = await User.create({
+        googleId,
+        email,
+        fullName: fullName || "",
+        profilePic: profilePic || "",
+        authProvider: "google",
+        isProfileComplete: !!fullName
+      });
+
+      isNewUser = true;
+    }
+
+    const token = jwt.sign(
+      { userId: user._id, provider: "google" },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      success: true,
+      message: "Google login successful",
+      token,
+      isNewUser,
+      user
+    });
+
+  } catch (error) {
+  console.error("Google login FULL ERROR:", error);
+
+  res.status(500).json({
+    success: false,
+    message: error.message
+  });
+}
 };

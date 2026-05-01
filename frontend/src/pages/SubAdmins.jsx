@@ -31,7 +31,11 @@ const MODULES = [
   { key: "plans", label: "Plans" },
   { key: "promos", label: "Coupon Codes" },
   { key: "bannerAds", label: "Banners" },
-  { key: "admins", label: "Legal Pages" }
+  { key: "podcasts", label: "Podcasts" },
+  { key: "socialMedia", label: "Social Media" },
+  { key: "legal", label: "Legal Pages" },
+  { key: "settings", label: "Settings" },
+  { key: "admins", label: "Sub Admins" }
 ];
 
 const ACTIONS = [
@@ -662,9 +666,6 @@ function SubAdmins() {
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Module Permissions</p>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        Legal Pages uses the backend permission key named admins.
-                      </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <input

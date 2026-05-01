@@ -66,6 +66,10 @@ const formatMatch = (req, doc) => {
 
   return {
     ...match,
+    isTrending: match.isTrending ?? false,
+    isFeatured: match.isFeatured ?? false,
+    isPremium: match.isPremium ?? false,
+
     thumbnail: fileUrl(req, match.thumbnail),
     banner: fileUrl(req, match.banner),
     teamALogo: fileUrl(req, match.teamALogo),
@@ -112,6 +116,8 @@ if (req.files?.teamBLogo?.[0]) {
 const data = {
   ...normalizeMatchBody(req.body),
   isFeatured: parseBoolean(req.body.isFeatured),
+  isTrending: parseBoolean(req.body.isTrending),
+  isPremium: parseBoolean(req.body.isPremium),
   thumbnail,
   banner,
   teamALogo,
@@ -191,6 +197,12 @@ exports.updateMatch = async (req, res) => {
 
     if (req.body.isFeatured !== undefined) {
       data.isFeatured = parseBoolean(req.body.isFeatured);
+    }
+    if (req.body.isTrending !== undefined) {
+      data.isTrending = parseBoolean(req.body.isTrending);
+    }
+    if (req.body.isPremium !== undefined) {
+      data.isPremium = parseBoolean(req.body.isPremium);
     }
 
     if (req.files?.thumbnail?.[0]) {

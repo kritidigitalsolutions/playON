@@ -9,8 +9,10 @@ import Plans from "./pages/Plans";
 import Matches from "./pages/Matches";
 import Sports from "./pages/Sports";
 import Banners from "./pages/Banners";
+import Podcasts from "./pages/Podcasts";
 import UserPlans from "./pages/UserPlans";
 import Streams from "./pages/Streams";
+import StarPlayers from "./pages/StarPlayers";
 import LiveTV from "./pages/LiveTV";
 import ActivateTV from "./pages/ActivateTV";
 import Notifications from "./pages/Notifications";
@@ -19,6 +21,7 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import SubAdmins from "./pages/SubAdmins";
 import Legal from "./pages/Legal";
+import SocialMedia from "./pages/SocialMedia";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -97,6 +100,8 @@ function App() {
         <Route path="matches" element={<Matches />} />
         <Route path="sports" element={<Sports />} />
         <Route path="banners" element={<Banners />} />
+        <Route path="podcasts" element={<Podcasts />} />
+        <Route path="star-players" element={<StarPlayers />} />
         <Route path="streams" element={<Streams />} />
         <Route path="livetv" element={<LiveTV />} />
         <Route path="activate-tv" element={<ActivateTV />} />
@@ -105,6 +110,7 @@ function App() {
         <Route path="reports" element={<Reports />} />
         <Route path="legal" element={<Legal />} />
         <Route path="sub-admins" element={<SubAdmins />} />
+        <Route path="social-media" element={<SocialMedia />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={hasAuthToken() ? <NotFound /> : <Navigate to={LOGIN_ROUTE} replace />} />

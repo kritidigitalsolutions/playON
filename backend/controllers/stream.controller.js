@@ -1,4 +1,15 @@
 const streamService = require("../services/stream.service");
+const subscriptionService = require("../services/subscription.service");
+const jwt = require("jsonwebtoken");
+
+const getUserIdFromToken = (req) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET);
+    return decoded?.userId || null;
+  } catch { return null; }
+};
 
 // helper
 const fileUrl = (req, filePath) => {
@@ -20,6 +31,7 @@ const formatStream = (req, doc) => {
 
   return {
     ...stream,
+    isPremium: !!stream.isPremium,
     thumbnail: fileUrl(req, stream.thumbnail)
   };
 };
@@ -95,17 +107,23 @@ exports.playStream = async (req, res) => {
     const stream = await streamService.getStreamByMatch(req.params.matchId);
 
     if (!stream) {
-      return res.status(404).json({
-        success: false,
-        message: "No stream found"
-      });
+      return res.status(404).json({ success: false, message: "No stream found" });
     }
 
     if (stream.status !== "live") {
-      return res.status(400).json({
-        success: false,
-        message: "Stream is not live"
-      });
+      return res.status(400).json({ success: false, message: "Stream is not live" });
+    }
+
+    // ✅ PREMIUM GATE
+    if (stream.isPremium) {
+      const userId = getUserIdFromToken(req);
+      if (!userId) {
+        return res.status(401).json({ success: false, message: "Login required to watch premium content", locked: true, isPremium: true });
+      }
+      const hasAccess = await subscriptionService.checkAccess(userId);
+      if (!hasAccess) {
+        return res.status(403).json({ success: false, message: "Active subscription required to watch this stream", locked: true, isPremium: true });
+      }
     }
 
     res.json({
@@ -114,9 +132,6 @@ exports.playStream = async (req, res) => {
       stream: formatStream(req, stream)
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, Pencil, Plus, RefreshCw, Star, Trash2, Film, X, Calendar, MapPin, Trophy, Users, Clock, Info } from "lucide-react";
+import { Eye, Pencil, Plus, RefreshCw, Star, Trash2, Film, X, Calendar, MapPin, Trophy, Users, Clock, Info, Home } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
@@ -21,6 +21,8 @@ const defaultForm = {
   endDate: "",
   status: "upcoming",
   isFeatured: false,
+  isPremium: false,
+  isHomeScreen: false,
   imageFile: null,
   matchIds: []
 };
@@ -76,7 +78,8 @@ const defaultNewMatch = {
   bannerFile: null,
   scoreSources: [],
   description: "",
-  isFeatured: false
+  isFeatured: false,
+  isHomeScreen: false
 };
 
 const getStatusForMatchDate = (status, matchDate) => {
@@ -137,19 +140,23 @@ function Series() {
     loadSeries();
   }, []);
 
-  const stats = useMemo(() => {
-    const upcoming = seriesList.filter((item) => item.status === "upcoming").length;
-    const live = seriesList.filter((item) => item.status === "live").length;
-    const completed = seriesList.filter((item) => item.status === "completed").length;
-    const featured = seriesList.filter((item) => item.isFeatured).length;
-    return {
-      total: seriesList.length,
-      upcoming,
-      live,
-      completed,
-      featured
-    };
-  }, [seriesList]);
+ const stats = useMemo(() => {
+  const upcoming = seriesList.filter((item) => item.status === "upcoming").length;
+  const live = seriesList.filter((item) => item.status === "live").length;
+  const completed = seriesList.filter((item) => item.status === "completed").length;
+  const featured = seriesList.filter((item) => item.isFeatured).length;
+  const homeScreen = seriesList.filter((item) => item.isHomeScreen).length;
+
+  return {
+    total: seriesList.length,
+    upcoming,
+    live,
+    completed,
+    featured,
+    homeScreen // ✅ added
+  };
+}, [seriesList]);
+
 
   const filteredSeries = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -210,8 +217,26 @@ function Series() {
     }));
   };
 
-  const getPlayerObj = (id) => players.find(p => String(p._id) === String(id));
-  const getMatchObj = (id) => allMatches.find(m => String(m._id) === String(id));
+// ✅ Optimized lookup maps (O(1) instead of O(n))
+const playerMap = useMemo(() => {
+  const map = new Map();
+  players.forEach((p) => {
+    map.set(String(p._id), p);
+  });
+  return map;
+}, [players]);
+
+const matchMap = useMemo(() => {
+  const map = new Map();
+  allMatches.forEach((m) => {
+    map.set(String(m._id), m);
+  });
+  return map;
+}, [allMatches]);
+
+// ✅ Fast getters
+const getPlayerObj = (id) => playerMap.get(String(id));
+const getMatchObj = (id) => matchMap.get(String(id));
 
   const getSeriesMatchIds = (series) => {
     if (Array.isArray(series?.matchIds)) return series.matchIds.map((item) => (typeof item === "object" ? item._id : item));
@@ -313,6 +338,7 @@ function Series() {
       payload.append("status", resolvedStatus);
       payload.append("description", newMatchForm.description || "");
       payload.append("isFeatured", String(Boolean(newMatchForm.isFeatured)));
+      payload.append("isHomeScreen", String(Boolean(newMatchForm.isHomeScreen)));
       payload.append("scoreSources", JSON.stringify(scoreSources));
       if (newMatchForm.teamALogoFile) payload.append("teamALogo", newMatchForm.teamALogoFile);
       if (newMatchForm.teamBLogoFile) payload.append("teamBLogo", newMatchForm.teamBLogoFile);
@@ -381,6 +407,8 @@ function Series() {
       endDate: series?.endDate ? new Date(series.endDate).toISOString().split('T')[0] : "",
       status: series?.status || "upcoming",
       isFeatured: Boolean(series?.isFeatured),
+      isPremium: Boolean(series?.isPremium),
+      isHomeScreen: Boolean(series?.isHomeScreen),
       imageFile: null,
       matchIds: getSeriesMatchIds(series)
     });
@@ -435,6 +463,8 @@ function Series() {
       if (form.endDate) payload.append("endDate", form.endDate);
       payload.append("status", form.status || "upcoming");
       payload.append("isFeatured", String(Boolean(form.isFeatured)));
+      payload.append("isPremium", String(Boolean(form.isPremium)));
+      payload.append("isHomeScreen", String(Boolean(form.isHomeScreen)));
       if (form.imageFile) payload.append("banner", form.imageFile);
 
       let response;
@@ -577,6 +607,10 @@ function Series() {
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Featured</p>
           <p className="mt-2 text-2xl font-semibold text-amber-500">{stats.featured}</p>
         </div>
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
+          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Home Screen</p>
+          <p className="mt-2 text-2xl font-semibold text-indigo-500">{stats.homeScreen}</p>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -631,6 +665,19 @@ function Series() {
                   <Star size={12} className="fill-current" /> Featured
                 </span>
               )}
+              {series.isPremium && (
+                <span className="inline-flex items-center gap-1 rounded-xl border border-violet-300 bg-violet-50 px-2 py-1 text-xs text-violet-600 dark:bg-violet-500/10">
+                  👑 Premium
+                </span>
+              )}
+              {series.isHomeScreen && (
+                <span className="inline-flex items-center gap-1 rounded-xl border border-indigo-300 bg-indigo-50 px-2 py-1 text-xs text-indigo-600 dark:bg-indigo-500/10">
+                  <Home size={12} className="fill-current" /> Home Screen
+                </span>
+              )}
+            </div>
+
+            <div className="mt-4 flex items-center gap-2">  
               <button
                 type="button"
                 onClick={() => openView(series)}
@@ -768,6 +815,26 @@ function Series() {
                       className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400"
                     />
                     <span className="text-slate-700 dark:text-slate-200">Is Featured</span>
+                  </label>
+
+                  <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={form.isHomeScreen}
+                      onChange={(e) => onFormChange("isHomeScreen", e.target.checked)}
+                      className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400"
+                    />
+                    <span className="text-slate-700 dark:text-slate-200">Is Home Screen</span>
+                  </label>
+
+                  <label className="flex items-center gap-3 rounded-xl border border-violet-200 bg-violet-50/50 px-4 py-3 text-sm dark:border-violet-500/30 dark:bg-violet-500/10">
+                    <input
+                      type="checkbox"
+                      checked={form.isPremium}
+                      onChange={(e) => onFormChange("isPremium", e.target.checked)}
+                      className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                    />
+                    <span className="text-violet-700 dark:text-violet-300">👑 Premium Content <span className="text-xs text-slate-400">(subscription required)</span></span>
                   </label>
 
                   <label className="block text-sm md:col-span-2">
@@ -1140,6 +1207,16 @@ function Series() {
                           {selectedSeries.isFeatured && (
                             <span className="flex items-center gap-1 rounded-lg bg-amber-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
                               <Star size={10} className="fill-current" /> Featured
+                            </span>
+                          )}
+                          {selectedSeries.isHomeScreen && (
+                            <span className="flex items-center gap-1 rounded-lg bg-indigo-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                              <Home size={10} className="fill-current" /> Home Screen
+                            </span>
+                          )}
+                          {selectedSeries.isPremium && (
+                            <span className="flex items-center gap-1 rounded-lg bg-violet-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                              👑 Premium
                             </span>
                           )}
                         </div>

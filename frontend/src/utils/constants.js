@@ -11,8 +11,11 @@ export const NAV_LINKS = [
   { label: "Activate TV", path: "/activate-tv" },
   { label: "Notifications", path: "/notifications" },
   { label: "Reports", path: "/reports" },
+  { label: "Star Players", path: "/star-players" },
+  { label: "Podcasts", path: "/podcasts" },
   { label: "Legal", path: "/legal" },
   { label: "Sub Admins", path: "/sub-admins" },
+  { label: "Social Media", path: "/social-media" },
   { label: "Settings", path: "/settings" }
 ];
 
@@ -31,8 +34,11 @@ export const PAGE_TITLES = {
   "/activate-tv": "Activate TV",
   "/notifications": "Notifications",
   "/reports": "Reports",
+  "/star-players": "Star Players",
+  "/podcasts": "Podcasts",
   "/legal": "Legal Pages",
   "/sub-admins": "Sub Admins",
+  "/social-media": "Social Media Links",
   "/settings": "Settings"
 };
 

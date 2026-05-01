@@ -86,6 +86,11 @@ const streamSchema = new mongoose.Schema(
       default: ""
     },
 
+    isPremium: {
+      type: Boolean,
+      default: false
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
@@ -99,6 +104,7 @@ const streamSchema = new mongoose.Schema(
 
 streamSchema.index({ matchId: 1 });
 streamSchema.index({ status: 1 });
+streamSchema.index({ isPremium: 1 });
 streamSchema.index({ scheduledAt: 1 });
 
 module.exports = mongoose.model("Stream", streamSchema);

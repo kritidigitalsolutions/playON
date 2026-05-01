@@ -139,8 +139,22 @@ app.use(
   "/api/channel-categories",
   require("./routes/user/channelCategory.routes")
 );
+//social media links
+app.use("/api/admin", require("./routes/admin/socialMedia.routes"));
+app.use("/api", require("./routes/user/socialMedia.routes"));
+//podcasts
+const adminPodcastRoutes = require("./routes/admin/podcast.routes");
+const podcastRoutes = require("./routes/user/podcast.routes");
 
+app.use("/api/admin/podcasts", adminPodcastRoutes);
+app.use("/api/podcasts", podcastRoutes);
+
+//star players
+const adminStarPlayerRoutes = require("./routes/admin/starPlayer.routes");
+const starPlayerRoutes = require("./routes/user/starPlayer.routes");
+
+app.use("/api/admin/star-players", adminStarPlayerRoutes);
+app.use("/api/star-players", starPlayerRoutes);
 startAutoLiveMatches();
 
 module.exports = app;
-

@@ -92,6 +92,11 @@ streamType: {
       default: false
     },
 
+    isPremium: {
+      type: Boolean,
+      default: false
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
@@ -104,5 +109,6 @@ streamType: {
 channelSchema.index({ slug: 1 });
 channelSchema.index({ status: 1 });
 channelSchema.index({ category: 1 });
+channelSchema.index({ isPremium: 1 });
 
 module.exports = mongoose.model("Channel", channelSchema);

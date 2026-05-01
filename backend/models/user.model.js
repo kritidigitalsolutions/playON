@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema(
 {
   mobile: {
     type: String,
-    required: true,
+    default: null,
     trim: true
   },
 
@@ -13,6 +13,22 @@ const userSchema = new mongoose.Schema(
     default: "",
     trim: true
   },
+
+  googleId: {
+  type: String,
+  default: null
+},
+
+facebookId: {
+  type: String,
+  default: null
+},
+
+authProvider: {
+  type: String,
+  enum: ["mobile", "google", "facebook"],
+  default: "mobile"
+},
 
   email: {
     type: String,
@@ -108,18 +124,41 @@ userSchema.index(
   {
     unique: true,
     partialFilterExpression: {
-      isDeleted: false
+      isDeleted: false,
+      mobile: { $exists: true, $ne: null }
     }
   }
 );
 
-// Unique email only when email exists
+// Unique email
 userSchema.index(
   { email: 1 },
   {
     unique: true,
     partialFilterExpression: {
-      email: { $type: "string", $ne: "" }
+      email: { $exists: true, $ne: null }
+    }
+  }
+);
+
+// Unique Google ID
+userSchema.index(
+  { googleId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      googleId: { $exists: true, $ne: null }
+    }
+  }
+);
+
+// Unique Facebook ID
+userSchema.index(
+  { facebookId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      facebookId: { $exists: true, $ne: null }
     }
   }
 );

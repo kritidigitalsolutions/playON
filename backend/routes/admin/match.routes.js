@@ -46,7 +46,7 @@ router.get(
   getSingleMatch
 );
 
-router.put(
+router.patch(
   "/:id",
   isAdmin,
   hasPermission("matches", "edit"),

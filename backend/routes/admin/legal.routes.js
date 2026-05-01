@@ -16,7 +16,7 @@ const {
 router.get(
   "/",
   isAdmin,
-  hasPermission("admins", "view"),
+  hasPermission("legal", "view"),
   getPages
 );
 
@@ -24,7 +24,7 @@ router.get(
 router.get(
   "/:type",
   isAdmin,
-  hasPermission("admins", "view"),
+  hasPermission("legal", "view"),
   getSinglePage
 );
 
@@ -32,7 +32,7 @@ router.get(
 router.post(
   "/:type",
   isAdmin,
-  hasPermission("admins", "edit"),
+  hasPermission("legal", "edit"),
   upsertPage
 );
 
@@ -40,7 +40,7 @@ router.post(
 router.patch(
   "/:type/toggle-status",
   isAdmin,
-  hasPermission("admins", "edit"),
+  hasPermission("legal", "edit"),
   toggleStatus
 );
 
@@ -48,7 +48,7 @@ router.patch(
 router.delete(
   "/:type",
   isAdmin,
-  hasPermission("admins", "delete"),
+  hasPermission("legal", "delete"),
   deletePage
 );
 

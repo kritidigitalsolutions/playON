@@ -1,4 +1,15 @@
 const matchService = require("../services/match.service");
+const subscriptionService = require("../services/subscription.service");
+const jwt = require("jsonwebtoken");
+
+const getUserIdFromToken = (req) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET);
+    return decoded?.userId || null;
+  } catch { return null; }
+};
 
 // helpers
 const fileUrl = (req, filePath) => {
@@ -21,6 +32,7 @@ const formatMatch = (req, doc) => {
 
   return {
     ...match,
+    isPremium: !!match.isPremium,
     thumbnail: fileUrl(req, match.thumbnail),
     banner: fileUrl(req, match.banner),
     teamALogo: fileUrl(req, match.teamALogo),
@@ -132,36 +144,33 @@ exports.watchMatch = async (req, res) => {
     const match = await matchService.getMatchById(req.params.id);
 
     if (!match) {
-      return res.status(404).json({
-        success: false,
-        message: "Match not found"
-      });
+      return res.status(404).json({ success: false, message: "Match not found" });
     }
     if (match.status !== "live") {
-  return res.status(400).json({
-    success: false,
-    message: "Match is not live yet"
-  });}
+      return res.status(400).json({ success: false, message: "Match is not live yet" });
+    }
 
+    // ✅ PREMIUM GATE
+    if (match.isPremium) {
+      const userId = getUserIdFromToken(req);
+      if (!userId) {
+        return res.status(401).json({ success: false, message: "Login required to watch premium content", locked: true, isPremium: true });
+      }
+      const hasAccess = await subscriptionService.checkAccess(userId);
+      if (!hasAccess) {
+        return res.status(403).json({ success: false, message: "Active subscription required to watch this match", locked: true, isPremium: true });
+      }
+    }
 
     const Stream = require("../models/stream.model");
-
-    const stream = await Stream.findOne({
-      matchId: req.params.id
-    }).sort({ createdAt: -1 });
+    const stream = await Stream.findOne({ matchId: req.params.id }).sort({ createdAt: -1 });
 
     if (!stream || !stream.streamUrl) {
-      return res.status(404).json({
-        success: false,
-        message: "No stream URL found for this match"
-      });
+      return res.status(404).json({ success: false, message: "No stream URL found for this match" });
     }
     if (stream.status !== "live") {
-  return res.status(400).json({
-    success: false,
-    message: "Stream is not live yet"
-  });
-}
+      return res.status(400).json({ success: false, message: "Stream is not live yet" });
+    }
 
     res.json({
       success: true,
@@ -174,9 +183,6 @@ exports.watchMatch = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };

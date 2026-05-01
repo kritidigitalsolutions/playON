@@ -93,6 +93,15 @@ const seriesSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    isHomeScreen: {
+      type: Boolean,
+      default: false
+    },
+
+    isPremium: {
+      type: Boolean,
+      default: false
+    },
 
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -106,6 +115,7 @@ const seriesSchema = new mongoose.Schema(
 seriesSchema.index({ sport: 1 });
 seriesSchema.index({ status: 1 });
 seriesSchema.index({ isFeatured: 1 });
+seriesSchema.index({ isPremium: 1 });
 seriesSchema.index({ slug: 1 });
 seriesSchema.index(
   { title: 1, sport: 1 },

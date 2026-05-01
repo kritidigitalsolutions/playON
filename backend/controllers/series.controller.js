@@ -1,6 +1,17 @@
 const Series = require("../models/series.model");
 const Match = require("../models/match.model");
 const User = require("../models/user.model");
+const subscriptionService = require("../services/subscription.service");
+const jwt = require("jsonwebtoken");
+
+const getUserIdFromToken = (req) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET);
+    return decoded?.userId || null;
+  } catch { return null; }
+};
 
 //get all series with matches
 exports.getAllSeries = async (req, res) => {
@@ -106,10 +117,15 @@ exports.getAllSeries = async (req, res) => {
       { $sort: { createdAt: -1 } }
     ]);
 
+    const formattedSeries = series.map((s) => ({
+      ...s,
+      isPremium: !!s.isPremium
+    }));
+
     res.json({
       success: true,
-      count: series.length,
-      series
+      count: formattedSeries.length,
+      series: formattedSeries
     });
 
   } catch (error) {
@@ -126,37 +142,35 @@ exports.getSingleSeries = async (req, res) => {
     const { id } = req.params;
 
     const series = await Series.findById(id)
-      .populate(
-        "teamAPlayers",
-        "name image team country"
-      )
-      .populate(
-        "teamBPlayers",
-        "name image team country"
-      );
+      .populate("teamAPlayers", "name image team country")
+      .populate("teamBPlayers", "name image team country");
 
     if (!series) {
-      return res.status(404).json({
-        success: false,
-        message: "Series not found"
-      });
+      return res.status(404).json({ success: false, message: "Series not found" });
     }
 
-    const matches = await Match.find({
-      seriesId: id
-    }).sort({ matchDate: 1 });
+    // ✅ PREMIUM GATE
+    if (series.isPremium) {
+      const userId = getUserIdFromToken(req);
+      if (!userId) {
+        return res.status(401).json({ success: false, message: "Login required to view premium content", locked: true, isPremium: true });
+      }
+      const hasAccess = await subscriptionService.checkAccess(userId);
+      if (!hasAccess) {
+        return res.status(403).json({ success: false, message: "Active subscription required to view this series", locked: true, isPremium: true });
+      }
+    }
+
+    const matches = await Match.find({ seriesId: id }).sort({ matchDate: 1 });
 
     res.json({
       success: true,
-      series,
-      matches
+      series: { ...series.toObject(), isPremium: !!series.isPremium },
+      matches: matches.map(m => ({ ...m.toObject(), isPremium: !!m.isPremium }))
     });
 
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -173,7 +187,7 @@ exports.getFeaturedSeries = async (req, res) => {
 
     res.json({
       success: true,
-      series
+      series: series.map((s) => ({ ...s.toObject(), isPremium: !!s.isPremium }))
     });
 
   } catch (error) {
@@ -384,3 +398,4 @@ exports.getFollowedSeries = async (
     });
   }
 };
+

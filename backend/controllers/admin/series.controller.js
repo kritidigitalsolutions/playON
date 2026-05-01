@@ -1,6 +1,7 @@
 const Series = require("../../models/series.model");
 const Match = require("../../models/match.model");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
+const autoNotify = require("../../utils/autoNotify");
 
 // helper
 const fileUrl = (req, filePath) => {
@@ -46,6 +47,7 @@ exports.createSeries = async (req, res) => {
       endDate,
       status,
       isFeatured,
+      isHomeScreen,
       matchIds
     } = req.body;
 
@@ -98,8 +100,21 @@ exports.createSeries = async (req, res) => {
       status: status || "upcoming",
       isFeatured:
         isFeatured === true || isFeatured === "true",
+      isHomeScreen:
+        isHomeScreen === true || isHomeScreen === "true",
       createdBy: req.admin.adminId
     });
+
+    // 🔔 AUTO NOTIFY FOR NEW SERIES
+await autoNotify({
+  title: "New Series Added",
+  message: `${series.title} is now available`,
+  type: "GENERAL", // or create "SERIES" type (recommended)
+  metadata: {
+    image: bannerUrl,
+    seriesId: series._id
+  }
+});
 
     let linkedMatches = 0;
 
@@ -242,6 +257,7 @@ exports.updateSeries = async (req, res) => {
       endDate,
       status,
       isFeatured,
+      isHomeScreen,
       matchIds
     } = req.body;
 
@@ -307,6 +323,12 @@ exports.updateSeries = async (req, res) => {
       series.isFeatured =
         isFeatured === true ||
         isFeatured === "true";
+    }
+
+    if (isHomeScreen !== undefined) {
+      series.isHomeScreen =
+        isHomeScreen === true ||
+        isHomeScreen === "true";
     }
 
     if (req.file) {

@@ -1,7 +1,4 @@
-exports.hasPermission = (
-  moduleName,
-  action
-) => {
+exports.hasPermission = (moduleName, action) => {
   return (req, res, next) => {
     try {
       const admin = req.admin;
@@ -13,18 +10,21 @@ exports.hasPermission = (
         });
       }
 
-      // Full access
+      // Super admin bypass
       if (admin.role === "super_admin") {
         return next();
       }
 
-      const allowed =
-        admin.permissions?.[moduleName]?.[action];
+      // 🔥 SAFE CHECK
+      const permissions = admin.permissions || {};
+      const modulePermissions = permissions[moduleName] || {};
+
+      const allowed = modulePermissions[action];
 
       if (!allowed) {
         return res.status(403).json({
           success: false,
-          message: "Access denied"
+          message: `Access denied: ${moduleName} ${action}`
         });
       }
 
@@ -38,3 +38,5 @@ exports.hasPermission = (
     }
   };
 };
+
+

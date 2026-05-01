@@ -11,6 +11,7 @@ import {
   Settings,
   Shield,
   ShieldCheck,
+  Star,
   Swords,
   TicketPercent,
   LogOut,
@@ -20,7 +21,9 @@ import {
   Wallet,
   ScrollText,
   Film,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Link as LinkIcon,
+  Mic
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { getAdminProfile } from "../utils/auth";
@@ -38,13 +41,15 @@ const navItems = [
   { label: "Matches", path: "/matches", icon: Swords },
   { label: "Sports", path: "/sports", icon: Trophy },
   { label: "Banners", path: "/banners", icon: ImageIcon },
+  { label: "Star Players", path: "/star-players", icon: Star },
+  { label: "Podcasts", path: "/podcasts", icon: Mic },
   { label: "Streams", path: "/streams", icon: Radio },
   { label: "Live TV", path: "/livetv", icon: Tv },
   { label: "Activate TV", path: "/activate-tv", icon: Tv },
   { label: "Notifications", path: "/notifications", icon: Bell },
   { label: "Coupon Codes", path: "/promo", icon: TicketPercent },
   { label: "Legal", path: "/legal", icon: ScrollText },
- 
+  { label: "Social Media", path: "/social-media", icon: LinkIcon },
   { label: "Settings", path: "/settings", icon: Settings }
 ];
 

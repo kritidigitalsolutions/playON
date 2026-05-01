@@ -25,7 +25,6 @@ exports.completeProfile = async (req, res) => {
       });
     }
 
-    // Only first-time onboarding allowed
     if (user.isProfileComplete === true) {
       return res.status(400).json({
         success: false,
@@ -88,7 +87,7 @@ exports.getProfile = async (req, res) => {
 // UPDATE PROFILE
 exports.updateProfile = async (req, res) => {
   try {
-    const { fullName, email, favoriteSports, mobile } = req.body;
+    const { fullName, email, favoriteSports } = req.body;
 
     const updateData = {};
 
@@ -97,12 +96,9 @@ exports.updateProfile = async (req, res) => {
       updateData.isProfileComplete = true;
     }
 
-    if (email) {
+    // 🔒 Allow email update only for mobile users
+    if (email && req.user.provider === "mobile") {
       updateData.email = email.trim().toLowerCase();
-    }
-
-    if (mobile) {
-      updateData.mobile = mobile.trim();
     }
 
     if (favoriteSports) {
@@ -111,6 +107,7 @@ exports.updateProfile = async (req, res) => {
         : [favoriteSports];
     }
 
+    // 📸 Profile image upload
     if (req.file) {
       updateData.profilePic = await uploadToFirebase(
         req.file,
@@ -139,6 +136,7 @@ exports.updateProfile = async (req, res) => {
       message: "Profile updated successfully",
       user: updatedUser
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -147,8 +145,7 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-
-//save token
+// SAVE FCM TOKEN
 exports.saveFcmToken = async (req, res) => {
   try {
     const { token } = req.body;

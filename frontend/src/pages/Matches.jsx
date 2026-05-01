@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
+  Flame,
   ImageIcon,
   Pencil,
   Plus,
@@ -56,6 +57,7 @@ const FALLBACK_MATCHES = [
     seriesId: null,
     description: "High-intensity group stage clash.",
     isFeatured: true,
+    isTrending: true,
     liveStartedAt: null,
     liveEndedAt: null,
     createdAt: "2026-04-15T07:52:00.000Z",
@@ -79,6 +81,7 @@ const FALLBACK_MATCHES = [
     seriesId: null,
     description: "Knockout stage quarterfinal.",
     isFeatured: false,
+    isTrending: false,
     liveStartedAt: "2026-04-16T16:00:00.000Z",
     liveEndedAt: null,
     createdAt: "2026-04-14T10:00:00.000Z",
@@ -144,6 +147,8 @@ const defaultForm = {
   scoreSources: [],
   description: "",
   isFeatured: false,
+  isTrending: false,
+  isPremium: false,
   thumbnailFile: null,
   bannerFile: null,
   teamALogoFile: null,
@@ -284,7 +289,7 @@ function Matches() {
   const [formErrors, setFormErrors] = useState({});
   const [form, setForm] = useState(defaultForm);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [filters, setFilters] = useState({ status: "all", sport: "all", sort: "newest" });
+  const [filters, setFilters] = useState({ status: "all", sport: "all", spotlight: "all", sort: "newest" });
   const [toasts, setToasts] = useState([]);
   const [seriesOptions, setSeriesOptions] = useState([]);
 
@@ -335,7 +340,8 @@ function Matches() {
     const live = matches.filter((m) => m.status === "live").length;
     const upcoming = matches.filter((m) => m.status === "upcoming").length;
     const completed = matches.filter((m) => m.status === "completed").length;
-    return { total: matches.length, live, upcoming, completed };
+    const trending = matches.filter((m) => m.isTrending).length;
+    return { total: matches.length, live, upcoming, completed, trending };
   }, [matches]);
 
   const sportOptions = useMemo(() => {
@@ -363,8 +369,12 @@ function Matches() {
     const list = matches.filter((m) => {
       const statusOk = filters.status === "all" ? true : (m.status || "").toLowerCase() === filters.status;
       const sportOk = filters.sport === "all" ? true : (m.sport || "").toLowerCase() === filters.sport;
+      const spotlightOk =
+        filters.spotlight === "all" ||
+        (filters.spotlight === "featured" && m.isFeatured) ||
+        (filters.spotlight === "trending" && m.isTrending);
       const searchOk = !q || [m.title, m.teamA, m.teamB, m.tournament, m.venue, m.sport, m.status].filter(Boolean).join(" ").toLowerCase().includes(q);
-      return statusOk && sportOk && searchOk;
+      return statusOk && sportOk && spotlightOk && searchOk;
     });
 
     if (filters.sort === "oldest") {
@@ -380,7 +390,7 @@ function Matches() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, filters.status, filters.sport, filters.sort]);
+  }, [debouncedSearch, filters.status, filters.sport, filters.spotlight, filters.sort]);
 
   const totalPages = Math.max(1, Math.ceil(filteredMatches.length / PAGE_SIZE));
   const pageData = useMemo(() => filteredMatches.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filteredMatches, page]);
@@ -401,6 +411,9 @@ function Matches() {
       matchDate: asDateTimeLocal(match.matchDate),
       seriesId: getSeriesId(match.seriesId),
       scoreSources: Array.isArray(match.scoreSources) ? match.scoreSources.map(normalizeScoreSource) : [],
+      isFeatured: Boolean(match.isFeatured),
+      isTrending: Boolean(match.isTrending),
+      isPremium: Boolean(match.isPremium),
       thumbnailPreview: match.thumbnail || "",
       bannerPreview: match.banner || "",
       teamALogoPreview: match.teamALogo || "",
@@ -526,6 +539,8 @@ const handleWatch = async (match) => {
       payload.append("status", form.status);
       payload.append("description", form.description || "");
       payload.append("isFeatured", String(Boolean(form.isFeatured)));
+      payload.append("isTrending", String(Boolean(form.isTrending)));
+      payload.append("isPremium", String(Boolean(form.isPremium)));
       if (form.thumbnailFile) payload.append("thumbnail", form.thumbnailFile);
       if (form.bannerFile) payload.append("banner", form.bannerFile);
       if (form.teamALogoFile) payload.append("teamALogo", form.teamALogoFile);
@@ -545,16 +560,12 @@ const handleWatch = async (match) => {
 
       let response;
       if (editMode && form._id) {
-        response = await api.put(`/admin/matches/${form._id}`, payload, { headers: { "Content-Type": "multipart/form-data" } });
+        response = await api.patch(`/admin/matches/${form._id}`, payload, { headers: { "Content-Type": "multipart/form-data" } });
         const updated = response?.data?.match;
         if (updated) setMatches((prev) => prev.map((m) => (m._id === updated._id ? updated : m)));
         pushToast("Match updated successfully", "success");
       } else {
-        try {
-          response = await api.post("/admin/matches", payload, { headers: { "Content-Type": "multipart/form-data" } });
-        } catch {
-          response = await api.post("/admin/matches/create", payload, { headers: { "Content-Type": "multipart/form-data" } });
-        }
+        response = await api.post("/admin/matches/create", payload, { headers: { "Content-Type": "multipart/form-data" } });
         const created = response?.data?.match;
         if (created) setMatches((prev) => [created, ...prev]);
         pushToast("Match created successfully", "success");
@@ -584,11 +595,9 @@ const handleWatch = async (match) => {
   const updateStatus = async (match, nextStatus) => {
     try {
       if (nextStatus === "live") {
-        try { await api.patch(`/admin/matches/${match._id}/live`); }
-        catch { await api.patch(`/admin/matches/${match._id}/status`, { status: "live" }); }
+        await api.patch(`/admin/matches/${match._id}/live`);
       } else {
-        try { await api.patch(`/admin/matches/${match._id}/end`); }
-        catch { await api.patch(`/admin/matches/${match._id}/status`, { status: "completed" }); }
+        await api.patch(`/admin/matches/${match._id}/end`);
       }
       setMatches((prev) => prev.map((m) => (m._id === match._id ? { ...m, status: nextStatus } : m)));
       pushToast(`Match marked ${nextStatus}`, "success");
@@ -636,11 +645,12 @@ const handleWatch = async (match) => {
         }
       />
 
-      <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {[
           { label: "Total Matches", value: stats.total, icon: Trophy, tone: "text-slate-700 dark:text-slate-200" },
           { label: "Live Now", value: stats.live, icon: Activity, tone: "text-rose-600 dark:text-rose-300" },
           { label: "Upcoming", value: stats.upcoming, icon: CalendarClock, tone: "text-blue-600 dark:text-blue-300" },
+          { label: "Trending", value: stats.trending, icon: Flame, tone: "text-orange-600 dark:text-orange-300" },
           { label: "Completed", value: stats.completed, icon: CheckCircle2, tone: "text-emerald-600 dark:text-emerald-300" }
         ].map((chip) => {
           const Icon = chip.icon;
@@ -657,7 +667,7 @@ const handleWatch = async (match) => {
       </motion.section>
 
       <section className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,2fr),repeat(3,minmax(0,1fr)),auto]">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,2fr),repeat(4,minmax(0,1fr)),auto]">
           <label className="relative block">
             <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -703,9 +713,19 @@ const handleWatch = async (match) => {
             <option value="az">Sort: A-Z</option>
           </select>
 
+          <select
+            value={filters.spotlight}
+            onChange={(e) => setFilters((prev) => ({ ...prev, spotlight: e.target.value }))}
+            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-950 dark:text-slate-100"
+          >
+            <option value="all">Spotlight: All</option>
+            <option value="featured">Spotlight: Featured</option>
+            <option value="trending">Spotlight: Trending</option>
+          </select>
+
           <button
             type="button"
-            onClick={() => setFilters({ status: "all", sport: "all", sort: "newest" })}
+            onClick={() => setFilters({ status: "all", sport: "all", spotlight: "all", sort: "newest" })}
             className="admin-toolbar-btn"
           >
             Clear
@@ -754,11 +774,22 @@ const handleWatch = async (match) => {
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <p className="font-semibold text-slate-900 dark:text-slate-100">{match.title || `${match.teamA} vs ${match.teamB}`}</p>
-                            {match.isFeatured ? (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-600 dark:text-amber-300">
-                                <Star size={11} className="fill-current" /> Featured
-                              </span>
-                            ) : null}
+                           {match.isFeatured && (
+  <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-600">
+    <Star size={11} className="fill-current" /> Featured
+  </span>
+)}
+
+{match.isTrending && (
+  <span className="inline-flex items-center gap-1 rounded-full border border-orange-400/40 bg-orange-500/10 px-2 py-0.5 text-[11px] text-orange-600 dark:text-orange-300">
+    <Flame size={11} className="fill-current" /> Trending
+  </span>
+)}
+{match.isPremium && (
+  <span className="inline-flex items-center gap-1 rounded-full border border-violet-400/40 bg-violet-500/10 px-2 py-0.5 text-[11px] text-violet-600 dark:text-violet-300">
+    👑 Premium
+  </span>
+)}
                           </div>
                           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                             {match.teamA} vs {match.teamB} • {(match.sport || "other").toUpperCase()}
@@ -986,10 +1017,48 @@ const handleWatch = async (match) => {
                     )}
                   </div>
 
-                  <label className="block text-sm md:col-span-2">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Description</span>
-                    <textarea rows="3" value={form.description} onChange={(e) => onFormChange("description", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
-                  </label>
+                 <div className="flex gap-6 md:col-span-2">
+  <label className="flex items-center gap-2 text-sm text-slate-600">
+    <input
+      type="checkbox"
+      checked={form.isFeatured}
+      onChange={(e) => onFormChange("isFeatured", e.target.checked)}
+      className="h-4 w-4"
+    />
+    Featured
+  </label>
+
+  <label className="flex items-center gap-2 text-sm text-slate-600">
+    <input
+      type="checkbox"
+      checked={form.isTrending}
+      onChange={(e) => onFormChange("isTrending", e.target.checked)}
+      className="h-4 w-4"
+    />
+    Trending
+  </label>
+
+  <label className="flex items-center gap-2 text-sm text-violet-600">
+    <input
+      type="checkbox"
+      checked={form.isPremium}
+      onChange={(e) => onFormChange("isPremium", e.target.checked)}
+      className="h-4 w-4"
+    />
+    👑 Premium (subscription required)
+  </label>
+</div>
+
+<label className="block text-sm md:col-span-2">
+  <span className="mb-1 block text-slate-500 dark:text-slate-400">Description</span>
+  <textarea
+    rows="3"
+    value={form.description}
+    onChange={(e) => onFormChange("description", e.target.value)}
+    className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
+  />
+</label>
+
 
                   <ImageUploadField
                     label="Team A Logo"
@@ -1071,6 +1140,7 @@ const handleWatch = async (match) => {
                 <DetailItem label="Date & Time" value={formatDate(selectedMatch.matchDate)} />
                 <DetailItem label="Status" value={selectedMatch.status || "upcoming"} />
                 <DetailItem label="Featured" value={Boolean(selectedMatch.isFeatured)} />
+                <DetailItem label="Trending" value={Boolean(selectedMatch.isTrending)} />
                 <DetailItem label="Live Started At" value={formatDate(selectedMatch.liveStartedAt)} />
                 <DetailItem label="Live Ended At" value={formatDate(selectedMatch.liveEndedAt)} />
                 <DetailItem label="Created At" value={formatDate(selectedMatch.createdAt)} />

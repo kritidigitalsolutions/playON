@@ -23,7 +23,6 @@ router.get(
   isAuth,
   getFollowedSeries
 );
-
 router.patch(
   "/:id/follow",
   isAuth,

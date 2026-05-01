@@ -21,6 +21,7 @@ const defaultForm = {
   quality: "auto",
   status: "offline",
   featured: false,
+  isPremium: false,
   thumbnailFile: null,
   logoFile: null
 };
@@ -186,6 +187,7 @@ function LiveTV() {
       quality: channel?.quality || "auto",
       status: channel?.status || "offline",
       featured: Boolean(channel?.featured),
+      isPremium: Boolean(channel?.isPremium),
       thumbnailFile: null,
       logoFile: null
     });
@@ -227,6 +229,7 @@ function LiveTV() {
       payload.append("quality", form.quality || "auto");
       payload.append("status", form.status || "offline");
       payload.append("featured", String(Boolean(form.featured)));
+      payload.append("isPremium", String(Boolean(form.isPremium)));
       if (form.thumbnailFile) payload.append("thumbnail", form.thumbnailFile);
       if (form.logoFile) payload.append("logo", form.logoFile);
 
@@ -661,9 +664,16 @@ function LiveTV() {
                   {(channel.category || "other").toUpperCase()} - {channel.streamType || "other"}
                 </p>
               </div>
-              <span className={`rounded-full px-2.5 py-1 text-xs ${getBadgeClass(channel.status, STATUS_STYLES)}`}>
-                {channel.status || "offline"}
-              </span>
+              <div className="flex items-center gap-2">
+                {channel.isPremium && (
+                  <span className="inline-flex items-center rounded-full bg-violet-600 px-2.5 py-1 text-[10px] font-bold uppercase text-white">
+                    👑 Premium
+                  </span>
+                )}
+                <span className={`rounded-full px-2.5 py-1 text-xs ${getBadgeClass(channel.status, STATUS_STYLES)}`}>
+                  {channel.status || "offline"}
+                </span>
+              </div>
             </div>
 
             <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">
@@ -879,6 +889,27 @@ function LiveTV() {
                   </label>
                 </div>
 
+                <div className="flex flex-wrap items-center gap-4 md:col-span-2">
+                  <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                    <input
+                      type="checkbox"
+                      checked={form.featured}
+                      onChange={(e) => onFormChange("featured", e.target.checked)}
+                      className="h-4 w-4"
+                    />
+                    Featured Channel
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-violet-600 dark:text-violet-400">
+                    <input
+                      type="checkbox"
+                      checked={form.isPremium}
+                      onChange={(e) => onFormChange("isPremium", e.target.checked)}
+                      className="h-4 w-4"
+                    />
+                    👑 Premium (subscription required)
+                  </label>
+                </div>
+
                 <div className="flex justify-end gap-3">
                   <button type="button" onClick={closeModal} className="admin-secondary-btn">
                     Cancel
@@ -928,6 +959,7 @@ function LiveTV() {
                 <p><strong>Category:</strong> {selectedChannel.category || "other"}</p>
                 <p><strong>Status:</strong> {selectedChannel.status || "offline"}</p>
                 <p><strong>Featured:</strong> {selectedChannel.featured ? "Yes" : "No"}</p>
+                <p><strong>Premium:</strong> {selectedChannel.isPremium ? "👑 Yes (subscription required)" : "No (free)"}</p>
                 <p><strong>Viewers:</strong> {formatNumber(selectedChannel.viewerCount || 0)}</p>
                 <p><strong>Type:</strong> {selectedChannel.streamType || "other"}</p>
                 <p><strong>Quality:</strong> {selectedChannel.quality || "auto"}</p>
@@ -941,7 +973,6 @@ function LiveTV() {
           </motion.div>
         ) : null}
       </AnimatePresence>
-
       <ConfirmModal
         open={Boolean(deleteTarget)}
         title="Delete this channel?"
