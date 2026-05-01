@@ -225,7 +225,7 @@ function StarPlayers() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {loading ? (
           <div className="col-span-full rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
             Loading highlights...
@@ -246,11 +246,11 @@ function StarPlayers() {
             transition={{ delay: index * 0.05 }}
             className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-slate-900"
           >
-            <div className="relative aspect-video w-full bg-slate-100 dark:bg-slate-800">
+            <div className="relative h-60 w-full bg-slate-950 dark:bg-slate-950">
               {hl.thumbnail ? (
-                <img src={hl.thumbnail} alt={hl.title} className="h-full w-full object-cover" />
+                <img src={hl.thumbnail} alt={hl.title} className="h-full w-full object-contain" />
               ) : (
-                <div className="flex h-full items-center justify-center text-slate-400">
+                <div className="flex h-full w-full items-center justify-center text-slate-400">
                   <Video size={32} />
                 </div>
               )}
@@ -350,12 +350,12 @@ function StarPlayers() {
                       onChange={(e) => {
                         const pid = e.target.value;
                         const p = players.find(x => x._id === pid);
-                        setForm(prev => ({ 
-                           ...prev, 
-                           playerId: pid, 
-                           playerName: p ? p.name : prev.playerName,
-                           team: p ? p.team : prev.team,
-                           sportId: p ? (p.sportId?._id || p.sportId || prev.sportId) : prev.sportId
+                        setForm(prev => ({
+                          ...prev,
+                          playerId: pid,
+                          playerName: p ? p.name : prev.playerName,
+                          team: p ? p.team : prev.team,
+                          sportId: p ? (p.sportId?._id || p.sportId || prev.sportId) : prev.sportId
                         }));
                         if (formErrors.playerId) setFormErrors(prev => ({ ...prev, playerId: "" }));
                       }}

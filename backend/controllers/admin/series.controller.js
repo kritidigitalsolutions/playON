@@ -47,6 +47,7 @@ exports.createSeries = async (req, res) => {
       endDate,
       status,
       isFeatured,
+      isPremium,
       isHomeScreen,
       matchIds
     } = req.body;
@@ -100,21 +101,23 @@ exports.createSeries = async (req, res) => {
       status: status || "upcoming",
       isFeatured:
         isFeatured === true || isFeatured === "true",
+      isPremium:
+        isPremium === true || isPremium === "true",
       isHomeScreen:
         isHomeScreen === true || isHomeScreen === "true",
       createdBy: req.admin.adminId
     });
 
     // 🔔 AUTO NOTIFY FOR NEW SERIES
-await autoNotify({
-  title: "New Series Added",
-  message: `${series.title} is now available`,
-  type: "GENERAL", // or create "SERIES" type (recommended)
-  metadata: {
-    image: bannerUrl,
-    seriesId: series._id
-  }
-});
+    await autoNotify({
+      title: "New Series Added",
+      message: `${series.title} is now available`,
+      type: "GENERAL", // or create "SERIES" type (recommended)
+      metadata: {
+        image: bannerUrl,
+        seriesId: series._id
+      }
+    });
 
     let linkedMatches = 0;
 
@@ -257,6 +260,7 @@ exports.updateSeries = async (req, res) => {
       endDate,
       status,
       isFeatured,
+      isPremium,
       isHomeScreen,
       matchIds
     } = req.body;
@@ -323,6 +327,12 @@ exports.updateSeries = async (req, res) => {
       series.isFeatured =
         isFeatured === true ||
         isFeatured === "true";
+    }
+
+    if (isPremium !== undefined) {
+      series.isPremium =
+        isPremium === true ||
+        isPremium === "true";
     }
 
     if (isHomeScreen !== undefined) {

@@ -80,61 +80,61 @@ const formatMatch = (req, doc) => {
 // Create
 exports.createMatch = async (req, res) => {
   try {
-  let thumbnail = "";
-let banner = "";
-let teamALogo = "";
-let teamBLogo = "";
+    let thumbnail = "";
+    let banner = "";
+    let teamALogo = "";
+    let teamBLogo = "";
 
-if (req.files?.thumbnail?.[0]) {
-  thumbnail = await uploadToFirebase(
-    req.files.thumbnail[0],
-    "matches"
-  );
-}
+    if (req.files?.thumbnail?.[0]) {
+      thumbnail = await uploadToFirebase(
+        req.files.thumbnail[0],
+        "matches"
+      );
+    }
 
-if (req.files?.banner?.[0]) {
-  banner = await uploadToFirebase(
-    req.files.banner[0],
-    "matches"
-  );
-}
+    if (req.files?.banner?.[0]) {
+      banner = await uploadToFirebase(
+        req.files.banner[0],
+        "matches"
+      );
+    }
 
-if (req.files?.teamALogo?.[0]) {
-  teamALogo = await uploadToFirebase(
-    req.files.teamALogo[0],
-    "matches"
-  );
-}
+    if (req.files?.teamALogo?.[0]) {
+      teamALogo = await uploadToFirebase(
+        req.files.teamALogo[0],
+        "matches"
+      );
+    }
 
-if (req.files?.teamBLogo?.[0]) {
-  teamBLogo = await uploadToFirebase(
-    req.files.teamBLogo[0],
-    "matches"
-  );
-}
+    if (req.files?.teamBLogo?.[0]) {
+      teamBLogo = await uploadToFirebase(
+        req.files.teamBLogo[0],
+        "matches"
+      );
+    }
 
-const data = {
-  ...normalizeMatchBody(req.body),
-  isFeatured: parseBoolean(req.body.isFeatured),
-  isTrending: parseBoolean(req.body.isTrending),
-  isPremium: parseBoolean(req.body.isPremium),
-  thumbnail,
-  banner,
-  teamALogo,
-  teamBLogo,
-  createdBy: req.admin._id
-};
+    const data = {
+      ...normalizeMatchBody(req.body),
+      isFeatured: parseBoolean(req.body.isFeatured),
+      isTrending: parseBoolean(req.body.isTrending),
+      isPremium: parseBoolean(req.body.isPremium),
+      thumbnail,
+      banner,
+      teamALogo,
+      teamBLogo,
+      createdBy: req.admin._id
+    };
 
     const match = await matchService.createMatch(data);
-await autoNotify({
-  title: "New Match Added",
-  message: `${match.teamA} vs ${match.teamB} is now scheduled.`,
-  type: "MATCH",
- metadata: {
-  matchId: match._id,
-  image: match.banner || match.thumbnail || ""
-}
-});
+    await autoNotify({
+      title: "New Match Added",
+      message: `${match.teamA} vs ${match.teamB} is now scheduled.`,
+      type: "MATCH",
+      metadata: {
+        matchId: match._id,
+        image: match.banner || match.thumbnail || ""
+      }
+    });
     res.status(201).json({
       success: true,
       message: "Match created successfully",
@@ -206,32 +206,32 @@ exports.updateMatch = async (req, res) => {
     }
 
     if (req.files?.thumbnail?.[0]) {
-  data.thumbnail = await uploadToFirebase(
-    req.files.thumbnail[0],
-    "matches"
-  );
-}
+      data.thumbnail = await uploadToFirebase(
+        req.files.thumbnail[0],
+        "matches"
+      );
+    }
 
-if (req.files?.banner?.[0]) {
-  data.banner = await uploadToFirebase(
-    req.files.banner[0],
-    "matches"
-  );
-}
+    if (req.files?.banner?.[0]) {
+      data.banner = await uploadToFirebase(
+        req.files.banner[0],
+        "matches"
+      );
+    }
 
-if (req.files?.teamALogo?.[0]) {
-  data.teamALogo = await uploadToFirebase(
-    req.files.teamALogo[0],
-    "matches"
-  );
-}
+    if (req.files?.teamALogo?.[0]) {
+      data.teamALogo = await uploadToFirebase(
+        req.files.teamALogo[0],
+        "matches"
+      );
+    }
 
-if (req.files?.teamBLogo?.[0]) {
-  data.teamBLogo = await uploadToFirebase(
-    req.files.teamBLogo[0],
-    "matches"
-  );
-}
+    if (req.files?.teamBLogo?.[0]) {
+      data.teamBLogo = await uploadToFirebase(
+        req.files.teamBLogo[0],
+        "matches"
+      );
+    }
     const match = await matchService.updateMatch(req.params.id, data);
 
     if (!match) {
@@ -309,9 +309,9 @@ exports.goLive = async (req, res) => {
     // const match = await matchService.goLive(req.params.id);
 
     const match = await matchService.goLive(
-  req.params.id,
-  req.body
-);
+      req.params.id,
+      req.body
+    );
 
     if (!match) {
       return res.status(404).json({
@@ -319,15 +319,15 @@ exports.goLive = async (req, res) => {
         message: "Match not found"
       });
     }
-await autoNotify({
-  title: "Match Live Now",
-  message: `${match.teamA} vs ${match.teamB} is live now.`,
-  type: "MATCH",
-  metadata: {
-  matchId: match._id,
-  image: match.banner || match.thumbnail || ""
-}
-});
+    await autoNotify({
+      title: "Match Live Now",
+      message: `${match.teamA} vs ${match.teamB} is live now.`,
+      type: "MATCH",
+      metadata: {
+        matchId: match._id,
+        image: match.banner || match.thumbnail || ""
+      }
+    });
     res.json({
       success: true,
       message: "Match is now live",
@@ -377,11 +377,11 @@ exports.watchMatch = async (req, res) => {
       });
     }
     if (match.status !== "live") {
-  return res.status(400).json({
-    success: false,
-    message: "Match is not live yet"
-  });
-}
+      return res.status(400).json({
+        success: false,
+        message: "Match is not live yet"
+      });
+    }
 
     const Stream = require("../../models/stream.model");
     const stream = await Stream.findOne({ matchId: req.params.id }).sort({ createdAt: -1 });
@@ -393,11 +393,11 @@ exports.watchMatch = async (req, res) => {
       });
     }
     if (stream.status !== "live") {
-  return res.status(400).json({
-    success: false,
-    message: "Stream is not live yet"
-  });
-}
+      return res.status(400).json({
+        success: false,
+        message: "Stream is not live yet"
+      });
+    }
 
     res.json({
       success: true,
