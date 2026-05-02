@@ -407,9 +407,42 @@ function StarPlayers() {
                     {formErrors.sportId ? <span className="mt-1 block text-xs text-rose-500">{formErrors.sportId}</span> : null}
                   </label>
 
-                  <div className="md:col-span-2">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm block text-slate-500 dark:text-slate-400">Player</span>
+                  <div className="md:col-span-2 space-y-4">
+                    <label className="block text-sm">
+                      <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Option 1: Choose Existing Player</span>
+                      <select
+                        value={form.playerId}
+                        onChange={(e) => {
+                          const pid = e.target.value;
+                          const p = players.find(x => x._id === pid);
+                          setForm(prev => ({
+                            ...prev,
+                            playerId: pid,
+                            playerName: p ? p.name : prev.playerName,
+                            team: p ? p.team : prev.team,
+                            sportId: p ? (p.sportId?._id || p.sportId || prev.sportId) : prev.sportId
+                          }));
+                          if (formErrors.playerId) setFormErrors(prev => ({ ...prev, playerId: "" }));
+                        }}
+                        className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800"
+                      >
+                        <option value="">Select an existing player...</option>
+                        {players.map((p) => (
+                          <option key={p._id} value={p._id}>
+                            {p.name} ({p.team || "No Team"})
+                          </option>
+                        ))}
+                      </select>
+                      {formErrors.playerId ? <span className="mt-1 block text-xs text-rose-500">{formErrors.playerId}</span> : null}
+                    </label>
+
+                    <div className="relative flex items-center py-1">
+                      <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+                      <span className="flex-shrink mx-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">OR</span>
+                      <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+                    </div>
+
+                    <div className="flex flex-col items-center">
                       <button
                         type="button"
                         onClick={() => {
@@ -419,35 +452,12 @@ function StarPlayers() {
                           });
                           setPlayerModalOpen(true);
                         }}
-                        className="text-xs font-medium text-indigo-500 hover:text-indigo-600 dark:text-indigo-400"
+                        className="flex w-full h-11 items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 text-sm font-medium text-slate-600 transition hover:border-indigo-400 hover:text-indigo-500 dark:border-slate-800 dark:text-slate-400 dark:hover:border-indigo-500 dark:hover:text-indigo-400"
                       >
-                        + Create New Player
+                        <Plus size={16} /> Option 2: Create New Player
                       </button>
+                      <p className="mt-2 text-[10px] text-slate-400 text-center uppercase tracking-tighter">Adds player to master list immediately</p>
                     </div>
-                    <select
-                      value={form.playerId}
-                      onChange={(e) => {
-                        const pid = e.target.value;
-                        const p = players.find(x => x._id === pid);
-                        setForm(prev => ({
-                          ...prev,
-                          playerId: pid,
-                          playerName: p ? p.name : prev.playerName,
-                          team: p ? p.team : prev.team,
-                          sportId: p ? (p.sportId?._id || p.sportId || prev.sportId) : prev.sportId
-                        }));
-                        if (formErrors.playerId) setFormErrors(prev => ({ ...prev, playerId: "" }));
-                      }}
-                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800"
-                    >
-                      <option value="">Select an existing player...</option>
-                      {players.map((p) => (
-                        <option key={p._id} value={p._id}>
-                          {p.name} ({p.team || "No Team"})
-                        </option>
-                      ))}
-                    </select>
-                    {formErrors.playerId ? <span className="mt-1 block text-xs text-rose-500">{formErrors.playerId}</span> : null}
                   </div>
 
                   <label className="block text-sm">
