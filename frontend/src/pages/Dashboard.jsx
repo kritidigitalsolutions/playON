@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from "recharts";
 import api from "../api/axios";
 import { getAdminProfile } from "../utils/auth";
 import StatCard from "../components/StatCard";
@@ -209,7 +219,7 @@ function Dashboard() {
               <StatCard
                 title="Weekly Income"
                 value={data.incomeStats.weekly}
-                growth="This Week"
+                growth="Last 7 Days"
                 trend="up"
                 index={2}
                 currency={true}
@@ -217,7 +227,7 @@ function Dashboard() {
               <StatCard
                 title="Monthly Income"
                 value={data.incomeStats.monthly}
-                growth="This Month"
+                growth="Last 30 Days"
                 trend="up"
                 index={3}
                 currency={true}

@@ -7,17 +7,18 @@ const starPlayerHighlightSchema = new mongoose.Schema(
   ref: "Sport",
   required: true
 },
+
 playerId: {
   type: mongoose.Schema.Types.ObjectId,
   ref: "Player",
-  required: true
+  required: false
 },
 
-    playerName: {
-      type: String,
-      required: true,
-      trim: true
-    },
+playerName: {
+  type: String,
+  required: true,
+  trim: true
+},
 
     team: {
       type: String,

@@ -1,222 +1,235 @@
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend
-├── api
-├── app.js
-├── config
-├── controllers
-├── dev-server.err.log
-├── dev-server.log
-├── firebase
-├── jobs
-├── middlewares
-├── models
-├── node_modules
-├── package-lock.json
-├── package.json
-├── routes
-├── server.js
-├── services
-├── utils
-└── vercel.json
-
-directory: 11 file: 7
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\config
-├── db.js
-├── firebase.js
-└── razorpay.js
-
-file: 3
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\controllers
-├── account.controller.js
-├── admin
-├── admin auth
-├── auth.controller.js
-├── bannerAd.controller.js
-├── channel.controller.js
-├── channelCategory.controller.js
-├── legal.controller.js
-├── match.controller.js
-├── notification.controller.js
-├── payment.controller.js
-├── plan.controller.js
-├── player.controller.js
-├── podcast.controller.js
-├── promoCode.controller.js
-├── score.controller.js
-├── series.controller.js
-├── socialMedia.controller.js
-├── sport.controller.js
-├── starPlayer.controller.js
-├── stream.controller.js
-├── subscription.controller.js
-├── team.controller.js
-├── tv.controller.js
-├── user.controller.js
-└── watchlist.controller.js
-
-directory: 2 file: 24
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\controllers\admin
-├── channel.controller.js
-├── channelCategory.controller.js
-├── dashboard.controller.js
-├── legal.controller.js
-├── match.controller.js
-├── notification.controller.js
-├── plan.controller.js
-├── player.controller.js
-├── podcast.controller.js
-├── promoCode.controller.js
-├── series.controller.js
-├── socialMedia.controller.js
-├── starPlayer.controller.js
-├── stream.controller.js
-├── subAdmin.controller.js
-├── subscription.controller.js
-├── team.controller.js
-├── tv.admin.controller.js
-└── users.admin.controller.js
-
-file: 19
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\controllers\admin auth
-├── admin.auth.controller.js
-└── admin.settings.controller.js
-
-file: 2
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\firebase
-└── serviceAccountKey.json
-
-file: 1
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\jobs
-└── autoLiveMatches.js
-
-file: 1
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\middlewares
-├── admin.middleware.js
-├── auth.middleware.js
-├── permission.middleware.js
-├── subscription.middleware.js
-├── superAdmin.middleware.js
-└── upload.middleware.js
-
-file: 6
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\models
-├── admin.model.js
-├── adminOtp.model.js
-├── bannerAd.model.js
-├── channel.model.js
-├── channelCategory.model.js
-├── legal.model.js
-├── match.model.js
-├── notification.model.js
-├── otp.model.js
-├── plan.model.js
-├── player.model.js
-├── podcast.model.js
-├── promoCode.model.js
-├── promoUsage.model.js
-├── series.model.js
-├── socialMedia.model.js
-├── sport.model.js
-├── starPlayer.model.js
-├── stream.model.js
-├── subscription.model.js
-├── team.model.js
-├── tvCode.model.js
-├── user.model.js
-└── watchlist.model.js
-
-file: 24
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\routes
-├── admin
-└── user
-
-directory: 2
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\routes\admin
-├── admin.routes.js
-├── bannerAd.routes.js
-├── channel.routes.js
-├── channelCategory.routes.js
-├── legal.routes.js
-├── match.routes.js
-├── notification.routes.js
-├── plan.routes.js
-├── player.routes.js
-├── podcast.routes.js
-├── promoCode.routes.js
-├── series.routes.js
-├── socialMedia.routes.js
-├── sport.routes.js
-├── starPlayer.routes.js
-├── stream.routes.js
-├── subAdmin.routes.js
-├── subscription.routes.js
-└── team.routes.js
-
-file: 19
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\routes\user
-├── account.routes.js
-├── auth.routes.js
-├── bannerAd.routes.js
-├── channel.routes.js
-├── channelCategory.routes.js
-├── legal.routes.js
-├── match.routes.js
-├── notification.routes.js
-├── payment.routes.js
-├── plan.routes.js
-├── player.routes.js
-├── podcast.routes.js
-├── promoCode.routes.js
-├── score.routes.js
-├── series.routes.js
-├── socialMedia.routes.js
-├── sport.routes.js
-├── starPlayer.routes.js
-├── stream.routes.js
-├── subscription.routes.js
-├── team.routes.js
-├── tv.routes.js
-├── user.routes.js
-└── watchlist.routes.js
-
-file: 24
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\services
-├── bannerAd.service.js
-├── channel.service.js
-├── legal.service.js
-├── match.service.js
-├── plan.service.js
-├── player.service.js
-├── promoCode.service.js
-├── providers
-├── score.service.js
-├── sport.service.js
-├── stream.service.js
-├── subscription.service.js
-└── team.service.js
-
-directory: 1 file: 12
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\services\providers
-└── mock.provider.js
-
-file: 1
-
-C:\Users\Asus\OneDrive\Desktop\Play ON\backend\utils
-├── autoNotify.js
-├── sendNotification.js
-└── uploadToFirebase.js
-
-file: 3
-
+Play ON/
+├── backend/
+│   ├── api/
+│   │   └── index.js
+│   ├── config/
+│   │   ├── db.js
+│   │   ├── firebase.js
+    │   │   └── razorpay.js
+    │   ├── controllers/
+    │   │   ├── admin/
+    │   │   │   ├── channel.controller.js
+    │   │   │   ├── channelCategory.controller.js
+    │   │   │   ├── dashboard.controller.js
+    │   │   │   ├── legal.controller.js
+    │   │   │   ├── match.controller.js
+    │   │   │   ├── notification.controller.js
+    │   │   │   ├── plan.controller.js
+    │   │   │   ├── player.controller.js
+    │   │   │   ├── podcast.controller.js
+    │   │   │   ├── promoCode.controller.js
+    │   │   │   ├── series.controller.js
+    │   │   │   ├── socialMedia.controller.js
+    │   │   │   ├── starPlayer.controller.js
+    │   │   │   ├── stream.controller.js
+    │   │   │   ├── subAdmin.controller.js
+    │   │   │   ├── subscription.controller.js
+    │   │   │   ├── team.controller.js
+    │   │   │   ├── tv.admin.controller.js
+    │   │   │   └── users.admin.controller.js
+    │   │   ├── admin auth/
+    │   │   │   ├── admin.auth.controller.js
+    │   │   │   └── admin.settings.controller.js
+    │   │   ├── account.controller.js
+    │   │   ├── auth.controller.js
+    │   │   ├── bannerAd.controller.js
+    │   │   ├── channel.controller.js
+    │   │   ├── channelCategory.controller.js
+    │   │   ├── legal.controller.js
+    │   │   ├── match.controller.js
+    │   │   ├── notification.controller.js
+    │   │   ├── payment.controller.js
+    │   │   ├── plan.controller.js
+    │   │   ├── player.controller.js
+    │   │   ├── podcast.controller.js
+    │   │   ├── promoCode.controller.js
+    │   │   ├── score.controller.js
+    │   │   ├── series.controller.js
+    │   │   ├── socialMedia.controller.js
+    │   │   ├── sport.controller.js
+    │   │   ├── starPlayer.controller.js
+    │   │   ├── stream.controller.js
+    │   │   ├── subscription.controller.js
+    │   │   ├── team.controller.js
+    │   │   ├── tv.controller.js
+    │   │   ├── user.controller.js
+    │   │   └── watchlist.controller.js
+    │   ├── jobs/
+    │   │   └── autoLiveMatches.js
+    │   ├── middlewares/
+    │   │   ├── admin.middleware.js
+    │   │   ├── auth.middleware.js
+    │   │   ├── permission.middleware.js
+    │   │   ├── subscription.middleware.js
+    │   │   ├── superAdmin.middleware.js
+    │   │   └── upload.middleware.js
+    │   ├── models/
+    │   │   ├── admin.model.js
+    │   │   ├── adminOtp.model.js
+    │   │   ├── bannerAd.model.js
+    │   │   ├── channel.model.js
+    │   │   ├── channelCategory.model.js
+    │   │   ├── legal.model.js
+    │   │   ├── match.model.js
+    │   │   ├── notification.model.js
+    │   │   ├── otp.model.js
+    │   │   ├── plan.model.js
+    │   │   ├── player.model.js
+    │   │   ├── podcast.model.js
+    │   │   ├── promoCode.model.js
+    │   │   ├── promoUsage.model.js
+    │   │   ├── series.model.js
+    │   │   ├── socialMedia.model.js
+    │   │   ├── sport.model.js
+    │   │   ├── starPlayer.model.js
+    │   │   ├── stream.model.js
+    │   │   ├── subscription.model.js
+    │   │   ├── team.model.js
+    │   │   ├── tvCode.model.js
+    │   │   ├── user.model.js
+    │   │   └── watchlist.model.js
+    │   ├── routes/
+    │   │   ├── admin/
+    │   │   │   ├── admin.routes.js
+    │   │   │   ├── bannerAd.routes.js
+    │   │   │   ├── channel.routes.js
+    │   │   │   ├── channelCategory.routes.js
+    │   │   │   ├── legal.routes.js
+    │   │   │   ├── match.routes.js
+    │   │   │   ├── notification.routes.js
+    │   │   │   ├── plan.routes.js
+    │   │   │   ├── player.routes.js
+    │   │   │   ├── podcast.routes.js
+    │   │   │   ├── promoCode.routes.js
+    │   │   │   ├── series.routes.js
+    │   │   │   ├── socialMedia.routes.js
+    │   │   │   ├── sport.routes.js
+    │   │   │   ├── starPlayer.routes.js
+    │   │   │   ├── stream.routes.js
+    │   │   │   ├── subAdmin.routes.js
+    │   │   │   ├── subscription.routes.js
+    │   │   │   └── team.routes.js
+    │   │   └── user/
+    │   │       ├── account.routes.js
+    │   │       ├── auth.routes.js
+    │   │       ├── bannerAd.routes.js
+    │   │       ├── channel.routes.js
+    │   │       ├── channelCategory.routes.js
+    │   │       ├── legal.routes.js
+    │   │       ├── match.routes.js
+    │   │       ├── notification.routes.js
+    │   │       ├── payment.routes.js
+    │   │       ├── plan.routes.js
+    │   │       ├── player.routes.js
+    │   │       ├── podcast.routes.js
+    │   │       ├── promoCode.routes.js
+    │   │       ├── score.routes.js
+    │   │       ├── series.routes.js
+    │   │       ├── socialMedia.routes.js
+    │   │       ├── sport.routes.js
+    │   │       ├── starPlayer.routes.js
+    │   │       ├── stream.routes.js
+    │   │       ├── subscription.routes.js
+    │   │       ├── team.routes.js
+    │   │       ├── tv.routes.js
+    │   │       ├── user.routes.js
+    │   │       └── watchlist.routes.js
+    │   ├── services/
+    │   │   ├── providers/
+    │   │   │   └── mock.provider.js
+    │   │   ├── bannerAd.service.js
+    │   │   ├── channel.service.js
+    │   │   ├── legal.service.js
+    │   │   ├── match.service.js
+    │   │   ├── plan.service.js
+    │   │   ├── player.service.js
+    │   │   ├── promoCode.service.js
+    │   │   ├── score.service.js
+    │   │   ├── sport.service.js
+    │   │   ├── stream.service.js
+    │   │   ├── subscription.service.js
+    │   │   └── team.service.js
+    │   ├── utils/
+    │   │   ├── autoNotify.js
+    │   │   ├── sendNotification.js
+    │   │   └── uploadToFirebase.js
+    │   ├── app.js
+    │   ├── package-lock.json
+    │   ├── package.json
+    │   ├── server.js
+    │   └── vercel.json
+    ├── frontend/
+    │   ├── public/
+    │   │   ├── favicon.ico
+    │   │   ├── index.html
+    │   │   ├── logo192.png
+    │   │   ├── logo512.png
+    │   │   ├── manifest.json
+    │   │   └── robots.txt
+    │   ├── src/
+    │   │   ├── api/
+    │   │   │   └── axios.js
+    │   │   ├── components/
+    │   │   │   ├── ChartCard.jsx
+    │   │   │   ├── ConfirmModal.jsx
+    │   │   │   ├── DataTable.jsx
+    │   │   │   ├── EmptyState.jsx
+    │   │   │   ├── GlobalSearch.jsx
+    │   │   │   ├── Loader.jsx
+    │   │   │   ├── NotificationBell.jsx
+    │   │   │   ├── PageHeader.jsx
+    │   │   │   ├── SearchBar.jsx
+    │   │   │   ├── Sidebar.jsx
+    │   │   │   ├── StatCard.jsx
+    │   │   │   ├── ThemeToggle.jsx
+    │   │   │   ├── Topbar.jsx
+    │   │   │   └── WatchModal.jsx
+    │   │   ├── hooks/
+    │   │   │   ├── useDebounce.js
+    │   │   │   └── useTheme.js
+    │   │   ├── layout/
+    │   │   │   └── AdminLayout.jsx
+    │   │   ├── pages/
+    │   │   │   ├── ActivateTV.jsx
+    │   │   │   ├── Banners.jsx
+    │   │   │   ├── Dashboard.jsx
+    │   │   │   ├── ForgotPassword.jsx
+    │   │   │   ├── Legal.jsx
+    │   │   │   ├── LiveTV.jsx
+    │   │   │   ├── Login.jsx
+    │   │   │   ├── Matches.jsx
+    │   │   │   ├── NotFound.jsx
+    │   │   │   ├── Notifications.jsx
+    │   │   │   ├── Plans.jsx
+    │   │   │   ├── Players.jsx
+    │   │   │   ├── Podcasts.jsx
+    │   │   │   ├── Promo.jsx
+    │   │   │   ├── Reports.jsx
+    │   │   │   ├── ResetPassword.jsx
+    │   │   │   ├── Series.jsx
+    │   │   │   ├── Settings.jsx
+    │   │   │   ├── SocialMedia.jsx
+    │   │   │   ├── Sports.jsx
+    │   │   │   ├── StarPlayers.jsx
+    │   │   │   ├── Streams.jsx
+    │   │   │   ├── SubAdmins.jsx
+    │   │   │   ├── Teams.jsx
+    │   │   │   ├── UserPlans.jsx
+    │   │   │   └── Users.jsx
+    │   │   ├── utils/
+    │   │   │   ├── adminFallbackData.js
+    │   │   │   ├── appPaths.js
+    │   │   │   ├── auth.js
+    │   │   │   ├── constants.js
+    │   │   │   └── helpers.js
+    │   │   ├── App.jsx
+    │   │   ├── index.css
+    │   │   └── index.js
+    │   ├── .gitignore
+    │   ├── package-lock.json
+    │   ├── package.json
+    │   ├── postcss.config.js
+    │   ├── README.md
+    │   ├── tailwind.config.js
+    │   └── vercel.json
+    └── .gitignore

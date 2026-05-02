@@ -23,19 +23,31 @@ import { getAdminProfile } from "../utils/auth";
 import { paginate } from "../utils/helpers";
 
 const MODULES = [
-  { key: "matches", label: "Matches" },
-  { key: "streams", label: "Streams" },
-  { key: "channels", label: "Live TV" },
-  { key: "users", label: "Users" },
-  { key: "notifications", label: "Notifications" },
-  { key: "plans", label: "Plans" },
-  { key: "promos", label: "Coupon Codes" },
-  { key: "bannerAds", label: "Banners" },
-  { key: "podcasts", label: "Podcasts" },
-  { key: "socialMedia", label: "Social Media" },
-  { key: "legal", label: "Legal Pages" },
-  { key: "settings", label: "Settings" },
-  { key: "admins", label: "Sub Admins" }
+  // Content & Match
+  { key: "matches",        label: "Matches",         group: "Content" },
+  { key: "series",         label: "Tours & Series",  group: "Content" },
+  { key: "streams",        label: "Streams",         group: "Content" },
+  { key: "channels",       label: "Live TV",         group: "Content" },
+  { key: "matchHighlights",label: "Match Highlights",group: "Content" },
+  { key: "starPlayers",    label: "Star Players",    group: "Content" },
+  { key: "podcasts",       label: "Podcasts",        group: "Content" },
+  // People
+  { key: "users",          label: "Users",           group: "People" },
+  { key: "players",        label: "Players",         group: "People" },
+  { key: "teams",          label: "Teams",           group: "People" },
+  // Commerce
+  { key: "plans",          label: "Plans",           group: "Commerce" },
+  { key: "promos",         label: "Coupon Codes",    group: "Commerce" },
+  // Platform
+  { key: "sports",         label: "Sports",          group: "Platform" },
+  { key: "bannerAds",      label: "Banners",         group: "Platform" },
+  { key: "notifications",  label: "Notifications",   group: "Platform" },
+  { key: "reports",        label: "Reports",         group: "Platform" },
+  { key: "socialMedia",    label: "Social Media",    group: "Platform" },
+  { key: "legal",          label: "Legal Pages",     group: "Platform" },
+  // Admin
+  { key: "settings",       label: "Settings",        group: "Admin" },
+  { key: "admins",         label: "Sub Admins",      group: "Admin" },
 ];
 
 const ACTIONS = [
@@ -713,40 +725,63 @@ function SubAdmins() {
                         </tr>
                       </thead>
                       <tbody>
-                        {visiblePermissionModules.map((moduleItem) => {
-                          const allChecked = ACTIONS.every((action) => form.permissions[moduleItem.key]?.[action.key]);
+                        {(() => {
+                          const rows = [];
+                          let lastGroup = null;
+                          visiblePermissionModules.forEach((moduleItem) => {
+                            // Insert a group separator row when the group changes
+                            if (moduleItem.group && moduleItem.group !== lastGroup) {
+                              lastGroup = moduleItem.group;
+                              rows.push(
+                                <tr key={`group-${moduleItem.group}`} className="border-t-2 border-slate-200 dark:border-slate-700">
+                                  <td
+                                    colSpan={ACTIONS.length + 2}
+                                    className="bg-slate-50 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:bg-slate-800/60 dark:text-slate-500"
+                                  >
+                                    {moduleItem.group}
+                                  </td>
+                                </tr>
+                              );
+                            }
 
-                          return (
-                            <tr key={moduleItem.key} className="border-t border-slate-200 dark:border-slate-800">
-                              <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{moduleItem.label}</td>
-                              {ACTIONS.map((action) => (
-                                <td key={action.key} className="px-4 py-3">
+                            const allChecked = ACTIONS.every((action) => form.permissions[moduleItem.key]?.[action.key]);
+                            rows.push(
+                              <tr key={moduleItem.key} className="border-t border-slate-100 dark:border-slate-800/60">
+                                <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{moduleItem.label}</td>
+                                {ACTIONS.map((action) => (
+                                  <td key={action.key} className="px-4 py-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={Boolean(form.permissions[moduleItem.key]?.[action.key])}
+                                      onChange={(event) => updatePermission(moduleItem.key, action.key, event.target.checked)}
+                                      className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400"
+                                    />
+                                  </td>
+                                ))}
+                                <td className="px-4 py-3">
                                   <input
                                     type="checkbox"
-                                    checked={Boolean(form.permissions[moduleItem.key]?.[action.key])}
-                                    onChange={(event) => updatePermission(moduleItem.key, action.key, event.target.checked)}
+                                    checked={allChecked}
+                                    onChange={(event) => setModulePermissions(moduleItem.key, event.target.checked)}
                                     className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400"
                                   />
                                 </td>
-                              ))}
-                              <td className="px-4 py-3">
-                                <input
-                                  type="checkbox"
-                                  checked={allChecked}
-                                  onChange={(event) => setModulePermissions(moduleItem.key, event.target.checked)}
-                                  className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400"
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                        {!visiblePermissionModules.length ? (
-                          <tr>
-                            <td colSpan={ACTIONS.length + 2} className="px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
-                              No permission modules match your search.
-                            </td>
-                          </tr>
-                        ) : null}
+                              </tr>
+                            );
+                          });
+
+                          if (!visiblePermissionModules.length) {
+                            rows.push(
+                              <tr key="empty">
+                                <td colSpan={ACTIONS.length + 2} className="px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                                  No permission modules match your search.
+                                </td>
+                              </tr>
+                            );
+                          }
+
+                          return rows;
+                        })()}
                       </tbody>
                     </table>
                   </div>
@@ -817,28 +852,53 @@ function SubAdmins() {
                 </div>
               </div>
 
-              <div className="mt-4 rounded-2xl p-4">
-                <p className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-200">Permission Details</p>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {MODULES.map((moduleItem) => {
-                    const grantedActions = ACTIONS.filter((action) => selectedAdmin?.permissions?.[moduleItem.key]?.[action.key]);
+              <div className="mt-4 rounded-2xl border border-slate-100 dark:border-slate-800 p-4">
+                <p className="mb-4 text-sm font-medium text-slate-700 dark:text-slate-200">Permission Details</p>
+                {(() => {
+                  const groups = {};
+                  MODULES.forEach((moduleItem) => {
+                    const g = moduleItem.group || "Other";
+                    if (!groups[g]) groups[g] = [];
+                    groups[g].push(moduleItem);
+                  });
 
-                    return (
-                      <div key={moduleItem.key} className="rounded-xl p-3">
-                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{moduleItem.label}</p>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {grantedActions.length ? grantedActions.map((action) => (
-                            <span key={action.key} className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs text-emerald-600">
-                              <CheckCircle2 size={12} /> {action.label}
-                            </span>
-                          )) : (
-                            <span className="text-xs text-slate-500 dark:text-slate-400">No access</span>
-                          )}
-                        </div>
+                  return Object.entries(groups).map(([groupName, items]) => (
+                    <div key={groupName} className="mb-5 last:mb-0">
+                      <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                        {groupName}
+                      </p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {items.map((moduleItem) => {
+                          const grantedActions = ACTIONS.filter(
+                            (action) => selectedAdmin?.permissions?.[moduleItem.key]?.[action.key]
+                          );
+                          return (
+                            <div
+                              key={moduleItem.key}
+                              className="rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950/40"
+                            >
+                              <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">{moduleItem.label}</p>
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                {grantedActions.length ? (
+                                  grantedActions.map((action) => (
+                                    <span
+                                      key={action.key}
+                                      className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-600 dark:text-emerald-400"
+                                    >
+                                      <CheckCircle2 size={10} /> {action.label}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-[11px] text-slate-400 dark:text-slate-500">No access</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  ));
+                })()}
               </div>
             </motion.div>
           </motion.div>

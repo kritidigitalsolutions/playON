@@ -13,6 +13,7 @@ import Podcasts from "./pages/Podcasts";
 import UserPlans from "./pages/UserPlans";
 import Streams from "./pages/Streams";
 import StarPlayers from "./pages/StarPlayers";
+import MatchHighlights from "./pages/MatchHighlights";
 import LiveTV from "./pages/LiveTV";
 import ActivateTV from "./pages/ActivateTV";
 import Notifications from "./pages/Notifications";
@@ -102,6 +103,7 @@ function App() {
         <Route path="banners" element={<Banners />} />
         <Route path="podcasts" element={<Podcasts />} />
         <Route path="star-players" element={<StarPlayers />} />
+        <Route path="match-highlights" element={<MatchHighlights />} />
         <Route path="streams" element={<Streams />} />
         <Route path="livetv" element={<LiveTV />} />
         <Route path="activate-tv" element={<ActivateTV />} />

@@ -35,6 +35,7 @@ export const PAGE_TITLES = {
   "/notifications": "Notifications",
   "/reports": "Reports",
   "/star-players": "Star Players",
+  "/match-highlights": "Match Highlights",
   "/podcasts": "Podcasts",
   "/legal": "Legal Pages",
   "/sub-admins": "Sub Admins",

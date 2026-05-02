@@ -20,6 +20,18 @@ const defaultForm = {
   thumbnailFile: null
 };
 
+const defaultPlayerForm = {
+  name: "",
+  sport: "cricket",
+  team: "",
+  position: "",
+  country: "",
+  bio: "",
+  status: "active",
+  featured: false,
+  imageFile: null
+};
+
 function StarPlayers() {
   const [highlights, setHighlights] = useState([]);
   const [sports, setSports] = useState([]);
@@ -35,6 +47,12 @@ function StarPlayers() {
   const [selectedHighlight, setSelectedHighlight] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Player Creation Modal State
+  const [playerModalOpen, setPlayerModalOpen] = useState(false);
+  const [playerForm, setPlayerForm] = useState(defaultPlayerForm);
+  const [playerFormErrors, setPlayerFormErrors] = useState({});
+  const [playerSubmitting, setPlayerSubmitting] = useState(false);
 
   const loadData = async () => {
     try {
@@ -186,6 +204,52 @@ function StarPlayers() {
       setError(apiError?.response?.data?.message || "Unable to delete highlight.");
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const savePlayer = async (event) => {
+    event.preventDefault();
+    const nextErrors = {};
+    if (!playerForm.name?.trim()) nextErrors.name = "Player name is required";
+    if (!playerForm.sport?.trim()) nextErrors.sport = "Sport is required";
+    setPlayerFormErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
+    try {
+      setPlayerSubmitting(true);
+      const payload = new FormData();
+      payload.append("name", playerForm.name || "");
+      payload.append("sport", playerForm.sport || "");
+      payload.append("team", playerForm.team || "");
+      payload.append("position", playerForm.position || "");
+      payload.append("country", playerForm.country || "");
+      payload.append("bio", playerForm.bio || "");
+      payload.append("status", playerForm.status || "active");
+      payload.append("featured", String(Boolean(playerForm.featured)));
+      if (playerForm.imageFile) payload.append("image", playerForm.imageFile);
+
+      const response = await api.post("/admin/players", payload, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      const saved = response?.data?.player;
+      if (saved?._id) {
+        // Add to local players list
+        setPlayers((prev) => [saved, ...prev]);
+        // Select this player in the main form
+        setForm((prev) => ({
+          ...prev,
+          playerId: saved._id,
+          playerName: saved.name,
+          team: saved.team || prev.team,
+        }));
+      }
+      setPlayerModalOpen(false);
+      setPlayerForm(defaultPlayerForm);
+    } catch (apiError) {
+      setError(apiError?.response?.data?.message || "Unable to create player.");
+    } finally {
+      setPlayerSubmitting(false);
     }
   };
 
@@ -343,8 +407,23 @@ function StarPlayers() {
                     {formErrors.sportId ? <span className="mt-1 block text-xs text-rose-500">{formErrors.sportId}</span> : null}
                   </label>
 
-                  <label className="block text-sm">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Player</span>
+                  <div className="md:col-span-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm block text-slate-500 dark:text-slate-400">Player</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPlayerForm({
+                            ...defaultPlayerForm,
+                            sport: sports.find(s => s._id === form.sportId)?.name?.toLowerCase() || "cricket"
+                          });
+                          setPlayerModalOpen(true);
+                        }}
+                        className="text-xs font-medium text-indigo-500 hover:text-indigo-600 dark:text-indigo-400"
+                      >
+                        + Create New Player
+                      </button>
+                    </div>
                     <select
                       value={form.playerId}
                       onChange={(e) => {
@@ -361,7 +440,7 @@ function StarPlayers() {
                       }}
                       className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800"
                     >
-                      <option value="">Select a player...</option>
+                      <option value="">Select an existing player...</option>
                       {players.map((p) => (
                         <option key={p._id} value={p._id}>
                           {p.name} ({p.team || "No Team"})
@@ -369,7 +448,7 @@ function StarPlayers() {
                       ))}
                     </select>
                     {formErrors.playerId ? <span className="mt-1 block text-xs text-rose-500">{formErrors.playerId}</span> : null}
-                  </label>
+                  </div>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Player Name (Display)</span>
@@ -525,6 +604,123 @@ function StarPlayers() {
                 <p><strong>Premium:</strong> {selectedHighlight.isPremium ? "👑 Yes (subscription required)" : "No (free)"}</p>
                 <p><strong>URL:</strong> <a href={selectedHighlight.videoUrl} target="_blank" rel="noreferrer" className="text-indigo-500 hover:underline break-all">{selectedHighlight.videoUrl}</a></p>
               </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {playerModalOpen ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 p-4">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Create New Player</h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Add a new player to the platform.</p>
+                </div>
+                <button type="button" onClick={() => setPlayerModalOpen(false)} className="text-slate-500 transition hover:text-slate-800 dark:hover:text-slate-200">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={savePlayer} className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Player Name</span>
+                    <input
+                      value={playerForm.name}
+                      onChange={(e) => setPlayerForm(p => ({ ...p, name: e.target.value }))}
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
+                    />
+                    {playerFormErrors.name ? <span className="mt-1 block text-xs text-rose-500">{playerFormErrors.name}</span> : null}
+                  </label>
+
+                  <label className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Sport</span>
+                    <select
+                      value={playerForm.sport}
+                      onChange={(e) => setPlayerForm(p => ({ ...p, sport: e.target.value }))}
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
+                    >
+                      {sports.map((item) => (
+                        <option key={item._id} value={item.name.toLowerCase()}>
+                          {item.name}
+                        </option>
+                      ))}
+                      <option value="other">Other</option>
+                    </select>
+                    {playerFormErrors.sport ? <span className="mt-1 block text-xs text-rose-500">{playerFormErrors.sport}</span> : null}
+                  </label>
+
+                  <label className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Team</span>
+                    <input
+                      value={playerForm.team}
+                      onChange={(e) => setPlayerForm(p => ({ ...p, team: e.target.value }))}
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
+                    />
+                  </label>
+
+                  <label className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Position</span>
+                    <input
+                      value={playerForm.position}
+                      onChange={(e) => setPlayerForm(p => ({ ...p, position: e.target.value }))}
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
+                    />
+                  </label>
+
+                  <label className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Country</span>
+                    <input
+                      value={playerForm.country}
+                      onChange={(e) => setPlayerForm(p => ({ ...p, country: e.target.value }))}
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
+                    />
+                  </label>
+
+                  <label className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Status</span>
+                    <select
+                      value={playerForm.status}
+                      onChange={(e) => setPlayerForm(p => ({ ...p, status: e.target.value }))}
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
+                    >
+                      <option value="active">active</option>
+                      <option value="inactive">inactive</option>
+                    </select>
+                  </label>
+
+                  <label className="block text-sm md:col-span-2">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Player Image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setPlayerForm(p => ({ ...p, imageFile: e.target.files?.[0] || null }))}
+                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
+                    />
+                  </label>
+
+                  <label className="block text-sm md:col-span-2">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Bio</span>
+                    <textarea
+                      rows="3"
+                      value={playerForm.bio}
+                      onChange={(e) => setPlayerForm(p => ({ ...p, bio: e.target.value }))}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
+                    />
+                  </label>
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <button type="button" onClick={() => setPlayerModalOpen(false)} className="admin-secondary-btn">
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={playerSubmitting} className="rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-70">
+                    {playerSubmitting ? "Creating..." : "Create Player"}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         ) : null}

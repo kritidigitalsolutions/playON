@@ -112,8 +112,11 @@ exports.getDashboard = async (req, res) => {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-    const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    // Use rolling windows for Weekly and Monthly to avoid confusion at the start of a month
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    
     const startOfYear = new Date(now.getFullYear(), 0, 1);
 
     const [
@@ -218,11 +221,11 @@ exports.getDashboard = async (req, res) => {
               { $group: { _id: null, sum: { $sum: "$amountPaid" } } }
             ],
             weekly: [
-              { $match: { createdAt: { $gte: startOfWeek } } },
+              { $match: { createdAt: { $gte: sevenDaysAgo } } },
               { $group: { _id: null, sum: { $sum: "$amountPaid" } } }
             ],
             monthly: [
-              { $match: { createdAt: { $gte: startOfMonth } } },
+              { $match: { createdAt: { $gte: thirtyDaysAgo } } },
               { $group: { _id: null, sum: { $sum: "$amountPaid" } } }
             ],
             yearly: [
@@ -315,26 +318,26 @@ exports.getDashboard = async (req, res) => {
       },
       latestMatch
         ? {
-            id: "act-latest-match",
-            text: `Latest match added: ${latestMatch.title || `${latestMatch.teamA} vs ${latestMatch.teamB}`}.`,
-            time: getRelativeTime(latestMatch.createdAt)
-          }
+          id: "act-latest-match",
+          text: `Latest match added: ${latestMatch.title || `${latestMatch.teamA} vs ${latestMatch.teamB}`}.`,
+          time: getRelativeTime(latestMatch.createdAt)
+        }
         : null,
       latestUser
         ? {
-            id: "act-latest-user",
-            text: `New user joined: ${latestUser.fullName || latestUser.mobile || "User"}.`,
-            time: getRelativeTime(latestUser.createdAt)
-          }
+          id: "act-latest-user",
+          text: `New user joined: ${latestUser.fullName || latestUser.mobile || "User"}.`,
+          time: getRelativeTime(latestUser.createdAt)
+        }
         : null,
       liveTopStream
         ? {
-            id: "act-top-stream",
-            text: `Top live stream: ${liveTopStream.title || "Untitled Stream"} (${formatNumber(
-              liveTopStream.viewerCount || 0
-            )} viewers).`,
-            time: "Live"
-          }
+          id: "act-top-stream",
+          text: `Top live stream: ${liveTopStream.title || "Untitled Stream"} (${formatNumber(
+            liveTopStream.viewerCount || 0
+          )} viewers).`,
+          time: "Live"
+        }
         : null
     ].filter(Boolean);
 

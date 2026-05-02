@@ -53,6 +53,26 @@ const adminSchema = new mongoose.Schema(
         default: () => ({})
       },
 
+      series: {
+        type: permissionSchema,
+        default: () => ({})
+      },
+
+      players: {
+        type: permissionSchema,
+        default: () => ({})
+      },
+
+      teams: {
+        type: permissionSchema,
+        default: () => ({})
+      },
+
+      sports: {
+        type: permissionSchema,
+        default: () => ({})
+      },
+
       users: {
         type: permissionSchema,
         default: () => ({})
@@ -78,12 +98,22 @@ const adminSchema = new mongoose.Schema(
         default: () => ({})
       },
 
-      admins: {
+      starPlayers: {
         type: permissionSchema,
         default: () => ({})
       },
 
-      settings: {
+      matchHighlights: {
+        type: permissionSchema,
+        default: () => ({})
+      },
+
+      podcasts: {
+        type: permissionSchema,
+        default: () => ({})
+      },
+
+      reports: {
         type: permissionSchema,
         default: () => ({})
       },
@@ -98,7 +128,12 @@ const adminSchema = new mongoose.Schema(
         default: () => ({})
       },
 
-      podcasts: {
+      settings: {
+        type: permissionSchema,
+        default: () => ({})
+      },
+
+      admins: {
         type: permissionSchema,
         default: () => ({})
       }

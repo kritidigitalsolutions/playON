@@ -7,6 +7,8 @@ const Player = require("../../models/player.model");
 // ----------------------------------------
 // CREATE HIGHLIGHT (SPORT BASED)
 // ----------------------------------------
+const createPlayerService = require("../../services/player.service");
+
 exports.createHighlight = async (req, res) => {
   try {
     const {
@@ -22,15 +24,15 @@ exports.createHighlight = async (req, res) => {
       isPremium
     } = req.body;
 
-    // ✅ VALIDATION
-    if (!sportId || !playerId || !playerName || !title || !videoUrl) {
+    // BASIC VALIDATION
+    if (!sportId || !title || !videoUrl) {
       return res.status(400).json({
         success: false,
         message: "Required fields missing"
       });
     }
 
-    // ✅ SPORT CHECK
+    // SPORT CHECK
     const sportExists = await Sport.findById(sportId);
     if (!sportExists) {
       return res.status(404).json({
@@ -39,26 +41,57 @@ exports.createHighlight = async (req, res) => {
       });
     }
 
-    // ✅ PLAYER CHECK
-    const playerExists = await Player.findById(playerId);
-    if (!playerExists) {
-      return res.status(404).json({
-        success: false,
-        message: "Player not found"
-      });
+    let finalPlayerId = playerId;
+    let finalPlayerName = playerName;
+
+    // -----------------------------
+    // CASE 1: EXISTING PLAYER
+    // -----------------------------
+    if (playerId) {
+      const playerExists = await Player.findById(playerId);
+
+      if (!playerExists) {
+        return res.status(404).json({
+          success: false,
+          message: "Player not found"
+        });
+      }
+
+      finalPlayerName = playerExists.name;
     }
 
-    // ✅ UPLOAD THUMBNAIL
+    // -----------------------------
+    // CASE 2: CREATE NEW PLAYER
+    // -----------------------------
+    else {
+      if (!playerName) {
+        return res.status(400).json({
+          success: false,
+          message: "Player name required for new player"
+        });
+      }
+
+      const newPlayer = await createPlayerService.createPlayer({
+        name: playerName,
+        sport: sportExists.name, // or sportId mapping
+        team: team || ""
+      });
+
+      finalPlayerId = newPlayer._id;
+      finalPlayerName = newPlayer.name;
+    }
+
+    // THUMBNAIL
     let thumbnailUrl = "";
     if (req.file) {
       thumbnailUrl = await uploadToFirebase(req.file, "highlights");
     }
 
-    // ✅ CREATE
+    // CREATE HIGHLIGHT
     const highlight = await Highlight.create({
       sportId,
-      playerId,
-      playerName,
+      playerId: finalPlayerId,
+      playerName: finalPlayerName,
       team,
       title,
       videoUrl,
@@ -70,10 +103,9 @@ exports.createHighlight = async (req, res) => {
       createdBy: req.admin.adminId
     });
 
-    // ✅ NOTIFICATION
     await autoNotify({
       title: "New Highlight 🔥",
-      message: `${playerName} highlight added`,
+      message: `${finalPlayerName} highlight added`,
       type: "HIGHLIGHT",
       metadata: {
         image: thumbnailUrl,

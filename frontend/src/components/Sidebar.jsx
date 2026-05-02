@@ -23,7 +23,8 @@ import {
   Film,
   Image as ImageIcon,
   Link as LinkIcon,
-  Mic
+  Mic,
+  Clapperboard
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { getAdminProfile } from "../utils/auth";
@@ -42,6 +43,7 @@ const navItems = [
   { label: "Sports", path: "/sports", icon: Trophy },
   { label: "Banners", path: "/banners", icon: ImageIcon },
   { label: "Star Players", path: "/star-players", icon: Star },
+  { label: "Match Highlights", path: "/match-highlights", icon: Clapperboard },
   { label: "Podcasts", path: "/podcasts", icon: Mic },
   { label: "Streams", path: "/streams", icon: Radio },
   { label: "Live TV", path: "/livetv", icon: Tv },
