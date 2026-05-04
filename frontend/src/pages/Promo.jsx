@@ -19,6 +19,7 @@ const defaultForm = {
   validFrom: "",
   validTill: "",
   isActive: true,
+  isReferral: false,
   applicablePlans: []
 };
 
@@ -65,6 +66,7 @@ function Promo() {
   const [selectedPromo, setSelectedPromo] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [activeReferrals, setActiveReferrals] = useState([]);
 
   const loadPromos = async () => {
     try {
@@ -86,8 +88,18 @@ function Promo() {
     }
   };
 
+  const loadActiveReferral = async () => {
+    try {
+      const response = await api.get("/user/referral-offer");
+      setActiveReferrals(Array.isArray(response?.data?.offers) ? response.data.offers : []);
+    } catch (err) {
+      console.error("Failed to load active referral:", err);
+    }
+  };
+
   useEffect(() => {
     loadPromos();
+    loadActiveReferral();
   }, []);
 
   const stats = useMemo(() => {
@@ -107,7 +119,11 @@ function Promo() {
     const query = search.trim().toLowerCase();
 
     return promos.filter((item) => {
-      const statusOk = statusFilter === "all" ? true : statusFilter === "active" ? item.isActive : !item.isActive;
+      let statusOk = true;
+      if (statusFilter === "active") statusOk = item.isActive;
+      else if (statusFilter === "inactive") statusOk = !item.isActive;
+      else if (statusFilter === "referral") statusOk = item.isReferral;
+
       const haystack = [
         item.code,
         item.title,
@@ -153,6 +169,7 @@ function Promo() {
       validFrom: toDateInputValue(promo?.validFrom),
       validTill: toDateInputValue(promo?.validTill),
       isActive: Boolean(promo?.isActive),
+      isReferral: Boolean(promo?.isReferral),
       applicablePlans: (promo?.applicablePlans || []).map((plan) => plan?._id || plan).filter(Boolean)
     });
     setModalOpen(true);
@@ -209,6 +226,7 @@ function Promo() {
         validFrom: form.validFrom || null,
         validTill: form.validTill || null,
         isActive: Boolean(form.isActive),
+        isReferral: Boolean(form.isReferral),
         applicablePlans: form.applicablePlans
       };
 
@@ -224,6 +242,7 @@ function Promo() {
         await loadPromos();
       }
 
+      await loadActiveReferral();
       closeModal();
     } catch (apiError) {
       setError(apiError?.response?.data?.message || "Unable to save promo code.");
@@ -302,7 +321,14 @@ function Promo() {
       label: "Promo",
       render: (row) => (
         <div>
-          <p className="font-semibold text-slate-900 dark:text-slate-100">{row.code}</p>
+          <div className="flex items-center gap-2">
+            <p className="font-semibold text-slate-900 dark:text-slate-100">{row.code}</p>
+            {row.isReferral && (
+              <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500">
+                Referral
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{row.title || "No title"}</p>
         </div>
       )
@@ -409,6 +435,7 @@ function Promo() {
           <option value="all">Status: All</option>
           <option value="active">Status: Active</option>
           <option value="inactive">Status: Inactive</option>
+          <option value="referral">Type: Referral Offers</option>
         </select>
       </div>
 
@@ -430,6 +457,32 @@ function Promo() {
           <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{stats.percent} percent / {stats.flat} flat</p>
         </div>
       </div>
+
+      {activeReferrals.length > 0 && (
+        <div className="mb-6 space-y-3">
+          {activeReferrals.map((offer) => (
+            <div key={offer._id} className="overflow-hidden rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 dark:bg-amber-500/10">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500 text-white shadow-lg shadow-amber-500/20">
+                    <TicketPercent size={20} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500">Live Referral Offer</p>
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      {offer.title} ({offer.discountType === "percent" ? `${offer.discountValue}%` : `₹${offer.discountValue}`})
+                    </h3>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Public Endpoint</p>
+                  <code className="text-[11px] font-medium text-amber-700 dark:text-amber-400">/api/user/referral-offer</code>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
@@ -521,10 +574,24 @@ function Promo() {
                     {formErrors.validTill ? <span className="mt-1 block text-xs text-rose-500">{formErrors.validTill}</span> : null}
                   </label>
 
-                  <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm">
-                    <input type="checkbox" checked={form.isActive} onChange={(event) => onFormChange("isActive", event.target.checked)} className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
-                    <span className="text-slate-700 dark:text-slate-200">Promo is active</span>
-                  </label>
+                  <div className="flex flex-col gap-3 rounded-xl border border-slate-200 px-4 py-3">
+                    <label className="flex items-center gap-3 text-sm">
+                      <input type="checkbox" checked={form.isActive} onChange={(event) => onFormChange("isActive", event.target.checked)} className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
+                      <span className="text-slate-700 dark:text-slate-200">Promo is active</span>
+                    </label>
+
+                    <label className="flex items-center gap-3 text-sm">
+                      <input type="checkbox" checked={form.isReferral} onChange={(event) => onFormChange("isReferral", event.target.checked)} className="h-4 w-4 rounded border-slate-300 text-amber-500 focus:ring-amber-400" />
+                      <span className="text-slate-700 dark:text-slate-200 font-medium">Is Referral Voucher Offer</span>
+                    </label>
+                    
+                    {form.isReferral && (
+                      <p className="text-[11px] text-amber-600 dark:text-amber-400 leading-relaxed">
+                        * When active, this promo acts as a template for user referral rewards. 
+                        Its values (discount, title, etc.) will be copied to vouchers earned by referrers.
+                      </p>
+                    )}
+                  </div>
 
                   <div className="md:col-span-2">
                     <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">Applicable Plans</p>

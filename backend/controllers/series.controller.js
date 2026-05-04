@@ -13,6 +13,25 @@ const getUserIdFromToken = (req) => {
   } catch { return null; }
 };
 
+const fileUrl = (req, filePath) => {
+  if (!filePath) return "";
+  if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
+    return filePath;
+  }
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  return `${baseUrl}/${filePath.replace(/\\/g, "/")}`;
+};
+
+const formatSeries = (req, series) => {
+  const item = series.toObject ? series.toObject() : series;
+  return {
+    ...item,
+    banner: fileUrl(req, item.banner),
+    tournamentLogo: fileUrl(req, item.tournamentLogo),
+    isPremium: !!item.isPremium
+  };
+};
+
 //get all series with matches
 exports.getAllSeries = async (req, res) => {
   try {
@@ -117,10 +136,7 @@ exports.getAllSeries = async (req, res) => {
       { $sort: { createdAt: -1 } }
     ]);
 
-    const formattedSeries = series.map((s) => ({
-      ...s,
-      isPremium: !!s.isPremium
-    }));
+    const formattedSeries = series.map((s) => formatSeries(req, s));
 
     res.json({
       success: true,
@@ -165,7 +181,7 @@ exports.getSingleSeries = async (req, res) => {
 
     res.json({
       success: true,
-      series: { ...series.toObject(), isPremium: !!series.isPremium },
+      series: formatSeries(req, series),
       matches: matches.map(m => ({ ...m.toObject(), isPremium: !!m.isPremium }))
     });
 
@@ -187,7 +203,7 @@ exports.getFeaturedSeries = async (req, res) => {
 
     res.json({
       success: true,
-      series: series.map((s) => ({ ...s.toObject(), isPremium: !!s.isPremium }))
+      series: series.map((s) => formatSeries(req, s))
     });
 
   } catch (error) {
@@ -388,7 +404,7 @@ exports.getFollowedSeries = async (
     res.json({
       success: true,
       count: series.length,
-      series
+      series: series.map((s) => formatSeries(req, s))
     });
 
   } catch (error) {

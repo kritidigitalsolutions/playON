@@ -77,15 +77,6 @@ const matchSchema = new mongoose.Schema(
     sport: {
       type: String,
       required: true,
-      enum: [
-        "cricket",
-        "football",
-        "basketball",
-        "kabaddi",
-        "tennis",
-        "volleyball",
-        "other"
-      ],
       lowercase: true,
       trim: true
     },

@@ -31,6 +31,15 @@ const asArray = (value) => {
   return Array.isArray(value) ? value : [value];
 };
 
+const formatSeries = (req, series) => {
+  const item = series.toObject ? series.toObject() : series;
+  return {
+    ...item,
+    banner: fileUrl(req, item.banner),
+    tournamentLogo: fileUrl(req, item.tournamentLogo)
+  };
+};
+
 // CREATE SERIES
 exports.createSeries = async (req, res) => {
   try {
@@ -47,6 +56,7 @@ exports.createSeries = async (req, res) => {
       endDate,
       status,
       isFeatured,
+      isTrending,
       isPremium,
       isHomeScreen,
       matchIds
@@ -75,9 +85,17 @@ exports.createSeries = async (req, res) => {
     }
 
     let bannerUrl = "";
+    let tournamentLogoUrl = "";
 
-    if (req.file) {
-      bannerUrl = await uploadToFirebase(req.file, "series");
+    if (req.files?.banner?.[0]) {
+      bannerUrl = await uploadToFirebase(req.files.banner[0], "series");
+    }
+
+    if (req.files?.tournamentLogo?.[0]) {
+      tournamentLogoUrl = await uploadToFirebase(
+        req.files.tournamentLogo[0],
+        "series"
+      );
     }
 
     const series = await Series.create({
@@ -85,6 +103,7 @@ exports.createSeries = async (req, res) => {
       sport: cleanSport,
       slug: makeSlug(cleanTitle),
       banner: bannerUrl,
+      tournamentLogo: tournamentLogoUrl,
       description: description || "",
 
       teamA: teamA || "",
@@ -101,6 +120,8 @@ exports.createSeries = async (req, res) => {
       status: status || "upcoming",
       isFeatured:
         isFeatured === true || isFeatured === "true",
+      isTrending:
+        isTrending === true || isTrending === "true",
       isPremium:
         isPremium === true || isPremium === "true",
       isHomeScreen:
@@ -112,7 +133,7 @@ exports.createSeries = async (req, res) => {
     await autoNotify({
       title: "New Series Added",
       message: `${series.title} is now available`,
-      type: "GENERAL", // or create "SERIES" type (recommended)
+      type: "SERIES",
       metadata: {
         image: bannerUrl,
         seriesId: series._id
@@ -136,10 +157,7 @@ exports.createSeries = async (req, res) => {
       success: true,
       message: "Series created successfully",
       linkedMatches,
-      series: {
-        ...series.toObject(),
-        banner: fileUrl(req, series.banner)
-      }
+      series: formatSeries(req, series)
     });
 
   } catch (error) {
@@ -191,10 +209,7 @@ exports.getAllSeries = async (req, res) => {
       page: Number(page),
       limit: Number(limit),
       pages: Math.ceil(total / Number(limit)),
-      series: series.map((item) => ({
-        ...item.toObject(),
-        banner: fileUrl(req, item.banner)
-      }))
+      series: series.map((item) => formatSeries(req, item))
     });
 
   } catch (error) {
@@ -228,8 +243,7 @@ exports.getSingleSeries = async (req, res) => {
     res.json({
       success: true,
       series: {
-        ...series.toObject(),
-        banner: fileUrl(req, series.banner)
+        ...formatSeries(req, series)
       },
       matches
     });
@@ -260,6 +274,7 @@ exports.updateSeries = async (req, res) => {
       endDate,
       status,
       isFeatured,
+      isTrending,
       isPremium,
       isHomeScreen,
       matchIds
@@ -273,6 +288,8 @@ exports.updateSeries = async (req, res) => {
         message: "Series not found"
       });
     }
+
+    const oldStatus = series.status;
 
     const cleanTitle = title
       ? title.trim()
@@ -328,6 +345,11 @@ exports.updateSeries = async (req, res) => {
         isFeatured === true ||
         isFeatured === "true";
     }
+    if (isTrending !== undefined) {
+      series.isTrending =
+        isTrending === true ||
+        isTrending === "true";
+    }
 
     if (isPremium !== undefined) {
       series.isPremium =
@@ -341,12 +363,20 @@ exports.updateSeries = async (req, res) => {
         isHomeScreen === "true";
     }
 
-    if (req.file) {
+    if (req.files?.banner?.[0]) {
       const bannerUrl = await uploadToFirebase(
-        req.file,
+        req.files.banner[0],
         "series"
       );
       series.banner = bannerUrl;
+    }
+
+    if (req.files?.tournamentLogo?.[0]) {
+      const tournamentLogoUrl = await uploadToFirebase(
+        req.files.tournamentLogo[0],
+        "series"
+      );
+      series.tournamentLogo = tournamentLogoUrl;
     }
 
     await series.save();
@@ -354,6 +384,20 @@ exports.updateSeries = async (req, res) => {
       { path: "teamAPlayers", select: "name team country sport" },
       { path: "teamBPlayers", select: "name team country sport" }
     ]);
+
+    // 🔔 AUTO NOTIFY IF SERIES GOES LIVE
+    if (oldStatus !== "live" && series.status === "live") {
+      await autoNotify({
+        title: "Series Live Now",
+        message: `${series.title} is live now!`,
+        type: "SERIES",
+        metadata: {
+          seriesId: series._id,
+          image: series.banner || series.tournamentLogo || "",
+          actionUrl: `/series/${series._id}`
+        }
+      });
+    }
 
     if (matchIds !== undefined) {
       const ids = asArray(matchIds);
@@ -374,9 +418,8 @@ exports.updateSeries = async (req, res) => {
     res.json({
       success: true,
       message: "Series updated successfully",
-      series
+      series: formatSeries(req, series)
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,

@@ -235,7 +235,7 @@ function Dashboard() {
               <StatCard
                 title="Yearly Income"
                 value={data.incomeStats.yearly}
-                growth="This Year"
+                growth="Last 365 Days"
                 trend="up"
                 index={4}
                 currency={true}

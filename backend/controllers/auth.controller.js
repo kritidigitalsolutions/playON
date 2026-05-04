@@ -5,18 +5,26 @@ const { OAuth2Client } = require("google-auth-library");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// DEV MODE SMS (console)
-const sendSmsOtp = async (mobile, otp) => {
-  try {
-    console.log("=================================");
-    console.log("SMS DISABLED (DEV MODE)");
-    console.log("Mobile:", mobile);
-    console.log("OTP:", otp);
-    console.log("=================================");
-    return true;
-  } catch (error) {
-    return false;
+const { rewardReferrer } = require("../utils/referralReward");
+
+// =======================
+// 🔑 REFERRAL HELPERS (GLOBAL)
+// =======================
+const generateReferralCode = () => {
+  return "REF" + Math.random().toString(36).substring(2, 8).toUpperCase();
+};
+
+const getUniqueReferralCode = async () => {
+  let code;
+  let exists = true;
+
+  while (exists) {
+    code = generateReferralCode();
+    const check = await User.findOne({ referralCode: code });
+    if (!check) exists = false;
   }
+
+  return code;
 };
 
 // =======================
@@ -54,27 +62,6 @@ exports.sendOtp = async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const existingUser = await User.findOne({
-      mobile,
-      isDeleted: false
-    });
-
-    let isNewUser = true;
-
-    if (existingUser) {
-      const hasFullName =
-        existingUser.fullName &&
-        existingUser.fullName.trim() !== "";
-
-      const profileDone =
-        existingUser.isProfileComplete === true;
-
-      if (hasFullName && profileDone) {
-        isNewUser = false;
-      }
-    }
-
-    // 🔁 Replace delete+create with upsert (safer)
     await Otp.findOneAndUpdate(
       { mobile },
       {
@@ -84,21 +71,10 @@ exports.sendOtp = async (req, res) => {
       { upsert: true, new: true }
     );
 
-    const smsSent = await sendSmsOtp(mobile, otp);
-
-    if (!smsSent) {
-      return res.status(500).json({
-        success: false,
-        message: "Failed to send OTP SMS"
-      });
-    }
-
-    // ⚠️ REMOVE OTP in production
     res.json({
       success: true,
       message: "OTP sent successfully",
-      isNewUser,
-      otp // keep for dev only
+      otp
     });
 
   } catch (error) {
@@ -114,7 +90,7 @@ exports.sendOtp = async (req, res) => {
 // =======================
 exports.verifyOtp = async (req, res) => {
   try {
-    const { mobile, otp } = req.body;
+    const { mobile, otp, referralCode } = req.body;
 
     if (!mobile || !otp) {
       return res.status(400).json({
@@ -136,40 +112,74 @@ exports.verifyOtp = async (req, res) => {
       });
     }
 
-    let user = await User.findOne({
-      mobile,
-      isDeleted: false
-    });
+    let referredByUser = null;
 
-    let isNewUser = true;
+    if (referralCode) {
+      referredByUser = await User.findOne({ referralCode });
 
-    if (!user) {
-      user = await User.create({
-        mobile,
-        authProvider: "mobile"
-      });
-    } else if (user.isDeleted) {
-      user.isDeleted = false;
-      user.deletedAt = null;
-      user.deleteReason = "";
-      user.accountStatus = "active";
+      if (!referredByUser) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid referral code"
+        });
+      }
 
-      user.fullName = "";
-      user.email = null;
-      user.profilePic = "";
-      user.favoriteSports = [];
-      user.isProfileComplete = false;
-      user.fcmToken = "";
-
-      await user.save();
-    } else {
-      if (user.fullName && user.isProfileComplete) {
-        isNewUser = false;
+      if (referredByUser.mobile === mobile) {
+        return res.status(400).json({
+          success: false,
+          message: "You cannot refer yourself"
+        });
       }
     }
 
+    let user = await User.findOne({ mobile });
+    let isNewUser = false;
+
+    // =========================
+    // NEW USER
+    // =========================
+    if (!user) {
+      const newReferralCode = await getUniqueReferralCode();
+
+      user = await User.create({
+        mobile,
+        referralCode: newReferralCode,
+        referredBy: referredByUser?._id || null
+      });
+
+      // increment referral count
+      if (referredByUser) {
+        await User.findByIdAndUpdate(referredByUser._id, {
+          $inc: { referralCount: 1 }
+        });
+        await rewardReferrer(referredByUser._id);
+      }
+
+      isNewUser = true;
+    }
+
+    // =========================
+    // EXISTING USER
+    // =========================
+    else {
+      if (!user.referralCode) {
+        user.referralCode = await getUniqueReferralCode();
+      }
+
+      // prevent multiple referral usage
+      if (referralCode && !user.referredBy) {
+        user.referredBy = referredByUser._id;
+
+        await User.findByIdAndUpdate(referredByUser._id, {
+          $inc: { referralCount: 1 }
+        });
+      }
+
+      await user.save();
+    }
+
     const token = jwt.sign(
-      { userId: user._id, provider: "mobile" },
+      { userId: user._id },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -181,7 +191,8 @@ exports.verifyOtp = async (req, res) => {
       message: "OTP verified successfully",
       token,
       isNewUser,
-      user: isNewUser ? null : user
+      user,
+      referralCode: user.referralCode
     });
 
   } catch (error) {
@@ -193,11 +204,11 @@ exports.verifyOtp = async (req, res) => {
 };
 
 // =======================
-// GOOGLE LOGIN (FIXED)
+// GOOGLE LOGIN
 // =======================
 exports.googleLogin = async (req, res) => {
   try {
-    const { idToken } = req.body;
+    const { idToken, referralCode } = req.body;
 
     if (!idToken) {
       return res.status(400).json({
@@ -218,14 +229,6 @@ exports.googleLogin = async (req, res) => {
     const fullName = payload.name;
     const profilePic = payload.picture;
 
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Google email not available"
-      });
-    }
-
-    // 🔥 FIX: prevent duplicate users
     let user = await User.findOne({
       $or: [{ googleId }, { email }],
       isDeleted: false
@@ -233,22 +236,99 @@ exports.googleLogin = async (req, res) => {
 
     let isNewUser = false;
 
+    // =========================
+    // EXISTING USER
+    // =========================
     if (user) {
-      // 🔗 Link google if not linked
       if (!user.googleId) {
         user.googleId = googleId;
         user.authProvider = "google";
-        await user.save();
       }
-    } else {
+
+      if (!user.profilePic && profilePic) {
+        user.profilePic = profilePic;
+      }
+
+      if (!user.fullName && fullName) {
+        user.fullName = fullName;
+      }
+
+      if (!user.referralCode) {
+        user.referralCode = await getUniqueReferralCode();
+      }
+
+      // apply referral only once
+      if (referralCode && !user.referredBy) {
+        const referredByUser = await User.findOne({ referralCode });
+
+        if (!referredByUser) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid referral code"
+          });
+        }
+
+        if (referredByUser.email === email) {
+          return res.status(400).json({
+            success: false,
+            message: "You cannot refer yourself"
+          });
+        }
+
+        user.referredBy = referredByUser._id;
+
+        await User.findByIdAndUpdate(referredByUser._id, {
+          $inc: { referralCount: 1 }
+        });
+      }
+
+      await user.save();
+    }
+
+    // =========================
+    // NEW USER
+    // =========================
+    else {
+      let referredByUser = null;
+
+      if (referralCode) {
+        referredByUser = await User.findOne({ referralCode });
+
+        if (!referredByUser) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid referral code"
+          });
+        }
+
+        if (referredByUser.email === email) {
+          return res.status(400).json({
+            success: false,
+            message: "You cannot refer yourself"
+          });
+        }
+      }
+
+      const newReferralCode = await getUniqueReferralCode();
+
       user = await User.create({
         googleId,
         email,
         fullName: fullName || "",
         profilePic: profilePic || "",
         authProvider: "google",
-        isProfileComplete: !!fullName
+        isProfileComplete: !!fullName,
+        referralCode: newReferralCode,
+        referredBy: referredByUser?._id || null
       });
+
+      // increment referral count
+      if (referredByUser) {
+        await User.findByIdAndUpdate(referredByUser._id, {
+          $inc: { referralCount: 1 }
+        });
+        await rewardReferrer(referredByUser._id);
+      }
 
       isNewUser = true;
     }
@@ -268,11 +348,11 @@ exports.googleLogin = async (req, res) => {
     });
 
   } catch (error) {
-  console.error("Google login FULL ERROR:", error);
+    console.error("Google login FULL ERROR:", error);
 
-  res.status(500).json({
-    success: false,
-    message: error.message
-  });
-}
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 };

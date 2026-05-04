@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, X, Users, Swords, Film, UserRound, Radio, Loader2, Tv, Shield } from "lucide-react";
+import { Search, X, Users, Swords, Film, UserRound, Loader2, Tv, Shield } from "lucide-react";
 import api from "../api/axios";
 
 const CATEGORY_CONFIG = [
@@ -53,16 +53,6 @@ const CATEGORY_CONFIG = [
     route: "/matches",
     getLabel: (item) => `${item.teamA || ""} vs ${item.teamB || ""}`,
     getSub: (item) => [item.sport, item.status].filter(Boolean).join(" · "),
-  },
-  {
-    key: "streams",
-    label: "Streams",
-    icon: Radio,
-    color: "text-emerald-500",
-    bg: "bg-emerald-50 dark:bg-emerald-500/10",
-    route: "/streams",
-    getLabel: (item) => item.title || item.streamUrl || "Stream",
-    getSub: (item) => [item.streamType, item.status].filter(Boolean).join(" · "),
   },
   {
     key: "channels",
@@ -131,19 +121,17 @@ function GlobalSearch({ className = "", placeholder = "Search everything... (Ctr
       api.get("/admin/players", { params: { search: q, limit: 4 } }).catch(() => null),
       api.get("/admin/series", { params: { search: q, limit: 4 } }).catch(() => null),
       api.get("/admin/matches", { params: { search: q, limit: 4 } }).catch(() => null),
-      api.get("/admin/streams", { params: { search: q, limit: 4 } }).catch(() => null),
       api.get("/admin/channels", { params: { search: q, limit: 4 } }).catch(() => null),
       api.get("/admin/teams", { params: { search: q, limit: 4 } }).catch(() => null),
     ];
 
-    const [usersRes, playersRes, seriesRes, matchesRes, streamsRes, channelsRes, teamsRes] = await Promise.all(searches);
+    const [usersRes, playersRes, seriesRes, matchesRes, channelsRes, teamsRes] = await Promise.all(searches);
 
     setResults({
       users: usersRes?.data?.users || [],
       players: playersRes?.data?.players || [],
       series: seriesRes?.data?.series || [],
       matches: matchesRes?.data?.matches || [],
-      streams: streamsRes?.data?.streams || [],
       channels: channelsRes?.data?.channels || [],
       teams: teamsRes?.data?.teams || [],
     });

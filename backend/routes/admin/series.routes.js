@@ -13,12 +13,17 @@ const {
   deleteSeries
 } = require("../../controllers/admin/series.controller");
 
+const seriesUploads = upload.fields([
+  { name: "banner", maxCount: 1 },
+  { name: "tournamentLogo", maxCount: 1 }
+]);
+
 // Create
 router.post(
   "/",
   isAdmin,
   hasPermission("matches", "create"),
-  upload.single("banner"),
+  seriesUploads,
   createSeries
 );
 
@@ -43,7 +48,7 @@ router.patch(
   "/:id",
   isAdmin,
   hasPermission("matches", "edit"),
-  upload.single("banner"),
+  seriesUploads,
   updateSeries
 );
 

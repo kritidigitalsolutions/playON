@@ -165,12 +165,14 @@ exports.goLive = async (req, res) => {
       });
     }
 
-    await autoNotify({
+await autoNotify({
   title: "Live Stream Started",
-  message: `${stream.title} is live now.`,
+  message: `${stream.title || stream.matchId?.title || "Stream"} is live now.`,
   type: "STREAM",
   metadata: {
   streamId: stream._id,
+  matchId: stream.matchId?._id || stream.matchId,
+  actionUrl: stream.matchId?._id || stream.matchId ? `/matches/${stream.matchId?._id || stream.matchId}/watch` : "",
   image: stream.thumbnail || ""
 }
 });

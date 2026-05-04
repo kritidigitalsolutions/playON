@@ -113,11 +113,10 @@ exports.getDashboard = async (req, res) => {
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
     
-    // Use rolling windows for Weekly and Monthly to avoid confusion at the start of a month
+    // Rolling windows for dynamic statistics
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    
-    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const threeSixtyFiveDaysAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
 
     const [
       totalUsers,
@@ -229,7 +228,7 @@ exports.getDashboard = async (req, res) => {
               { $group: { _id: null, sum: { $sum: "$amountPaid" } } }
             ],
             yearly: [
-              { $match: { createdAt: { $gte: startOfYear } } },
+              { $match: { createdAt: { $gte: threeSixtyFiveDaysAgo } } },
               { $group: { _id: null, sum: { $sum: "$amountPaid" } } }
             ],
             total: [

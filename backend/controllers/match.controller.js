@@ -1,4 +1,5 @@
 const matchService = require("../services/match.service");
+const matchStreamSync = require("../services/matchStreamSync.service");
 const subscriptionService = require("../services/subscription.service");
 const jwt = require("jsonwebtoken");
 
@@ -162,8 +163,7 @@ exports.watchMatch = async (req, res) => {
       }
     }
 
-    const Stream = require("../models/stream.model");
-    const stream = await Stream.findOne({ matchId: req.params.id }).sort({ createdAt: -1 });
+    const stream = await matchStreamSync.getLatestStreamByMatch(req.params.id);
 
     if (!stream || !stream.streamUrl) {
       return res.status(404).json({ success: false, message: "No stream URL found for this match" });
@@ -177,7 +177,9 @@ exports.watchMatch = async (req, res) => {
       message: "Access granted",
       stream: {
         streamUrl: stream.streamUrl,
-        streamType: stream.streamType
+        streamType: stream.streamType,
+        backupUrl: stream.backupUrl,
+        quality: stream.quality
       },
       match: formatMatch(req, match)
     });

@@ -14,6 +14,9 @@ exports.getAdminMatches = async (query) => {
     page = 1,
     limit = 10
   } = query;
+  const fetchAll = String(limit).toLowerCase() === "all";
+  const pageNumber = Math.max(1, Number(page) || 1);
+  const limitNumber = Math.max(1, Number(limit) || 10);
 
   const filter = {};
 
@@ -29,13 +32,15 @@ exports.getAdminMatches = async (query) => {
     ];
   }
 
-  const skip = (Number(page) - 1) * Number(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+  const matchQuery = Match.find(filter).sort({ createdAt: -1, matchDate: -1 });
+
+  if (!fetchAll) {
+    matchQuery.skip(skip).limit(limitNumber);
+  }
 
   const [matches, total] = await Promise.all([
-    Match.find(filter)
-      .sort({ matchDate: 1 })
-      .skip(skip)
-      .limit(Number(limit)),
+    matchQuery,
     Match.countDocuments(filter)
   ]);
 
@@ -43,9 +48,9 @@ exports.getAdminMatches = async (query) => {
     matches,
     pagination: {
       total,
-      page: Number(page),
-      limit: Number(limit),
-      pages: Math.ceil(total / Number(limit))
+      page: fetchAll ? 1 : pageNumber,
+      limit: fetchAll ? total : limitNumber,
+      pages: fetchAll ? 1 : Math.ceil(total / limitNumber)
     }
   };
 };

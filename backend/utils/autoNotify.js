@@ -10,11 +10,21 @@ const autoNotify = async ({
   targetUser = null
 }) => {
   try {
+    const notificationData = Object.entries(metadata || {}).reduce(
+      (acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {}
+    );
+
     const payload = {
       title,
       message,
       type,
-      metadata,
+      metadata: notificationData,
       targetUser,
       sentAt: new Date(),
       isActive: true
@@ -41,7 +51,8 @@ const autoNotify = async ({
         image: metadata?.image || "",
         data: {
           notificationId: notification._id,
-          type
+          type,
+          ...notificationData
         }
       });
     }

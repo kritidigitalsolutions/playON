@@ -24,13 +24,12 @@ function Topbar({
   const [adminProfile, setAdminProfile] = useState(null);
 
   const SEARCH_PLACEHOLDERS = {
-    "/dashboard": "Search matches, users, streams...",
+    "/dashboard": "Search matches, users, channels...",
     "/users": "Search by name, email, phone...",
     "/players": "Search by player name, team, sport...",
     "/teams": "Search by team name, country, sport...",
     "/series": "Search by title, sport, team...",
     "/matches": "Search by teams, sport, status...",
-    "/streams": "Search by title, type, status...",
     "/livetv": "Search channels by name...",
     "/activate-tv": "Search TV connected users...",
     "/plans": "Search subscription plans...",

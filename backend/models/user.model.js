@@ -15,20 +15,20 @@ const userSchema = new mongoose.Schema(
   },
 
   googleId: {
-  type: String,
-  default: null
-},
+    type: String,
+    default: null
+  },
 
-facebookId: {
-  type: String,
-  default: null
-},
+  facebookId: {
+    type: String,
+    default: null
+  },
 
-authProvider: {
-  type: String,
-  enum: ["mobile", "google", "facebook"],
-  default: "mobile"
-},
+  authProvider: {
+    type: String,
+    enum: ["mobile", "google", "facebook"],
+    default: "mobile"
+  },
 
   email: {
     type: String,
@@ -78,25 +78,19 @@ authProvider: {
     default: "active"
   },
 
-  followedPlayers: {
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Player"
-      }
-    ],
-    default: []
-  },
+  followedPlayers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Player"
+    }
+  ],
 
-  followedSeries: {
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Series"
-      }
-    ],
-    default: []
-  },
+  followedSeries: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Series"
+    }
+  ],
 
   adsDisabled: {
     type: Boolean,
@@ -112,13 +106,44 @@ authProvider: {
     type: String,
     enum: ["none", "temporary", "lifetime"],
     default: "none"
+  },
+
+  // =====================
+  // REFERRAL SYSTEM
+  // =====================
+
+  referralCode: {
+    type: String,
+    trim: true,
+    uppercase: true,
+    default: null
+  },
+
+  referredBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null
+  },
+
+  referralCount: {
+    type: Number,
+    default: 0
+  },
+
+  hasCompletedReferralReward: {
+    type: Boolean,
+    default: false
   }
 
 },
 { timestamps: true }
 );
 
-// Unique mobile for active users only
+// =====================
+// INDEXES
+// =====================
+
+// Unique mobile (only active users)
 userSchema.index(
   { mobile: 1 },
   {
@@ -159,6 +184,17 @@ userSchema.index(
     unique: true,
     partialFilterExpression: {
       facebookId: { $exists: true, $ne: null }
+    }
+  }
+);
+
+// Unique referral code
+userSchema.index(
+  { referralCode: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      referralCode: { $exists: true, $ne: null }
     }
   }
 );

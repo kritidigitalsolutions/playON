@@ -43,7 +43,7 @@ function AdminLayout() {
           onLogout={handleLogout}
         />
 
-        <main>
+        <main className="pb-24">
           <Outlet />
         </main>
       </div>

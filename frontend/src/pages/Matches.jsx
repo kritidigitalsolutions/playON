@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Activity,
@@ -27,6 +27,7 @@ import PageHeader from "../components/PageHeader";
 import WatchModal from "../components/WatchModal";
 
 const PAGE_SIZE = 8;
+const DEFAULT_SPORT_SLUGS = ["cricket", "football", "basketball", "kabaddi", "tennis", "volleyball", "other"];
 
 const FALLBACK_MATCHES = [
   {
@@ -37,7 +38,6 @@ const FALLBACK_MATCHES = [
     teamB: "Australia",
     teamALogo: "",
     teamBLogo: "",
-    tournament: "World Cup",
     venue: "Mumbai",
     matchDate: "2026-04-20T12:00:00.000Z",
     status: "upcoming",
@@ -71,7 +71,6 @@ const FALLBACK_MATCHES = [
     teamB: "Juventus",
     teamALogo: "",
     teamBLogo: "",
-    tournament: "Champions League",
     venue: "Barcelona",
     matchDate: "2026-04-16T16:00:00.000Z",
     status: "live",
@@ -139,7 +138,6 @@ const defaultForm = {
   teamB: "",
   teamALogo: "",
   teamBLogo: "",
-  tournament: "",
   venue: "",
   matchDate: "",
   status: "upcoming",
@@ -149,6 +147,12 @@ const defaultForm = {
   isFeatured: false,
   isTrending: false,
   isPremium: false,
+  streamTitle: "",
+  streamProvider: "",
+  streamUrl: "",
+  streamBackupUrl: "",
+  streamType: "hls",
+  streamQuality: "auto",
   thumbnailFile: null,
   bannerFile: null,
   teamALogoFile: null,
@@ -160,6 +164,20 @@ const defaultForm = {
 };
 
 const classNames = (...parts) => parts.filter(Boolean).join(" ");
+
+const normalizeSportSlug = (value) => String(value || "").trim().toLowerCase();
+
+const formatSportLabel = (value) => {
+  const text = String(value || "").replace(/[-_]+/g, " ").trim();
+  if (!text) return "Other";
+  return text.replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const getSeriesId = (seriesValue) => {
+  if (!seriesValue) return "";
+  if (typeof seriesValue === "object") return seriesValue._id || "";
+  return seriesValue;
+};
 
 const asDateTimeLocal = (value) => {
   if (!value) return "";
@@ -182,6 +200,12 @@ const formatDate = (value) => {
   });
 };
 
+const getCreatedSortTime = (item = {}) => {
+  const value = item.createdAt || item.updatedAt || item.matchDate;
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
+};
+
 const normalizeScoreSource = (source = {}) => ({
   ...emptyScoreSource,
   ...source,
@@ -196,6 +220,19 @@ const hasScoreSourceValue = (source) =>
       source?.apiKey?.trim() ||
       source?.notes?.trim()
   );
+
+const getStreamFormValues = (match = {}) => {
+  const stream = match.stream || {};
+
+  return {
+    streamTitle: stream.title || match.title || `${match.teamA || ""} vs ${match.teamB || ""}`.trim(),
+    streamProvider: stream.provider || "",
+    streamUrl: stream.streamUrl || "",
+    streamBackupUrl: stream.backupUrl || "",
+    streamType: stream.streamType || "hls",
+    streamQuality: stream.quality || "auto"
+  };
+};
 
 function Toasts({ toasts, onRemove }) {
   return (
@@ -292,6 +329,9 @@ function Matches() {
   const [filters, setFilters] = useState({ status: "all", sport: "all", spotlight: "all", sort: "newest" });
   const [toasts, setToasts] = useState([]);
   const [seriesOptions, setSeriesOptions] = useState([]);
+  const [sportsCatalog, setSportsCatalog] = useState([]);
+  const [sportsLoaded, setSportsLoaded] = useState(false);
+  const [sportsLoadFailed, setSportsLoadFailed] = useState(false);
 
   const debouncedSearch = useDebounce(search, 350);
 
@@ -311,7 +351,7 @@ function Matches() {
   const loadMatches = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/admin/matches");
+      const response = await api.get("/admin/matches", { params: { limit: "all" } });
       const apiMatches = Array.isArray(response?.data?.matches) ? response.data.matches : [];
       setMatches(apiMatches);
     } catch {
@@ -331,9 +371,24 @@ function Matches() {
     }
   };
 
+  const loadSports = async () => {
+    try {
+      const response = await api.get("/admin/sports");
+      setSportsCatalog(Array.isArray(response?.data?.sports) ? response.data.sports : []);
+      setSportsLoaded(true);
+      setSportsLoadFailed(false);
+    } catch {
+      setSportsCatalog([]);
+      setSportsLoaded(true);
+      setSportsLoadFailed(true);
+      pushToast("Could not load sports. Showing fallback options.", "error");
+    }
+  };
+
   useEffect(() => {
     loadMatches();
     loadSeriesOptions();
+    loadSports();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const stats = useMemo(() => {
@@ -345,23 +400,39 @@ function Matches() {
   }, [matches]);
 
   const sportOptions = useMemo(() => {
-    const fixed = ["cricket", "football", "basketball", "kabaddi", "tennis", "volleyball", "other"];
-    const dynamic = Array.from(new Set(matches.map((m) => (m.sport || "").toLowerCase()).filter(Boolean)));
-    return Array.from(new Set([...fixed, ...dynamic]));
-  }, [matches]);
+    const bySlug = new Map();
 
-  const getSeriesId = (seriesValue) => {
-    if (!seriesValue) return "";
-    if (typeof seriesValue === "object") return seriesValue._id || "";
-    return seriesValue;
-  };
+    if (!sportsLoaded || sportsLoadFailed) {
+      DEFAULT_SPORT_SLUGS.forEach((slug) => {
+        bySlug.set(slug, { value: slug, label: formatSportLabel(slug) });
+      });
+    }
 
-  const getSeriesLabel = (seriesValue) => {
+    sportsCatalog.forEach((sport) => {
+      const slug = normalizeSportSlug(sport.slug || sport.name);
+      if (!slug) return;
+      bySlug.set(slug, {
+        value: slug,
+        label: sport.name || formatSportLabel(slug)
+      });
+    });
+
+    matches.forEach((match) => {
+      const slug = normalizeSportSlug(match.sport);
+      if (slug && !bySlug.has(slug)) {
+        bySlug.set(slug, { value: slug, label: formatSportLabel(slug) });
+      }
+    });
+
+    return Array.from(bySlug.values());
+  }, [matches, sportsCatalog, sportsLoaded, sportsLoadFailed]);
+
+  const getSeriesLabel = useCallback((seriesValue) => {
     const seriesId = getSeriesId(seriesValue);
     if (seriesValue && typeof seriesValue === "object") return seriesValue.title || seriesValue.name || seriesId;
     const match = seriesOptions.find((item) => item._id === seriesId);
     return match?.title || seriesId || "-";
-  };
+  }, [seriesOptions]);
 
   const filteredMatches = useMemo(() => {
     const q = debouncedSearch.trim().toLowerCase();
@@ -373,20 +444,20 @@ function Matches() {
         filters.spotlight === "all" ||
         (filters.spotlight === "featured" && m.isFeatured) ||
         (filters.spotlight === "trending" && m.isTrending);
-      const searchOk = !q || [m.title, m.teamA, m.teamB, m.tournament, m.venue, m.sport, m.status].filter(Boolean).join(" ").toLowerCase().includes(q);
+      const searchOk = !q || [m.title, m.teamA, m.teamB, getSeriesLabel(m.seriesId), m.venue, m.sport, m.status].filter(Boolean).join(" ").toLowerCase().includes(q);
       return statusOk && sportOk && spotlightOk && searchOk;
     });
 
     if (filters.sort === "oldest") {
-      list.sort((a, b) => new Date(a.matchDate) - new Date(b.matchDate));
+      list.sort((a, b) => getCreatedSortTime(a) - getCreatedSortTime(b));
     } else if (filters.sort === "az") {
       list.sort((a, b) => (a.title || `${a.teamA} vs ${a.teamB}`).localeCompare(b.title || `${b.teamA} vs ${b.teamB}`));
     } else {
-      list.sort((a, b) => new Date(b.matchDate) - new Date(a.matchDate));
+      list.sort((a, b) => getCreatedSortTime(b) - getCreatedSortTime(a));
     }
 
     return list;
-  }, [matches, filters, debouncedSearch]);
+  }, [matches, filters, debouncedSearch, getSeriesLabel]);
 
   useEffect(() => {
     setPage(1);
@@ -397,7 +468,7 @@ function Matches() {
 
   const openCreate = () => {
     setEditMode(false);
-    setForm(defaultForm);
+    setForm({ ...defaultForm, sport: sportOptions[0]?.value || "" });
     setFormErrors({});
     setModalOpen(true);
   };
@@ -411,6 +482,7 @@ function Matches() {
       matchDate: asDateTimeLocal(match.matchDate),
       seriesId: getSeriesId(match.seriesId),
       scoreSources: Array.isArray(match.scoreSources) ? match.scoreSources.map(normalizeScoreSource) : [],
+      ...getStreamFormValues(match),
       isFeatured: Boolean(match.isFeatured),
       isTrending: Boolean(match.isTrending),
       isPremium: Boolean(match.isPremium),
@@ -481,6 +553,8 @@ const handleWatch = async (match) => {
     if (!form.teamB?.trim()) nextErrors.teamB = "Team B is required";
     if (!form.matchDate) nextErrors.matchDate = "Date & time is required";
     if (!form.sport) nextErrors.sport = "Sport is required";
+    if (!form.seriesId) nextErrors.seriesId = "Linked series is required";
+    if (form.status === "live" && !form.streamUrl?.trim()) nextErrors.streamUrl = "Stream URL is required for live matches";
     setFormErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
@@ -488,6 +562,16 @@ const handleWatch = async (match) => {
   const onFormChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: "" }));
+  };
+
+  const onSeriesChange = (seriesId) => {
+    const selectedSeries = seriesOptions.find((series) => String(series._id) === String(seriesId));
+    setForm((prev) => ({
+      ...prev,
+      seriesId,
+      sport: selectedSeries?.sport || prev.sport
+    }));
+    if (formErrors.seriesId) setFormErrors((prev) => ({ ...prev, seriesId: "" }));
   };
 
   const onFileChange = (field, previewField, file) => {
@@ -519,6 +603,16 @@ const handleWatch = async (match) => {
     }));
   };
 
+  const appendStreamFields = (payload) => {
+    payload.append("streamTitle", form.streamTitle || form.title || "");
+    payload.append("streamProvider", form.streamProvider || "");
+    payload.append("streamUrl", form.streamUrl || "");
+    payload.append("streamBackupUrl", form.streamBackupUrl || "");
+    payload.append("streamType", form.streamType || "hls");
+    payload.append("streamQuality", form.streamQuality || "auto");
+    payload.append("streamIsPremium", String(Boolean(form.isPremium)));
+  };
+
   const saveMatch = async (event) => {
     event.preventDefault();
     if (!validate()) return;
@@ -533,7 +627,6 @@ const handleWatch = async (match) => {
       if (!form.teamALogoFile) payload.append("teamALogo", form.teamALogo || "");
       if (!form.teamBLogoFile) payload.append("teamBLogo", form.teamBLogo || "");
       payload.append("seriesId", form.seriesId || "");
-      payload.append("tournament", form.tournament || "");
       payload.append("venue", form.venue || "");
       payload.append("matchDate", new Date(form.matchDate).toISOString());
       payload.append("status", form.status);
@@ -541,6 +634,7 @@ const handleWatch = async (match) => {
       payload.append("isFeatured", String(Boolean(form.isFeatured)));
       payload.append("isTrending", String(Boolean(form.isTrending)));
       payload.append("isPremium", String(Boolean(form.isPremium)));
+      appendStreamFields(payload);
       if (form.thumbnailFile) payload.append("thumbnail", form.thumbnailFile);
       if (form.bannerFile) payload.append("banner", form.bannerFile);
       if (form.teamALogoFile) payload.append("teamALogo", form.teamALogoFile);
@@ -567,7 +661,11 @@ const handleWatch = async (match) => {
       } else {
         response = await api.post("/admin/matches/create", payload, { headers: { "Content-Type": "multipart/form-data" } });
         const created = response?.data?.match;
-        if (created) setMatches((prev) => [created, ...prev]);
+        if (created) {
+          setMatches((prev) => [created, ...prev.filter((match) => match._id !== created._id)]);
+          setFilters({ status: "all", sport: "all", spotlight: "all", sort: "newest" });
+          setPage(1);
+        }
         pushToast("Match created successfully", "success");
       }
 
@@ -594,15 +692,33 @@ const handleWatch = async (match) => {
 
   const updateStatus = async (match, nextStatus) => {
     try {
+      const stream = match.stream || {};
       if (nextStatus === "live") {
-        await api.patch(`/admin/matches/${match._id}/live`);
+        if (!stream.streamUrl) {
+          pushToast("Add a stream URL before going live", "error");
+          openEdit(match);
+          return;
+        }
+
+        const response = await api.patch(`/admin/matches/${match._id}/live`, {
+          streamTitle: stream.title || match.title || `${match.teamA} vs ${match.teamB}`,
+          streamProvider: stream.provider || "",
+          streamUrl: stream.streamUrl,
+          streamBackupUrl: stream.backupUrl || "",
+          streamType: stream.streamType || "hls",
+          streamQuality: stream.quality || "auto",
+          streamIsPremium: Boolean(match.isPremium)
+        });
+        const updated = response?.data?.match;
+        if (updated) setMatches((prev) => prev.map((m) => (m._id === updated._id ? updated : m)));
       } else {
-        await api.patch(`/admin/matches/${match._id}/end`);
+        const response = await api.patch(`/admin/matches/${match._id}/end`);
+        const updated = response?.data?.match;
+        if (updated) setMatches((prev) => prev.map((m) => (m._id === updated._id ? updated : m)));
       }
-      setMatches((prev) => prev.map((m) => (m._id === match._id ? { ...m, status: nextStatus } : m)));
       pushToast(`Match marked ${nextStatus}`, "success");
-    } catch {
-      pushToast("Status update failed", "error");
+    } catch (error) {
+      pushToast(error?.response?.data?.message || "Status update failed", "error");
     }
   };
 
@@ -629,7 +745,10 @@ const handleWatch = async (match) => {
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
             <button
               type="button"
-              onClick={loadMatches}
+              onClick={() => {
+                loadMatches();
+                loadSports();
+              }}
               className="admin-toolbar-btn"
             >
               <RefreshCw size={15} /> Refresh
@@ -673,7 +792,7 @@ const handleWatch = async (match) => {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by title, teams, tournament, venue..."
+              placeholder="Search by title, teams, series, venue..."
               className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-950 dark:text-slate-100"
             />
           </label>
@@ -697,8 +816,8 @@ const handleWatch = async (match) => {
           >
             <option value="all">Sport: All</option>
             {sportOptions.map((sport) => (
-              <option key={sport} value={sport}>
-                Sport: {sport.charAt(0).toUpperCase() + sport.slice(1)}
+              <option key={sport.value} value={sport.value}>
+                Sport: {sport.label}
               </option>
             ))}
           </select>
@@ -889,12 +1008,14 @@ const handleWatch = async (match) => {
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Sport</span>
                     <select value={form.sport} onChange={(e) => onFormChange("sport", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
+                      <option value="" disabled>Select sport</option>
                       {sportOptions.map((sport) => (
-                        <option key={sport} value={sport}>
-                          {sport.charAt(0).toUpperCase() + sport.slice(1)}
+                        <option key={sport.value} value={sport.value}>
+                          {sport.label}
                         </option>
                       ))}
                     </select>
+                    {formErrors.sport ? <span className="mt-1 block text-xs text-rose-500">{formErrors.sport}</span> : null}
                   </label>
 
                   <label className="block text-sm">
@@ -910,8 +1031,16 @@ const handleWatch = async (match) => {
                   </label>
 
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Tournament</span>
-                    <input value={form.tournament} onChange={(e) => onFormChange("tournament", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Linked Series</span>
+                    <select value={form.seriesId} onChange={(e) => onSeriesChange(e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
+                      <option value="" disabled>Select series</option>
+                      {seriesOptions.map((series) => (
+                        <option key={series._id} value={series._id}>
+                          {series.title || "Untitled Series"}
+                        </option>
+                      ))}
+                    </select>
+                    {formErrors.seriesId ? <span className="mt-1 block text-xs text-rose-500">{formErrors.seriesId}</span> : null}
                   </label>
 
                   <label className="block text-sm">
@@ -935,17 +1064,65 @@ const handleWatch = async (match) => {
                     </select>
                   </label>
 
-                  <label className="block text-sm">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Linked Series</span>
-                    <select value={form.seriesId} onChange={(e) => onFormChange("seriesId", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
-                      <option value="">No linked series</option>
-                      {seriesOptions.map((series) => (
-                        <option key={series._id} value={series._id}>
-                          {series.title || "Untitled Series"}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <div className="md:col-span-2 rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Stream</p>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Playback settings are saved to the Stream module for this match.</p>
+                      </div>
+                      <span className={classNames("rounded-full px-2.5 py-1 text-xs", form.streamUrl ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300")}>
+                        {form.streamUrl ? "Configured" : "Not configured"}
+                      </span>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <label className="block text-sm">
+                        <span className="mb-1 block text-slate-500 dark:text-slate-400">Stream Title</span>
+                        <input value={form.streamTitle} onChange={(e) => onFormChange("streamTitle", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
+                      </label>
+
+                      <label className="block text-sm">
+                        <span className="mb-1 block text-slate-500 dark:text-slate-400">Provider</span>
+                        <input value={form.streamProvider} onChange={(e) => onFormChange("streamProvider", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" />
+                      </label>
+
+                      <label className="block text-sm md:col-span-2">
+                        <span className="mb-1 block text-slate-500 dark:text-slate-400">Stream URL</span>
+                        <input value={form.streamUrl} onChange={(e) => onFormChange("streamUrl", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" placeholder="https://..." />
+                        {formErrors.streamUrl ? <span className="mt-1 block text-xs text-rose-500">{formErrors.streamUrl}</span> : null}
+                      </label>
+
+                      <label className="block text-sm md:col-span-2">
+                        <span className="mb-1 block text-slate-500 dark:text-slate-400">Backup URL</span>
+                        <input value={form.streamBackupUrl} onChange={(e) => onFormChange("streamBackupUrl", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100" placeholder="https://..." />
+                      </label>
+
+                      <label className="block text-sm">
+                        <span className="mb-1 block text-slate-500 dark:text-slate-400">Stream Type</span>
+                        <select value={form.streamType} onChange={(e) => onFormChange("streamType", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
+                          <option value="hls">hls</option>
+                          <option value="youtube">youtube</option>
+                          <option value="iframe">iframe</option>
+                          <option value="rtmp">rtmp</option>
+                          <option value="srt">srt</option>
+                          <option value="other">other</option>
+                        </select>
+                      </label>
+
+                      <label className="block text-sm">
+                        <span className="mb-1 block text-slate-500 dark:text-slate-400">Quality</span>
+                        <select value={form.streamQuality} onChange={(e) => onFormChange("streamQuality", e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
+                          <option value="auto">auto</option>
+                          <option value="1080p">1080p</option>
+                          <option value="720p">720p</option>
+                          <option value="480p">480p</option>
+                          <option value="360p">360p</option>
+                          <option value="240p">240p</option>
+                        </select>
+                      </label>
+
+                    </div>
+                  </div>
 
                   <div className="md:col-span-2">
                     <div className="mb-2 flex items-center justify-between gap-3">
@@ -1113,7 +1290,7 @@ const handleWatch = async (match) => {
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedMatch.title || `${selectedMatch.teamA} vs ${selectedMatch.teamB}`}</h2>
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    {selectedMatch.tournament || "Tournament TBD"} • {(selectedMatch.sport || "other").toUpperCase()}
+                    {getSeriesLabel(selectedMatch.seriesId)} - {(selectedMatch.sport || "other").toUpperCase()}
                   </p>
                 </div>
                 <button type="button" onClick={() => setSelectedMatch(null)} className="text-slate-500 transition hover:text-slate-800 dark:hover:text-slate-200">
@@ -1134,7 +1311,6 @@ const handleWatch = async (match) => {
                 <DetailItem label="Sport" value={selectedMatch.sport} />
                 <DetailItem label="Team A" value={selectedMatch.teamA} />
                 <DetailItem label="Team B" value={selectedMatch.teamB} />
-                <DetailItem label="Tournament" value={selectedMatch.tournament} />
                 <DetailItem label="Linked Series" value={getSeriesLabel(selectedMatch.seriesId)} />
                 <DetailItem label="Venue" value={selectedMatch.venue || "Venue TBD"} />
                 <DetailItem label="Date & Time" value={formatDate(selectedMatch.matchDate)} />
@@ -1146,6 +1322,28 @@ const handleWatch = async (match) => {
                 <DetailItem label="Created At" value={formatDate(selectedMatch.createdAt)} />
                 <DetailItem label="Updated At" value={formatDate(selectedMatch.updatedAt)} />
                 <DetailItem label="Description" value={selectedMatch.description || "No description added."} className="md:col-span-2 xl:col-span-3" />
+              </div>
+
+              <div className="mt-4 rounded-xl p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Stream</h3>
+                  <span className={classNames("rounded-full px-2 py-0.5 text-xs", selectedMatch.stream?.streamUrl ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300")}>
+                    {selectedMatch.stream?.status || "not configured"}
+                  </span>
+                </div>
+                {selectedMatch.stream ? (
+                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    <DetailItem label="Provider" value={selectedMatch.stream.provider} />
+                    <DetailItem label="Type" value={selectedMatch.stream.streamType} />
+                    <DetailItem label="Quality" value={selectedMatch.stream.quality} />
+                    <DetailItem label="Stream URL" value={selectedMatch.stream.streamUrl} className="md:col-span-2 xl:col-span-3" />
+                    <DetailItem label="Backup URL" value={selectedMatch.stream.backupUrl} className="md:col-span-2 xl:col-span-3" />
+                    <DetailItem label="Started At" value={formatDate(selectedMatch.stream.startedAt)} />
+                    <DetailItem label="Ended At" value={formatDate(selectedMatch.stream.endedAt)} />
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No stream configured for this match.</p>
+                )}
               </div>
 
               <div className="mt-4 rounded-xl p-4">

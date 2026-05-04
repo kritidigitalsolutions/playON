@@ -20,6 +20,12 @@ exports.validatePromo = async ({
     throw new Error("Invalid promo code");
   }
 
+  // 🔒 USER-SPECIFIC PROMO CHECK (Referral support)
+if (promo.assignedTo) {
+  if (promo.assignedTo.toString() !== userId.toString()) {
+    throw new Error("This promo is not assigned to you");
+  }
+}
   const now = new Date();
 
   // Start date check

@@ -26,7 +26,6 @@ const MODULES = [
   // Content & Match
   { key: "matches",        label: "Matches",         group: "Content" },
   { key: "series",         label: "Tours & Series",  group: "Content" },
-  { key: "streams",        label: "Streams",         group: "Content" },
   { key: "channels",       label: "Live TV",         group: "Content" },
   { key: "matchHighlights",label: "Match Highlights",group: "Content" },
   { key: "starPlayers",    label: "Star Players",    group: "Content" },

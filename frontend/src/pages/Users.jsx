@@ -131,7 +131,12 @@ function Users() {
       render: (row) => (
         <div className="flex items-center gap-3">
           {row.profilePic ? (
-            <img src={row.profilePic} alt={row.fullName || row.mobile} className="h-9 w-9 rounded-full object-cover" />
+            <img 
+              src={row.profilePic} 
+              alt={row.fullName || row.mobile} 
+              className="h-9 w-9 rounded-full object-cover" 
+              referrerPolicy="no-referrer"
+            />
           ) : (
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-500/20 text-xs font-semibold text-indigo-500">
               {(row.fullName || row.mobile || "U").charAt(0).toUpperCase()}
@@ -264,7 +269,12 @@ function Users() {
 
               <div className="flex items-center gap-4">
                 {selectedUser.profilePic ? (
-                  <img src={selectedUser.profilePic} alt={selectedUser.fullName || "User"} className="h-16 w-16 rounded-full object-cover" />
+                  <img 
+                    src={selectedUser.profilePic} 
+                    alt={selectedUser.fullName || "User"} 
+                    className="h-16 w-16 rounded-full object-cover" 
+                    referrerPolicy="no-referrer"
+                  />
                 ) : (
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-500/20 text-lg font-semibold text-indigo-500">
                     {(selectedUser.fullName || selectedUser.mobile || "U").charAt(0).toUpperCase()}

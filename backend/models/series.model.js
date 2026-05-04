@@ -36,6 +36,11 @@ const seriesSchema = new mongoose.Schema(
       default: ""
     },
 
+    tournamentLogo: {
+      type: String,
+      default: ""
+    },
+
     description: {
       type: String,
       default: ""
@@ -93,6 +98,10 @@ const seriesSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    isTrending: {
+      type: Boolean,
+      default: false
+    },
     isHomeScreen: {
       type: Boolean,
       default: false
@@ -115,6 +124,7 @@ const seriesSchema = new mongoose.Schema(
 seriesSchema.index({ sport: 1 });
 seriesSchema.index({ status: 1 });
 seriesSchema.index({ isFeatured: 1 });
+seriesSchema.index({ isTrending: 1 });
 seriesSchema.index({ isPremium: 1 });
 seriesSchema.index({ slug: 1 });
 seriesSchema.index(

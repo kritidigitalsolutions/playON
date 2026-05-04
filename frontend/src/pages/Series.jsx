@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, Pencil, Plus, RefreshCw, Star, Trash2, Film, X, Calendar, MapPin, Trophy, Users, Clock, Info, Home } from "lucide-react";
+import { Eye, Flame, Pencil, Plus, RefreshCw, Star, Trash2, Film, X, Calendar, MapPin, Trophy, Users, Clock, Info, Home } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
@@ -21,9 +21,11 @@ const defaultForm = {
   endDate: "",
   status: "upcoming",
   isFeatured: false,
+  isTrending: false,
   isPremium: false,
   isHomeScreen: false,
   imageFile: null,
+  tournamentLogoFile: null,
   matchIds: []
 };
 
@@ -145,6 +147,7 @@ function Series() {
   const live = seriesList.filter((item) => item.status === "live").length;
   const completed = seriesList.filter((item) => item.status === "completed").length;
   const featured = seriesList.filter((item) => item.isFeatured).length;
+  const trending = seriesList.filter((item) => item.isTrending).length;
   const homeScreen = seriesList.filter((item) => item.isHomeScreen).length;
 
   return {
@@ -153,7 +156,8 @@ function Series() {
     live,
     completed,
     featured,
-    homeScreen // ✅ added
+    trending,
+    homeScreen
   };
 }, [seriesList]);
 
@@ -407,9 +411,11 @@ const getMatchObj = (id) => matchMap.get(String(id));
       endDate: series?.endDate ? new Date(series.endDate).toISOString().split('T')[0] : "",
       status: series?.status || "upcoming",
       isFeatured: Boolean(series?.isFeatured),
+      isTrending: Boolean(series?.isTrending),
       isPremium: Boolean(series?.isPremium),
       isHomeScreen: Boolean(series?.isHomeScreen),
       imageFile: null,
+      tournamentLogoFile: null,
       matchIds: getSeriesMatchIds(series)
     });
     setTempPlayerA("");
@@ -463,9 +469,11 @@ const getMatchObj = (id) => matchMap.get(String(id));
       if (form.endDate) payload.append("endDate", form.endDate);
       payload.append("status", form.status || "upcoming");
       payload.append("isFeatured", String(Boolean(form.isFeatured)));
+      payload.append("isTrending", String(Boolean(form.isTrending)));
       payload.append("isPremium", String(Boolean(form.isPremium)));
       payload.append("isHomeScreen", String(Boolean(form.isHomeScreen)));
       if (form.imageFile) payload.append("banner", form.imageFile);
+      if (form.tournamentLogoFile) payload.append("tournamentLogo", form.tournamentLogoFile);
 
       let response;
       if (editMode && form._id) {
@@ -608,6 +616,10 @@ const getMatchObj = (id) => matchMap.get(String(id));
           <p className="mt-2 text-2xl font-semibold text-amber-500">{stats.featured}</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
+          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Trending</p>
+          <p className="mt-2 text-2xl font-semibold text-emerald-500">{stats.trending}</p>
+        </div>
+        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Home Screen</p>
           <p className="mt-2 text-2xl font-semibold text-indigo-500">{stats.homeScreen}</p>
         </div>
@@ -637,8 +649,8 @@ const getMatchObj = (id) => matchMap.get(String(id));
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
                 <div className="h-12 w-12 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:bg-slate-800">
-                  {series.banner ? (
-                    <img src={series.banner} alt={series.title || "Series"} className="h-full w-full object-cover" />
+                  {series.tournamentLogo || series.banner ? (
+                    <img src={series.tournamentLogo || series.banner} alt={series.title || "Series"} className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-slate-400">
                       <Film size={18} />
@@ -663,6 +675,11 @@ const getMatchObj = (id) => matchMap.get(String(id));
               {series.isFeatured && (
                 <span className="inline-flex items-center gap-1 rounded-xl border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-amber-600 dark:bg-amber-500/10">
                   <Star size={12} className="fill-current" /> Featured
+                </span>
+              )}
+              {series.isTrending && (
+                <span className="inline-flex items-center gap-1 rounded-xl border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs text-emerald-600 dark:bg-emerald-500/10">
+                  <Flame size={12} className="fill-current" /> Trending
                 </span>
               )}
               {series.isPremium && (
@@ -711,7 +728,7 @@ const getMatchObj = (id) => matchMap.get(String(id));
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{editMode ? "Edit Series" : "Create Series"}</h2>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Update series details, dates, and banner.</p>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Update series details, dates, logo, and banner.</p>
                 </div>
                 <button type="button" onClick={closeModal} className="text-slate-500 transition hover:text-slate-800 dark:hover:text-slate-200">
                   <X size={18} />
@@ -807,6 +824,18 @@ const getMatchObj = (id) => matchMap.get(String(id));
                     </select>
                   </label>
 
+                  <label className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/50 px-4 py-3 text-sm dark:border-emerald-500/30 dark:bg-emerald-500/10">
+                    <input
+                      type="checkbox"
+                      checked={form.isTrending}
+                      onChange={(e) => onFormChange("isTrending", e.target.checked)}
+                      className="h-4 w-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-400"
+                    />
+                    <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300">
+                      <Flame size={14} className="fill-current" /> Is Trending
+                    </span>
+                  </label>
+
                   <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm">
                     <input
                       type="checkbox"
@@ -843,6 +872,16 @@ const getMatchObj = (id) => matchMap.get(String(id));
                       type="file"
                       accept="image/*"
                       onChange={(e) => onFormChange("imageFile", e.target.files?.[0] || null)}
+                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
+                    />
+                  </label>
+
+                  <label className="block text-sm md:col-span-2">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Tournament Logo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => onFormChange("tournamentLogoFile", e.target.files?.[0] || null)}
                       className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
                     />
                   </label>
@@ -1209,6 +1248,11 @@ const getMatchObj = (id) => matchMap.get(String(id));
                               <Star size={10} className="fill-current" /> Featured
                             </span>
                           )}
+                          {selectedSeries.isTrending && (
+                            <span className="flex items-center gap-1 rounded-lg bg-emerald-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                              <Flame size={10} className="fill-current" /> Trending
+                            </span>
+                          )}
                           {selectedSeries.isHomeScreen && (
                             <span className="flex items-center gap-1 rounded-lg bg-indigo-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
                               <Home size={10} className="fill-current" /> Home Screen
@@ -1220,7 +1264,16 @@ const getMatchObj = (id) => matchMap.get(String(id));
                             </span>
                           )}
                         </div>
-                        <h2 className="mt-2 text-3xl font-bold text-white">{selectedSeries.title || "Untitled Series"}</h2>
+                        <div className="mt-2 flex items-center gap-3">
+                          {selectedSeries.tournamentLogo ? (
+                            <img
+                              src={selectedSeries.tournamentLogo}
+                              alt={`${selectedSeries.title || "Series"} logo`}
+                              className="h-12 w-12 rounded-xl border border-white/20 bg-white/10 object-contain p-1"
+                            />
+                          ) : null}
+                          <h2 className="text-3xl font-bold text-white">{selectedSeries.title || "Untitled Series"}</h2>
+                        </div>
                         <p className="mt-1 flex items-center gap-2 text-slate-300">
                           <Trophy size={14} className="text-indigo-400" />
                           <span className="text-sm font-medium">{(selectedSeries.sport || "Other").toUpperCase()}</span>

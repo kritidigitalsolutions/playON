@@ -6,6 +6,7 @@ exports.getAvailablePromos = async (req, res) => {
 
     const promos = await PromoCode.find({
       isActive: true,
+      isReferral: { $ne: true }, // 🔥 Don't show referral templates in checkout
       $and: [
         {
           $or: [

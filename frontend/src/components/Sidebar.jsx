@@ -6,7 +6,6 @@ import {
   CircleUserRound,
   LayoutDashboard,
   Layers3,
-  Radio,
   Tv,
   Settings,
   Shield,
@@ -31,21 +30,20 @@ import { getAdminProfile } from "../utils/auth";
 
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-   { label: "Sub Admins", path: "/sub-admins", icon: ShieldCheck, superOnly: true },
+  { label: "Sub Admins", path: "/sub-admins", icon: ShieldCheck, superOnly: true },
   { label: "Users", path: "/users", icon: Users },
 
   { label: "Players", path: "/players", icon: UserRound },
   { label: "Teams", path: "/teams", icon: Shield },
+  { label: "Sports", path: "/sports", icon: Trophy },
   { label: "Tours & Series", path: "/series", icon: Film },
+  { label: "Matches", path: "/matches", icon: Swords },
   { label: "Subscribed Users", path: "/user-plans", icon: Wallet },
   { label: "Subscription Plans", path: "/plans", icon: Layers3 },
-  { label: "Matches", path: "/matches", icon: Swords },
-  { label: "Sports", path: "/sports", icon: Trophy },
   { label: "Banners", path: "/banners", icon: ImageIcon },
   { label: "Star Players", path: "/star-players", icon: Star },
   { label: "Match Highlights", path: "/match-highlights", icon: Clapperboard },
   { label: "Podcasts", path: "/podcasts", icon: Mic },
-  { label: "Streams", path: "/streams", icon: Radio },
   { label: "Live TV", path: "/livetv", icon: Tv },
   { label: "Activate TV", path: "/activate-tv", icon: Tv },
   { label: "Notifications", path: "/notifications", icon: Bell },
@@ -61,7 +59,7 @@ function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onCloseMobile, o
   const sidebarClasses = `
     fixed inset-y-0 left-0 z-40 flex h-screen flex-col border-r border-indigo-200/30
     bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 text-slate-100 backdrop-blur
-    transition-all duration-300 ${isCollapsed ? "w-[90px]" : "w-[260px]"}
+    pb-0 transition-all duration-300 ${isCollapsed ? "w-[90px]" : "w-[260px]"}
   `;
 
   return (
@@ -85,10 +83,9 @@ function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onCloseMobile, o
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `group flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${
-                    isActive
-                      ? "bg-gradient-to-r from-indigo-500/40 to-violet-500/30 text-white"
-                      : "text-slate-300 hover:bg-white/10"
+                  `group flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${isActive
+                    ? "bg-gradient-to-r from-indigo-500/40 to-violet-500/30 text-white"
+                    : "text-slate-300 hover:bg-white/10"
                   }`
                 }
               >
@@ -99,19 +96,23 @@ function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onCloseMobile, o
           })}
         </nav>
 
-        <div className="m-3 space-y-2 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-slate-300">
-          <div className="flex items-center gap-2">
-            <CircleUserRound size={16} />
-            {!isCollapsed && "Platform health stable"}
+        <div className="mt-auto">
+          <div className="mx-3 mt-3 mb-2 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-slate-300">
+            <div className="flex items-center gap-2">
+              <CircleUserRound size={16} />
+              {!isCollapsed && "Platform health stable"}
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={onLogout}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-rose-300/30 bg-rose-500/10 px-3 py-2 text-rose-200 transition hover:bg-rose-500/20"
-          >
-            <LogOut size={14} />
-            {!isCollapsed && <span>Logout</span>}
-          </button>
+          <div className="px-3 pb-4">
+            <button
+              type="button"
+              onClick={onLogout}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-rose-300/30 bg-rose-500/10 px-3 py-2 text-rose-200 transition hover:bg-rose-500/20"
+            >
+              <LogOut size={14} />
+              {!isCollapsed && <span>Logout</span>}
+            </button>
+          </div>
         </div>
       </motion.aside>
 
@@ -119,7 +120,7 @@ function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onCloseMobile, o
         initial={{ x: -280 }}
         animate={{ x: isMobileOpen ? 0 : -280 }}
         transition={{ type: "spring", stiffness: 260, damping: 28 }}
-        className="fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col border-r border-indigo-200/30 bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 text-slate-100 lg:hidden"
+        className="fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col border-r border-indigo-200/30 bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 pb-0 text-slate-100 lg:hidden"
       >
         <div className="flex items-center justify-between p-4">
           <span className="text-lg font-semibold">PlayON Admin</span>
@@ -136,8 +137,7 @@ function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onCloseMobile, o
                 to={item.path}
                 onClick={onCloseMobile}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${
-                    isActive ? "bg-indigo-500/40 text-white" : "text-slate-200 hover:bg-white/10"
+                  `flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${isActive ? "bg-indigo-500/40 text-white" : "text-slate-200 hover:bg-white/10"
                   }`
                 }
               >
@@ -147,7 +147,7 @@ function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onCloseMobile, o
             );
           })}
         </nav>
-        <div className="mt-auto p-3">
+        <div className="mt-auto px-3 pb-4">
           <button
             type="button"
             onClick={() => {

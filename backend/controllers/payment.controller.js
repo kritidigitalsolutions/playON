@@ -159,16 +159,11 @@ exports.verifyPayment = async (req, res) => {
         process.env.RAZORPAY_KEY_SECRET
       )
       .update(
-        razorpay_order_id +
-        "|" +
-        razorpay_payment_id
+        razorpay_order_id + "|" + razorpay_payment_id
       )
       .digest("hex");
 
-    if (
-      generatedSignature !==
-      razorpay_signature
-    ) {
+    if (generatedSignature !== razorpay_signature) {
       return res.status(400).json({
         success: false,
         message: "Invalid payment signature"
@@ -177,10 +172,9 @@ exports.verifyPayment = async (req, res) => {
 
     const userId = req.user.userId;
 
-    const alreadyExists =
-      await Subscription.findOne({
-        paymentId: razorpay_payment_id
-      });
+    const alreadyExists = await Subscription.findOne({
+      paymentId: razorpay_payment_id
+    });
 
     if (alreadyExists) {
       return res.json({
@@ -204,13 +198,12 @@ exports.verifyPayment = async (req, res) => {
     let appliedPromo = null;
 
     if (promoCode) {
-      const result =
-        await promoService.validatePromo({
-          code: promoCode,
-          userId,
-          planId: plan._id,
-          amount: plan.price
-        });
+      const result = await promoService.validatePromo({
+        code: promoCode,
+        userId,
+        planId: plan._id,
+        amount: plan.price
+      });
 
       amountPaid = result.finalAmount;
       discount = result.discount;
@@ -219,46 +212,54 @@ exports.verifyPayment = async (req, res) => {
 
     const startDate = new Date();
     const endDate = new Date();
+    endDate.setDate(endDate.getDate() + plan.durationDays);
 
-    endDate.setDate(
-      endDate.getDate() + plan.durationDays
-    );
+    const subscription = await Subscription.create({
+      userId,
+      planId: plan._id,
+      teamId: teamId || null,
+      matchId: matchId || null,
+      seriesId: seriesId || null,
+      accessType: plan.planType,
+      status: "active",
+      startDate,
+      endDate,
+      amountPaid,
+      paymentId: razorpay_payment_id,
+      promoCode: appliedPromo || "",
+      discountAmount: discount || 0
+    });
 
-    const subscription =
-      await Subscription.create({
-        userId,
-        planId: plan._id,
+    // =========================
+    // 🔥 REFERRAL REWARD LOGIC
+    // =========================
+    const user = await User.findById(userId);
 
-        teamId: teamId || null,
-        matchId: matchId || null,
-        seriesId: seriesId || null,
+    if (
+      user &&
+      user.referredBy &&
+      !user.hasCompletedReferralReward
+    ) {
+      const { rewardReferrer } = require("../utils/referralReward");
 
-        accessType: plan.planType,
+      await rewardReferrer(user.referredBy);
 
-        status: "active",
-        startDate,
-        endDate,
-        amountPaid,
-        paymentId: razorpay_payment_id,
+      user.hasCompletedReferralReward = true;
+      await user.save();
+    }
 
-        promoCode: appliedPromo || "",
-        discountAmount: discount || 0
+    // =========================
+    // PROMO USAGE TRACKING
+    // =========================
+    if (appliedPromo) {
+      const promo = await PromoCode.findOne({
+        code: appliedPromo
       });
 
-    // Mark promo used after successful payment
-    if (appliedPromo) {
-      const promo =
-        await PromoCode.findOne({
-          code: appliedPromo
-        });
-
       if (promo) {
-        await PromoCode.findByIdAndUpdate(
-          promo._id,
-          {
-            $inc: { usedCount: 1 }
-          }
-        );
+        await PromoCode.findByIdAndUpdate(promo._id, {
+          $inc: { usedCount: 1 }
+        });
 
         await PromoUsage.create({
           promoId: promo._id,
@@ -269,10 +270,10 @@ exports.verifyPayment = async (req, res) => {
       }
     }
 
+    // =========================
     // AD FREE LOGIC
+    // =========================
     if (plan.planType === "ad_free") {
-      const user = await User.findById(userId);
-
       if (user) {
         user.adsDisabled = true;
 
@@ -281,15 +282,12 @@ exports.verifyPayment = async (req, res) => {
           user.adFreePurchaseType = "lifetime";
         } else {
           const expiryDate = new Date();
-
           expiryDate.setDate(
-            expiryDate.getDate() +
-            plan.durationDays
+            expiryDate.getDate() + plan.durationDays
           );
 
           user.adsExpiry = expiryDate;
-          user.adFreePurchaseType =
-            "temporary";
+          user.adFreePurchaseType = "temporary";
         }
 
         await user.save();

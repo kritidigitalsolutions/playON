@@ -155,6 +155,11 @@ const starPlayerRoutes = require("./routes/user/starPlayer.routes");
 
 app.use("/api/admin/star-players", adminStarPlayerRoutes);
 app.use("/api/star-players", starPlayerRoutes);
+
+//comments
+const commentRoutes = require("./routes/user/comment.routes");
+app.use("/api/comments", commentRoutes);
+
 startAutoLiveMatches();
 
 module.exports = app;

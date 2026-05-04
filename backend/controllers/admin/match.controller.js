@@ -1,4 +1,5 @@
 const matchService = require("../../services/match.service");
+const matchStreamSync = require("../../services/matchStreamSync.service");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
 const autoNotify = require("../../utils/autoNotify");
 
@@ -33,7 +34,7 @@ const normalizeStatusForMatchDate = (status, matchDate) => {
 };
 
 const normalizeMatchBody = (body = {}) => {
-  const data = { ...body };
+  const data = matchStreamSync.stripStreamFields(body);
 
   delete data.score;
   data.scoreSources = parseScoreSources(body.scoreSources);
@@ -77,6 +78,21 @@ const formatMatch = (req, doc) => {
   };
 };
 
+const formatStream = (req, doc) => {
+  if (!doc) return null;
+  const stream = doc.toObject ? doc.toObject() : doc;
+
+  return {
+    ...stream,
+    thumbnail: fileUrl(req, stream.thumbnail)
+  };
+};
+
+const formatMatchWithStream = (req, match, stream) => ({
+  ...formatMatch(req, match),
+  stream: formatStream(req, stream)
+});
+
 // Create
 exports.createMatch = async (req, res) => {
   try {
@@ -113,6 +129,13 @@ exports.createMatch = async (req, res) => {
       );
     }
 
+    if (req.body.status === "live" && !req.body.streamUrl?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Stream URL is required before going live"
+      });
+    }
+
     const data = {
       ...normalizeMatchBody(req.body),
       isFeatured: parseBoolean(req.body.isFeatured),
@@ -126,19 +149,25 @@ exports.createMatch = async (req, res) => {
     };
 
     const match = await matchService.createMatch(data);
+    const stream = await matchStreamSync.syncForMatch(match, req.body, {
+      createdBy: req.admin._id
+    });
+
     await autoNotify({
       title: "New Match Added",
       message: `${match.teamA} vs ${match.teamB} is now scheduled.`,
       type: "MATCH",
       metadata: {
         matchId: match._id,
+        streamId: stream?._id,
+        actionUrl: `/matches/${match._id}`,
         image: match.banner || match.thumbnail || ""
       }
     });
     res.status(201).json({
       success: true,
       message: "Match created successfully",
-      match: formatMatch(req, match)
+      match: formatMatchWithStream(req, match, stream)
     });
   } catch (error) {
     res.status(500).json({
@@ -152,11 +181,16 @@ exports.createMatch = async (req, res) => {
 exports.getAllMatches = async (req, res) => {
   try {
     const result = await matchService.getAdminMatches(req.query);
+    const streamsByMatchId = await matchStreamSync.getStreamsByMatchIds(
+      result.matches.map((item) => item._id)
+    );
 
     res.json({
       success: true,
       ...result,
-      matches: result.matches.map((item) => formatMatch(req, item))
+      matches: result.matches.map((item) =>
+        formatMatchWithStream(req, item, streamsByMatchId.get(String(item._id)))
+      )
     });
   } catch (error) {
     res.status(500).json({
@@ -177,10 +211,11 @@ exports.getSingleMatch = async (req, res) => {
         message: "Match not found"
       });
     }
+    const stream = await matchStreamSync.getLatestStreamByMatch(match._id);
 
     res.json({
       success: true,
-      match: formatMatch(req, match)
+      match: formatMatchWithStream(req, match, stream)
     });
   } catch (error) {
     res.status(500).json({
@@ -203,6 +238,24 @@ exports.updateMatch = async (req, res) => {
     }
     if (req.body.isPremium !== undefined) {
       data.isPremium = parseBoolean(req.body.isPremium);
+    }
+
+    const existingMatch = await matchService.getMatchById(req.params.id);
+    if (!existingMatch) {
+      return res.status(404).json({
+        success: false,
+        message: "Match not found"
+      });
+    }
+
+    if (data.status === "live") {
+      const existingStream = await matchStreamSync.getLatestStreamByMatch(existingMatch._id);
+      if (!req.body.streamUrl?.trim() && !existingStream?.streamUrl) {
+        return res.status(400).json({
+          success: false,
+          message: "Stream URL is required before going live"
+        });
+      }
     }
 
     if (req.files?.thumbnail?.[0]) {
@@ -232,6 +285,7 @@ exports.updateMatch = async (req, res) => {
         "matches"
       );
     }
+
     const match = await matchService.updateMatch(req.params.id, data);
 
     if (!match) {
@@ -241,10 +295,26 @@ exports.updateMatch = async (req, res) => {
       });
     }
 
+    const stream = await matchStreamSync.syncForMatch(match, req.body);
+
+    if (existingMatch.status !== "live" && match.status === "live" && stream?.streamUrl) {
+      await autoNotify({
+        title: "Match Live Now",
+        message: `${match.teamA} vs ${match.teamB} is live now.`,
+        type: "STREAM",
+        metadata: {
+          matchId: match._id,
+          streamId: stream._id,
+          actionUrl: `/matches/${match._id}/watch`,
+          image: stream.thumbnail || match.banner || match.thumbnail || ""
+        }
+      });
+    }
+
     res.json({
       success: true,
       message: "Match updated successfully",
-      match: formatMatch(req, match)
+      match: formatMatchWithStream(req, match, stream)
     });
   } catch (error) {
     res.status(500).json({
@@ -265,6 +335,7 @@ exports.deleteMatch = async (req, res) => {
         message: "Match not found"
       });
     }
+    await matchStreamSync.deleteStreamsForMatch(match._id);
 
     res.json({
       success: true,
@@ -306,35 +377,36 @@ exports.toggleFeatured = async (req, res) => {
 // Go Live
 exports.goLive = async (req, res) => {
   try {
-    // const match = await matchService.goLive(req.params.id);
+    const currentMatch = await matchService.getMatchById(req.params.id);
 
-    const match = await matchService.goLive(
-      req.params.id,
-      req.body
-    );
-
-    if (!match) {
+    if (!currentMatch) {
       return res.status(404).json({
         success: false,
         message: "Match not found"
       });
     }
+
+    const stream = await matchStreamSync.markStreamLiveForMatch(currentMatch, req.body);
+    const match = await matchService.goLive(req.params.id, req.body);
+
     await autoNotify({
       title: "Match Live Now",
       message: `${match.teamA} vs ${match.teamB} is live now.`,
-      type: "MATCH",
+      type: "STREAM",
       metadata: {
         matchId: match._id,
-        image: match.banner || match.thumbnail || ""
+        streamId: stream?._id,
+        actionUrl: `/matches/${match._id}/watch`,
+        image: stream?.thumbnail || match.banner || match.thumbnail || ""
       }
     });
     res.json({
       success: true,
       message: "Match is now live",
-      match: formatMatch(req, match)
+      match: formatMatchWithStream(req, match, stream)
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       success: false,
       message: error.message
     });
@@ -352,11 +424,12 @@ exports.endLive = async (req, res) => {
         message: "Match not found"
       });
     }
+    const stream = await matchStreamSync.endStreamForMatch(match._id);
 
     res.json({
       success: true,
       message: "Match ended",
-      match: formatMatch(req, match)
+      match: formatMatchWithStream(req, match, stream)
     });
   } catch (error) {
     res.status(500).json({
@@ -383,8 +456,7 @@ exports.watchMatch = async (req, res) => {
       });
     }
 
-    const Stream = require("../../models/stream.model");
-    const stream = await Stream.findOne({ matchId: req.params.id }).sort({ createdAt: -1 });
+    const stream = await matchStreamSync.getLatestStreamByMatch(req.params.id);
 
     if (!stream || !stream.streamUrl) {
       return res.status(404).json({
@@ -404,9 +476,11 @@ exports.watchMatch = async (req, res) => {
       preview: true,
       stream: {
         streamUrl: stream.streamUrl,
-        streamType: stream.streamType
+        streamType: stream.streamType,
+        backupUrl: stream.backupUrl,
+        quality: stream.quality
       },
-      match
+      match: formatMatchWithStream(req, match, stream)
     });
   } catch (error) {
     res.status(500).json({
