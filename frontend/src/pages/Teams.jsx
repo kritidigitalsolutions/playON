@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, Pencil, Plus, RefreshCw, Shield, ToggleLeft, ToggleRight, Trash2, X } from "lucide-react";
 import api from "../api/axios";
@@ -40,7 +40,7 @@ function Teams() {
   const [deleting, setDeleting] = useState(false);
   const [actionId, setActionId] = useState("");
 
-  const loadTeams = useCallback(async () => {
+  const loadTeams = async () => {
     try {
       setLoading(true);
       setError("");
@@ -52,9 +52,9 @@ function Teams() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  useEffect(() => { loadTeams(); }, [loadTeams]);
+  useEffect(() => { loadTeams(); }, []);
 
   const stats = useMemo(() => {
     const active = teams.filter(t => t.isActive).length;
@@ -83,9 +83,11 @@ function Teams() {
   const openEdit = (t) => {
     setEditMode(true);
     setFormErrors({});
-    setForm({ _id: t._id || "", name: t.name || "", slug: t.slug || "", shortName: t.shortName || "",
+    setForm({
+      _id: t._id || "", name: t.name || "", slug: t.slug || "", shortName: t.shortName || "",
       sport: t.sport || "cricket", country: t.country || "", logo: t.logo || "",
-      isActive: Boolean(t.isActive), sortOrder: String(t.sortOrder ?? 0) });
+      isActive: Boolean(t.isActive), sortOrder: String(t.sortOrder ?? 0)
+    });
     setModalOpen(true);
   };
 

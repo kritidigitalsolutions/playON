@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   CheckCircle2,
@@ -24,30 +24,30 @@ import { paginate } from "../utils/helpers";
 
 const MODULES = [
   // Content & Match
-  { key: "matches",        label: "Matches",         group: "Content" },
-  { key: "series",         label: "Tours & Series",  group: "Content" },
-  { key: "channels",       label: "Live TV",         group: "Content" },
-  { key: "matchHighlights",label: "Match Highlights",group: "Content" },
-  { key: "starPlayers",    label: "Star Players",    group: "Content" },
-  { key: "podcasts",       label: "Podcasts",        group: "Content" },
+  { key: "matches", label: "Matches", group: "Content" },
+  { key: "series", label: "Tours & Series", group: "Content" },
+  { key: "channels", label: "Live TV", group: "Content" },
+  { key: "matchHighlights", label: "Match Highlights", group: "Content" },
+  { key: "starPlayers", label: "Star Players", group: "Content" },
+  { key: "podcasts", label: "Podcasts", group: "Content" },
   // People
-  { key: "users",          label: "Users",           group: "People" },
-  { key: "players",        label: "Players",         group: "People" },
-  { key: "teams",          label: "Teams",           group: "People" },
+  { key: "users", label: "Users", group: "People" },
+  { key: "players", label: "Players", group: "People" },
+  { key: "teams", label: "Teams", group: "People" },
   // Commerce
-  { key: "plans",          label: "Plans",           group: "Commerce" },
-  { key: "promos",         label: "Coupon Codes",    group: "Commerce" },
+  { key: "plans", label: "Plans", group: "Commerce" },
+  { key: "promos", label: "Coupon Codes", group: "Commerce" },
   // Platform
-  { key: "sports",         label: "Sports",          group: "Platform" },
-  { key: "bannerAds",      label: "Banners",         group: "Platform" },
-  { key: "admobPlacements",label: "AdMob Placements",group: "Platform" },
-  { key: "notifications",  label: "Notifications",   group: "Platform" },
-  { key: "reports",        label: "Reports",         group: "Platform" },
-  { key: "socialMedia",    label: "Social Media",    group: "Platform" },
-  { key: "legal",          label: "Legal Pages",     group: "Platform" },
+  { key: "sports", label: "Sports", group: "Platform" },
+  { key: "bannerAds", label: "Banners", group: "Platform" },
+  { key: "admobPlacements", label: "AdMob Placements", group: "Platform" },
+  { key: "notifications", label: "Notifications", group: "Platform" },
+  { key: "reports", label: "Reports", group: "Platform" },
+  { key: "socialMedia", label: "Social Media", group: "Platform" },
+  { key: "legal", label: "Legal Pages", group: "Platform" },
   // Admin
-  { key: "settings",       label: "Settings",        group: "Admin" },
-  { key: "admins",         label: "Sub Admins",      group: "Admin" },
+  { key: "settings", label: "Settings", group: "Admin" },
+  { key: "admins", label: "Sub Admins", group: "Admin" },
 ];
 
 const ACTIONS = [
@@ -128,6 +128,82 @@ const darkButtonClass =
 function SubAdmins() {
   const currentAdminEmail = getAdminProfile()?.email?.toLowerCase() || "";
   const emailInputRef = useRef(null);
+  const passwordInputRef = useRef(null);
+  const [subAdmins, setSubAdmins] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [form, setForm] = useState(defaultForm);
+  const [formErrors, setFormErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [actionId, setActionId] = useState("");
+  const [permissionSearch, setPermissionSearch] = useState("");
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const loadSubAdmins = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await api.get("/admin/sub-admins");
+      setSubAdmins(Array.isArray(response?.data?.admins) ? response.data.admins : []);
+    } catch (apiError) {
+      setSubAdmins([]);
+      setError(apiError?.response?.data?.message || "Unable to load sub admins.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSubAdmins();
+  }, []);
+
+  useEffect(() => {
+    if (!modalOpen || editMode) {
+      return undefined;
+    }
+
+    const clearAutofillTimer = window.setTimeout(() => {
+      if (emailInputRef.current) {
+        emailInputRef.current.value = "";
+      }
+
+      if (passwordInputRef.current) {
+        passwordInputRef.current.value = "";
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        email: "",
+        password: ""
+      }));
+    }, 250);
+
+    return () => window.clearTimeout(clearAutofillTimer);
+  }, [editMode, modalOpen]);
+
+  const stats = useMemo(() => {
+    const active = subAdmins.filter((admin) => admin.isActive).length;
+    const totalGrants = subAdmins.reduce((total, admin) => total + getPermissionCount(admin), 0);
+
+    return {
+      total: subAdmins.length,
+      active,
+      inactive: subAdmins.length - active,
+      totalGrants
+    };
+  }, [subAdmins]);
+
+  const filteredAdmins = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
     return subAdmins.filter((admin) => {
       const statusOk = statusFilter === "all" ? true : statusFilter === "active" ? admin.isActive : !admin.isActive;
       const haystack = [admin.name, admin.email]
