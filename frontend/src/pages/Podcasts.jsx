@@ -266,7 +266,7 @@ function Podcasts() {
                 <div className="absolute top-3 right-3 flex gap-2">
                   {podcast.isPremium && (
                     <span className="flex items-center rounded-full bg-violet-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
-                      ðŸ‘‘ Premium
+                      👑 Premium
                     </span>
                   )}
                   <button
@@ -470,7 +470,7 @@ function Podcasts() {
                     onChange={e => onFormChange("isPremium", e.target.checked)} 
                     className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500" 
                   />
-                  <span className="text-violet-700 dark:text-violet-300">ðŸ‘‘ Premium Content <span className="text-xs text-slate-400">(subscription required to listen)</span></span>
+                  <span className="text-violet-700 dark:text-violet-300">👑 Premium Content <span className="text-xs text-slate-400">(subscription required to listen)</span></span>
                 </label>
 
                 <div className="block text-sm">

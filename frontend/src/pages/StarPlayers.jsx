@@ -326,7 +326,7 @@ function StarPlayers() {
               )}
               {hl.isPremium && (
                 <div className="absolute right-2 top-2 rounded-lg bg-violet-600 px-2 py-1 text-xs font-bold text-white shadow-sm flex items-center gap-1">
-                  ðŸ‘‘ Premium
+                  👑 Premium
                 </div>
               )}
               {hl.duration && (
@@ -612,7 +612,7 @@ function StarPlayers() {
                 <p><strong>Type:</strong> {selectedHighlight.type}</p>
                 <p><strong>Duration:</strong> {selectedHighlight.duration || "-"}</p>
                 <p><strong>Featured:</strong> {selectedHighlight.isFeatured ? "Yes" : "No"}</p>
-                <p><strong>Premium:</strong> {selectedHighlight.isPremium ? "ðŸ‘‘ Yes (subscription required)" : "No (free)"}</p>
+                <p><strong>Premium:</strong> {selectedHighlight.isPremium ? "👑 Yes (subscription required)" : "No (free)"}</p>
                 <p><strong>URL:</strong> <a href={selectedHighlight.videoUrl} target="_blank" rel="noreferrer" className="text-indigo-500 hover:underline break-all">{selectedHighlight.videoUrl}</a></p>
               </div>
             </motion.div>

@@ -16,7 +16,7 @@ const defaultForm = {
   matchId: "",
   teamId: "",
   seriesId: "",
-  durationDays: "30",
+  durationDays: "30",                             
   features: "",
   buttonText: "Unlock Now",
   description: "",

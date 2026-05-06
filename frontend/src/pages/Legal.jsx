@@ -469,7 +469,7 @@ function Legal() {
                   <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{viewModal.title}</h2>
                   <div className="mt-2 flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
                     <span>{LEGAL_TYPES.find((t) => t.id === viewModal.type)?.label}</span>
-                    <span>â€¢</span>
+                    <span>•</span>
                     <span>Last updated: {new Date(viewModal.updatedAt).toLocaleString()}</span>
                   </div>
                 </div>

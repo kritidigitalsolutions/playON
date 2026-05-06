@@ -952,12 +952,12 @@ const handleWatch = async (match) => {
 )}
 {match.isPremium && (
   <span className="inline-flex items-center gap-1 rounded-full border border-violet-400/40 bg-violet-500/10 px-2 py-0.5 text-[11px] text-violet-600 dark:text-violet-300">
-    ðŸ‘‘ Premium
+    👑 Premium
   </span>
 )}
                           </div>
                           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                            {match.teamA} vs {match.teamB} â€¢ {(match.sport || "other").toUpperCase()}
+                            {match.teamA} vs {match.teamB} • {(match.sport || "other").toUpperCase()}
                           </p>
                         </div>
                       </div>
@@ -1334,7 +1334,7 @@ const handleWatch = async (match) => {
       onChange={(e) => onFormChange("isPremium", e.target.checked)}
       className="h-4 w-4"
     />
-    ðŸ‘‘ Premium (subscription required)
+    👑 Premium (subscription required)
   </label>
 </div>
 
