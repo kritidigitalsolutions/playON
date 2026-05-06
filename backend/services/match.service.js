@@ -1,5 +1,7 @@
 const Match = require("../models/match.model");
 
+const escapeRegex = (value) => String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 // Create
 exports.createMatch = async (data) => {
   return await Match.create(data);
@@ -24,11 +26,15 @@ exports.getAdminMatches = async (query) => {
   if (status) filter.status = status.toLowerCase();
 
   if (search) {
+    const searchRegex = { $regex: escapeRegex(search), $options: "i" };
     filter.$or = [
-      { title: { $regex: search, $options: "i" } },
-      { teamA: { $regex: search, $options: "i" } },
-      { teamB: { $regex: search, $options: "i" } },
-      { tournament: { $regex: search, $options: "i" } }
+      { title: searchRegex },
+      { teamA: searchRegex },
+      { teamB: searchRegex },
+      { tournament: searchRegex },
+      { venue: searchRegex },
+      { sport: searchRegex },
+      { status: searchRegex }
     ];
   }
 
@@ -115,15 +121,32 @@ exports.getPublicMatches = async (query) => {
   const {
     sport,
     status,
+    search,
     date,
     page = 1,
-    limit = 10
+    limit = "all"
   } = query;
+  const fetchAll = String(limit).toLowerCase() === "all";
+  const pageNumber = Math.max(1, Number(page) || 1);
+  const limitNumber = Math.max(1, Number(limit) || 10);
 
   const filter = {};
 
   if (sport) filter.sport = sport.toLowerCase();
   if (status) filter.status = status.toLowerCase();
+
+  if (search) {
+    const searchRegex = { $regex: escapeRegex(search), $options: "i" };
+    filter.$or = [
+      { title: searchRegex },
+      { teamA: searchRegex },
+      { teamB: searchRegex },
+      { tournament: searchRegex },
+      { venue: searchRegex },
+      { sport: searchRegex },
+      { status: searchRegex }
+    ];
+  }
 
   // Date filter
   if (date) {
@@ -137,21 +160,23 @@ exports.getPublicMatches = async (query) => {
     };
   }
 
-  const skip = (Number(page) - 1) * Number(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+  const matchQuery = Match.find(filter).sort({ matchDate: 1 });
+
+  if (!fetchAll) {
+    matchQuery.skip(skip).limit(limitNumber);
+  }
 
   const [matches, total] = await Promise.all([
-    Match.find(filter)
-      .sort({ matchDate: 1 })
-      .skip(skip)
-      .limit(Number(limit)),
+    matchQuery,
     Match.countDocuments(filter)
   ]);
 
   return {
     matches,
     total,
-    page: Number(page),
-    limit: Number(limit)
+    page: fetchAll ? 1 : pageNumber,
+    limit: fetchAll ? total : limitNumber
   };
 };
 // exports.getPublicMatches = async (query) => {

@@ -98,6 +98,11 @@ const adminSchema = new mongoose.Schema(
         default: () => ({})
       },
 
+      admobPlacements: {
+        type: permissionSchema,
+        default: () => ({})
+      },
+
       starPlayers: {
         type: permissionSchema,
         default: () => ({})

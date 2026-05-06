@@ -122,6 +122,10 @@ app.use("/api/sports", require("./routes/user/sport.routes"));
 app.use("/api/admin/banner-ads", require("./routes/admin/bannerAd.routes"));
 app.use("/api/banner-ads", require("./routes/user/bannerAd.routes"));
 
+//admob placements
+app.use("/api/admin/admob-placements", require("./routes/admin/admobPlacement.routes"));
+app.use("/api/admob-placements", require("./routes/user/admobPlacement.routes"));
+
 //promo codes
 app.use(
   "/api/admin/promos",
@@ -155,6 +159,10 @@ const starPlayerRoutes = require("./routes/user/starPlayer.routes");
 
 app.use("/api/admin/star-players", adminStarPlayerRoutes);
 app.use("/api/star-players", starPlayerRoutes);
+
+//highlights
+app.use("/api/admin/highlights", require("./routes/admin/highlight.routes"));
+app.use("/api/highlights", require("./routes/user/highlight.routes"));
 
 //comments
 const commentRoutes = require("./routes/user/comment.routes");

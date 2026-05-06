@@ -177,11 +177,42 @@ const matchSchema = new mongoose.Schema(
       default: null
     },
 
+    
+
     liveEndedAt: {
       type: Date,
       default: null
     },
+    
+highlightlyMatchId: {
+  type: String,
+  default: null,
+  index: true
+},
 
+highlightlySport: {
+  type: String,
+  default: null
+},
+
+// ← ADD THESE NEW FIELDS:
+highlightlyStatus: {
+  type: String,
+  default: null,
+  description: "Original status from Highlightly API"
+},
+
+highlightlyLastSync: {
+  type: Date,
+  default: null,
+  description: "Last time we synced with Highlightly"
+},
+
+highlightlyData: {
+  type: Object,
+  default: null,
+  description: "Full response from Highlightly for debugging"
+},
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",

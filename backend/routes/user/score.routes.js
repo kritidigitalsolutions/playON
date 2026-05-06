@@ -9,9 +9,11 @@ const {
     getEvents,
     getTopPerformers,
     getStats,
-    getHighlights
+    getHighlights,
+    searchHighlightlyMatches
 } = require("../../controllers/score.controller");
 
+router.get("/search/highlightly", searchHighlightlyMatches);
 router.get("/live", getLiveScores);
 router.get("/:matchId", getScoreByMatch);
 router.get("/:matchId/scoreboard", getScoreboard);

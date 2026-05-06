@@ -191,3 +191,20 @@ exports.getHighlights = async (req, res) => {
     });
   }
 };
+
+exports.searchHighlightlyMatches = async (req, res) => {
+  try {
+    const { sport, date } = req.query;
+    const data = await scoreService.searchHighlightlyMatches(sport, date);
+
+    res.status(200).json({
+      success: true,
+      data
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

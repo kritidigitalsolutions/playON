@@ -28,7 +28,28 @@ const fileUrl = (req, filePath) => {
   return `${baseUrl}/${filePath.replace(/\\/g, "/")}`;
 };
 
-const formatMatch = (req, doc) => {
+const formatStream = (doc) => {
+  if (!doc) return null;
+  const s = doc.toObject ? doc.toObject() : doc;
+  return {
+    _id: s._id,
+    title: s.title,
+    provider: s.provider,
+    streamUrl: s.streamUrl,
+    backupUrl: s.backupUrl,
+    streamType: s.streamType,
+    quality: s.quality,
+    status: s.status,
+    viewerCount: s.viewerCount,
+    health: s.health,
+    isPremium: !!s.isPremium,
+    scheduledAt: s.scheduledAt,
+    startedAt: s.startedAt,
+    endedAt: s.endedAt
+  };
+};
+
+const formatMatch = (req, doc, stream = null) => {
   const match = doc.toObject ? doc.toObject() : doc;
 
   return {
@@ -37,7 +58,8 @@ const formatMatch = (req, doc) => {
     thumbnail: fileUrl(req, match.thumbnail),
     banner: fileUrl(req, match.banner),
     teamALogo: fileUrl(req, match.teamALogo),
-    teamBLogo: fileUrl(req, match.teamBLogo)
+    teamBLogo: fileUrl(req, match.teamBLogo),
+    stream: formatStream(stream)
   };
 };
 
@@ -45,13 +67,18 @@ const formatMatch = (req, doc) => {
 exports.getMatches = async (req, res) => {
   try {
     const result = await matchService.getPublicMatches(req.query);
+    const streamMap = await matchStreamSync.getStreamsByMatchIds(
+      result.matches.map((m) => m._id)
+    );
 
     res.json({
       success: true,
       total: result.total,
       page: result.page,
       limit: result.limit,
-      matches: result.matches.map((item) => formatMatch(req, item))
+      matches: result.matches.map((item) =>
+        formatMatch(req, item, streamMap.get(String(item._id)) || null)
+      )
     });
   } catch (error) {
     res.status(500).json({
@@ -65,11 +92,16 @@ exports.getMatches = async (req, res) => {
 exports.getLiveMatches = async (req, res) => {
   try {
     const matches = await matchService.getByStatus("live");
+    const streamMap = await matchStreamSync.getStreamsByMatchIds(
+      matches.map((m) => m._id)
+    );
 
     res.json({
       success: true,
       count: matches.length,
-      matches: matches.map((item) => formatMatch(req, item))
+      matches: matches.map((item) =>
+        formatMatch(req, item, streamMap.get(String(item._id)) || null)
+      )
     });
   } catch (error) {
     res.status(500).json({
@@ -83,11 +115,16 @@ exports.getLiveMatches = async (req, res) => {
 exports.getUpcomingMatches = async (req, res) => {
   try {
     const matches = await matchService.getByStatus("upcoming");
+    const streamMap = await matchStreamSync.getStreamsByMatchIds(
+      matches.map((m) => m._id)
+    );
 
     res.json({
       success: true,
       count: matches.length,
-      matches: matches.map((item) => formatMatch(req, item))
+      matches: matches.map((item) =>
+        formatMatch(req, item, streamMap.get(String(item._id)) || null)
+      )
     });
   } catch (error) {
     res.status(500).json({
@@ -101,11 +138,16 @@ exports.getUpcomingMatches = async (req, res) => {
 exports.getFeaturedMatches = async (req, res) => {
   try {
     const matches = await matchService.getFeatured();
+    const streamMap = await matchStreamSync.getStreamsByMatchIds(
+      matches.map((m) => m._id)
+    );
 
     res.json({
       success: true,
       count: matches.length,
-      matches: matches.map((item) => formatMatch(req, item))
+      matches: matches.map((item) =>
+        formatMatch(req, item, streamMap.get(String(item._id)) || null)
+      )
     });
   } catch (error) {
     res.status(500).json({
@@ -127,9 +169,11 @@ exports.getSingleMatch = async (req, res) => {
       });
     }
 
+    const stream = await matchStreamSync.getLatestStreamByMatch(req.params.id);
+
     res.json({
       success: true,
-      match: formatMatch(req, match)
+      match: formatMatch(req, match, stream || null)
     });
   } catch (error) {
     res.status(500).json({
@@ -181,7 +225,7 @@ exports.watchMatch = async (req, res) => {
         backupUrl: stream.backupUrl,
         quality: stream.quality
       },
-      match: formatMatch(req, match)
+      match: formatMatch(req, match, stream)
     });
 
   } catch (error) {

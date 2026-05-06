@@ -1,10 +1,10 @@
 Play ON/
-├── backend/
-│   ├── api/
-│   │   └── index.js
-│   ├── config/
-│   │   ├── db.js
-│   │   ├── firebase.js
+    ├── backend/
+    │   ├── api/
+    │   │   └── index.js
+    │   ├── config/
+    │   │   ├── db.js
+    │   │   ├── firebase.js
     │   │   └── razorpay.js
     │   ├── controllers/
     │   │   ├── admin/
@@ -35,6 +35,7 @@ Play ON/
     │   │   ├── bannerAd.controller.js
     │   │   ├── channel.controller.js
     │   │   ├── channelCategory.controller.js
+    │   │   ├── comment.controller.js
     │   │   ├── legal.controller.js
     │   │   ├── match.controller.js
     │   │   ├── notification.controller.js
@@ -43,6 +44,8 @@ Play ON/
     │   │   ├── player.controller.js
     │   │   ├── podcast.controller.js
     │   │   ├── promoCode.controller.js
+    │   │   ├── referral.controller.js
+    │   │   ├── referralVoucher.controller.js
     │   │   ├── score.controller.js
     │   │   ├── series.controller.js
     │   │   ├── socialMedia.controller.js
@@ -69,6 +72,7 @@ Play ON/
     │   │   ├── bannerAd.model.js
     │   │   ├── channel.model.js
     │   │   ├── channelCategory.model.js
+    │   │   ├── comment.model.js
     │   │   ├── legal.model.js
     │   │   ├── match.model.js
     │   │   ├── notification.model.js
@@ -115,6 +119,7 @@ Play ON/
     │   │       ├── bannerAd.routes.js
     │   │       ├── channel.routes.js
     │   │       ├── channelCategory.routes.js
+    │   │       ├── comment.routes.js
     │   │       ├── legal.routes.js
     │   │       ├── match.routes.js
     │   │       ├── notification.routes.js
@@ -141,6 +146,7 @@ Play ON/
     │   │   ├── channel.service.js
     │   │   ├── legal.service.js
     │   │   ├── match.service.js
+    │   │   ├── matchStreamSync.service.js
     │   │   ├── plan.service.js
     │   │   ├── player.service.js
     │   │   ├── promoCode.service.js
@@ -151,6 +157,7 @@ Play ON/
     │   │   └── team.service.js
     │   ├── utils/
     │   │   ├── autoNotify.js
+    │   │   ├── referralReward.js
     │   │   ├── sendNotification.js
     │   │   └── uploadToFirebase.js
     │   ├── app.js
@@ -198,6 +205,7 @@ Play ON/
     │   │   │   ├── LiveTV.jsx
     │   │   │   ├── Login.jsx
     │   │   │   ├── Matches.jsx
+    │   │   │   ├── MatchHighlights.jsx
     │   │   │   ├── NotFound.jsx
     │   │   │   ├── Notifications.jsx
     │   │   │   ├── Plans.jsx
@@ -232,4 +240,6 @@ Play ON/
     │   ├── README.md
     │   ├── tailwind.config.js
     │   └── vercel.json
-    └── .gitignore
+    ├── .gitignore
+    ├── Backend tree
+    └── project tree

@@ -9,6 +9,7 @@ import Plans from "./pages/Plans";
 import Matches from "./pages/Matches";
 import Sports from "./pages/Sports";
 import Banners from "./pages/Banners";
+import AdmobPlacements from "./pages/AdmobPlacements";
 import Podcasts from "./pages/Podcasts";
 import UserPlans from "./pages/UserPlans";
 import StarPlayers from "./pages/StarPlayers";
@@ -100,6 +101,7 @@ function App() {
         <Route path="matches" element={<Matches />} />
         <Route path="sports" element={<Sports />} />
         <Route path="banners" element={<Banners />} />
+        <Route path="admob-placements" element={<AdmobPlacements />} />
         <Route path="podcasts" element={<Podcasts />} />
         <Route path="star-players" element={<StarPlayers />} />
         <Route path="match-highlights" element={<MatchHighlights />} />

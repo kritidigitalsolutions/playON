@@ -147,6 +147,8 @@ const defaultForm = {
   isFeatured: false,
   isTrending: false,
   isPremium: false,
+  highlightlyMatchId: "",
+  highlightlySport: "",
   streamTitle: "",
   streamProvider: "",
   streamUrl: "",
@@ -332,6 +334,8 @@ function Matches() {
   const [sportsCatalog, setSportsCatalog] = useState([]);
   const [sportsLoaded, setSportsLoaded] = useState(false);
   const [sportsLoadFailed, setSportsLoadFailed] = useState(false);
+  const [highlightlyResults, setHighlightlyResults] = useState([]);
+  const [searchingHighlightly, setSearchingHighlightly] = useState(false);
 
   const debouncedSearch = useDebounce(search, 350);
 
@@ -486,6 +490,8 @@ function Matches() {
       isFeatured: Boolean(match.isFeatured),
       isTrending: Boolean(match.isTrending),
       isPremium: Boolean(match.isPremium),
+      highlightlyMatchId: match.highlightlyMatchId || "",
+      highlightlySport: match.highlightlySport || match.sport || "cricket",
       thumbnailPreview: match.thumbnail || "",
       bannerPreview: match.banner || "",
       teamALogoPreview: match.teamALogo || "",
@@ -496,6 +502,43 @@ function Matches() {
       teamBLogoFile: null
     });
     setModalOpen(true);
+  };
+
+  const searchHighlightly = async () => {
+    if (!form.matchDate || !form.sport) {
+      pushToast("Please select Sport and Date & Time first", "info");
+      return;
+    }
+
+    try {
+      setSearchingHighlightly(true);
+      const date = new Date(form.matchDate).toISOString().split("T")[0];
+      const res = await api.get("/scores/search/highlightly", {
+        params: { sport: form.sport, date }
+      });
+
+      const results = Array.isArray(res?.data?.data) ? res.data.data : [];
+
+      // Filter by team names if provided to narrow down
+      let filtered = results;
+      if (form.teamA || form.teamB) {
+        const tA = (form.teamA || "").toLowerCase().trim();
+        const tB = (form.teamB || "").toLowerCase().trim();
+        filtered = results.filter((m) => {
+          const title = (m.title || "").toLowerCase();
+          return (tA && title.includes(tA)) || (tB && title.includes(tB));
+        });
+      }
+
+      setHighlightlyResults(filtered.length > 0 ? filtered : results);
+      if (results.length === 0) {
+        pushToast("No matches found on Highlightly for this date", "info");
+      }
+    } catch {
+      pushToast("Failed to search on Highlightly", "error");
+    } finally {
+      setSearchingHighlightly(false);
+    }
   };
 
   const openView = async (match) => {
@@ -639,6 +682,8 @@ const handleWatch = async (match) => {
       if (form.bannerFile) payload.append("banner", form.bannerFile);
       if (form.teamALogoFile) payload.append("teamALogo", form.teamALogoFile);
       if (form.teamBLogoFile) payload.append("teamBLogo", form.teamBLogoFile);
+      payload.append("highlightlyMatchId", form.highlightlyMatchId || "");
+      payload.append("highlightlySport", form.highlightlySport || form.sport || "");
       const scoreSources = form.scoreSources
         .filter(hasScoreSourceValue)
         .map((source) => ({
@@ -1063,6 +1108,72 @@ const handleWatch = async (match) => {
                       <option value="cancelled">Cancelled</option>
                     </select>
                   </label>
+
+                  <div className="md:col-span-2 rounded-2xl border border-dashed border-indigo-200 bg-indigo-50/30 p-4 dark:border-indigo-500/20 dark:bg-indigo-500/5">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-2">
+                          <Activity size={16} /> Highlightly Integration
+                        </p>
+                        <p className="mt-1 text-xs text-indigo-600/70 dark:text-indigo-400/70">
+                          Automatically fetch scores, stats, and highlights by linking to a Highlightly match.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={searchHighlightly}
+                        disabled={searchingHighlightly}
+                        className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-xs font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                      >
+                        {searchingHighlightly ? <RefreshCw size={14} className="animate-spin" /> : <Search size={14} />}
+                        Search on Highlightly
+                      </button>
+                    </div>
+
+                    {highlightlyResults.length > 0 && (
+                      <div className="mt-4 space-y-3">
+                        <label className="block text-sm">
+                          <span className="mb-1 block text-xs font-medium text-indigo-600 dark:text-indigo-400">Select Match Result</span>
+                          <select
+                            value={form.highlightlyMatchId}
+                            onChange={(e) => {
+                              const matchId = e.target.value;
+                              onFormChange("highlightlyMatchId", matchId);
+                              if (matchId) {
+                                onFormChange("highlightlySport", form.sport);
+                                pushToast("Match linked!", "success");
+                              }
+                            }}
+                            className="h-10 w-full rounded-xl border border-indigo-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
+                          >
+                            <option value="">-- Select matching Highlightly fixture --</option>
+                            {highlightlyResults.map((r) => (
+                              <option key={r.highlightlyId} value={r.highlightlyId}>
+                                {r.title} ({r.league || r.format}) - {r.status}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+                    )}
+
+                    {form.highlightlyMatchId && (
+                      <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-100 px-3 py-2 text-xs font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                        <CheckCircle2 size={14} /> Linked to Highlightly ID: {form.highlightlyMatchId}
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            onFormChange("highlightlyMatchId", "");
+                            onFormChange("highlightlySport", "");
+                            setHighlightlyResults([]);
+                          }} 
+                          className="ml-auto text-emerald-600 hover:text-emerald-800"
+                        >
+                          Unlink
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
                   <div className="md:col-span-2 rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
                     <div className="mb-4 flex items-center justify-between gap-3">

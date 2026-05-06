@@ -40,6 +40,7 @@ const MODULES = [
   // Platform
   { key: "sports",         label: "Sports",          group: "Platform" },
   { key: "bannerAds",      label: "Banners",         group: "Platform" },
+  { key: "admobPlacements",label: "AdMob Placements",group: "Platform" },
   { key: "notifications",  label: "Notifications",   group: "Platform" },
   { key: "reports",        label: "Reports",         group: "Platform" },
   { key: "socialMedia",    label: "Social Media",    group: "Platform" },

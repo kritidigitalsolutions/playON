@@ -109,14 +109,78 @@ exports.getHighlights = async (matchId) => {
   if (matchId === "match_1") {
     return {
       matchId: "match_1",
+      matchTitle: "India vs Australia",   // ← frontend needs this
+      sport: "cricket",                   // ← frontend needs this
       highlights: [
         {
+          id: "hl_1",                     // ← frontend uses as key
           title: "Match Highlights",
-          thumbnail:
-            "https://via.placeholder.com/300x200",
-          videoUrl:
-            "https://samplelib.com/lib/preview/mp4/sample-5s.mp4",
-          duration: "05:20"
+          description: "Full match highlights from India vs Australia clash.",
+          category: "full_match",         // ← frontend filters by this
+          thumbnail: "https://via.placeholder.com/300x200",
+          videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+          duration: "05:20",
+          tags: ["india", "australia", "cricket"]  // ← frontend shows these
+        },
+        {
+          id: "hl_2",
+          title: "Kohli's Half Century",
+          description: "Virat Kohli's brilliant 54 off 32 balls.",
+          category: "batting",
+          thumbnail: "https://via.placeholder.com/300x200",
+          videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+          duration: "01:45",
+          tags: ["kohli", "batting", "fifty"]
+        },
+        {
+          id: "hl_3",
+          title: "Hardik's Six",
+          description: "Hardik Pandya smashes Starc for a massive six.",
+          category: "batting",
+          thumbnail: "https://via.placeholder.com/300x200",
+          videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+          duration: "00:30",
+          tags: ["hardik", "six", "batting"]
+        },
+        {
+          id: "hl_4",
+          title: "Starc's Wicket",
+          description: "Mitchell Starc takes the crucial wicket of Hardik.",
+          category: "bowling",
+          thumbnail: "https://via.placeholder.com/300x200",
+          videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+          duration: "00:45",
+          tags: ["starc", "wicket", "bowling"]
+        }
+      ]
+    };
+  }
+
+  if (matchId === "match_2") {
+    return {
+      matchId: "match_2",
+      matchTitle: "Real Madrid vs Barcelona",
+      sport: "football",
+      highlights: [
+        {
+          id: "hl_5",
+          title: "El Clasico Highlights",
+          description: "Full highlights from the El Clasico thriller.",
+          category: "full_match",
+          thumbnail: "https://via.placeholder.com/300x200",
+          videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+          duration: "03:45",
+          tags: ["elclasico", "realmadrid", "barcelona"]
+        },
+        {
+          id: "hl_6",
+          title: "Vinicius Goal",
+          description: "Vinicius Jr scores a stunning opener in the 23rd minute.",
+          category: "goal",
+          thumbnail: "https://via.placeholder.com/300x200",
+          videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+          duration: "00:52",
+          tags: ["vinicius", "goal", "realmadrid"]
         }
       ]
     };

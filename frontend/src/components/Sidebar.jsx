@@ -22,6 +22,7 @@ import {
   Film,
   Image as ImageIcon,
   Link as LinkIcon,
+  Megaphone,
   Mic,
   Clapperboard
 } from "lucide-react";
@@ -41,6 +42,7 @@ const navItems = [
   { label: "Subscribed Users", path: "/user-plans", icon: Wallet },
   { label: "Subscription Plans", path: "/plans", icon: Layers3 },
   { label: "Banners", path: "/banners", icon: ImageIcon },
+  { label: "AdMob Placements", path: "/admob-placements", icon: Megaphone },
   { label: "Star Players", path: "/star-players", icon: Star },
   { label: "Match Highlights", path: "/match-highlights", icon: Clapperboard },
   { label: "Podcasts", path: "/podcasts", icon: Mic },
