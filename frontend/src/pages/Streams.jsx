@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, Pencil, Play, Plus, RefreshCw, Square, Trash2, X } from "lucide-react";
 import api from "../api/axios";
@@ -124,6 +124,7 @@ function Streams() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchStreams();
     loadMatches();

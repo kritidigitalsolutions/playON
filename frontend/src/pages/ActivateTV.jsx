@@ -69,6 +69,7 @@ function ActivateTV() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchConnections(debouncedQuery);
   }, [debouncedQuery]);

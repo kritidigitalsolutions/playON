@@ -281,7 +281,9 @@ export default function MatchHighlights() {
     } finally { setLoadingHl(false); }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadMatches(); }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (selectedMatchId) loadHighlights(selectedMatchId); }, [selectedMatchId]);
 
   const selectedMatch = matches.find(m => m._id === selectedMatchId);

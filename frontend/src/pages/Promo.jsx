@@ -47,7 +47,7 @@ const toDateInputValue = (value) => {
 
 const formatDiscount = (promo) => {
   const value = Number(promo?.discountValue || 0);
-  return promo?.discountType === "flat" ? `₹${value}` : `${value}%`;
+  return promo?.discountType === "flat" ? `â‚¹${value}` : `${value}%`;
 };
 
 function Promo() {
@@ -97,6 +97,7 @@ function Promo() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadPromos();
     loadActiveReferral();
@@ -470,7 +471,7 @@ function Promo() {
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500">Live Referral Offer</p>
                     <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                      {offer.title} ({offer.discountType === "percent" ? `${offer.discountValue}%` : `₹${offer.discountValue}`})
+                      {offer.title} ({offer.discountType === "percent" ? `${offer.discountValue}%` : `â‚¹${offer.discountValue}`})
                     </h3>
                   </div>
                 </div>
@@ -652,11 +653,11 @@ function Promo() {
                 </div>
                 <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Minimum Amount</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">₹{selectedPromo.minAmount || 0}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">â‚¹{selectedPromo.minAmount || 0}</p>
                 </div>
                 <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Maximum Discount</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">₹{selectedPromo.maxDiscount || 0}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">â‚¹{selectedPromo.maxDiscount || 0}</p>
                 </div>
                 <div className="rounded-xl p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Usage</p>

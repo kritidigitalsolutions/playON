@@ -124,6 +124,7 @@ const fetchSubscriptions = useCallback(
   []
 );
 
+// eslint-disable-next-line react-hooks/exhaustive-deps
 useEffect(() => {
   fetchSubscriptions(debouncedQuery);
 }, [debouncedQuery, fetchSubscriptions]);

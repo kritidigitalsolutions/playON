@@ -82,6 +82,7 @@ function LiveTV() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadChannels();
   }, []);
@@ -667,7 +668,7 @@ function LiveTV() {
               <div className="flex items-center gap-2">
                 {channel.isPremium && (
                   <span className="inline-flex items-center rounded-full bg-violet-600 px-2.5 py-1 text-[10px] font-bold uppercase text-white">
-                    👑 Premium
+                    ðŸ‘‘ Premium
                   </span>
                 )}
                 <span className={`rounded-full px-2.5 py-1 text-xs ${getBadgeClass(channel.status, STATUS_STYLES)}`}>
@@ -906,7 +907,7 @@ function LiveTV() {
                       onChange={(e) => onFormChange("isPremium", e.target.checked)}
                       className="h-4 w-4"
                     />
-                    👑 Premium (subscription required)
+                    ðŸ‘‘ Premium (subscription required)
                   </label>
                 </div>
 
@@ -959,7 +960,7 @@ function LiveTV() {
                 <p><strong>Category:</strong> {selectedChannel.category || "other"}</p>
                 <p><strong>Status:</strong> {selectedChannel.status || "offline"}</p>
                 <p><strong>Featured:</strong> {selectedChannel.featured ? "Yes" : "No"}</p>
-                <p><strong>Premium:</strong> {selectedChannel.isPremium ? "👑 Yes (subscription required)" : "No (free)"}</p>
+                <p><strong>Premium:</strong> {selectedChannel.isPremium ? "ðŸ‘‘ Yes (subscription required)" : "No (free)"}</p>
                 <p><strong>Viewers:</strong> {formatNumber(selectedChannel.viewerCount || 0)}</p>
                 <p><strong>Type:</strong> {selectedChannel.streamType || "other"}</p>
                 <p><strong>Quality:</strong> {selectedChannel.quality || "auto"}</p>

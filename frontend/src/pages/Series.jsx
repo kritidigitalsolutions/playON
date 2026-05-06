@@ -138,6 +138,7 @@ function Series() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadSeries();
   }, []);
@@ -221,7 +222,7 @@ function Series() {
     }));
   };
 
-// ✅ Optimized lookup maps (O(1) instead of O(n))
+// âœ… Optimized lookup maps (O(1) instead of O(n))
 const playerMap = useMemo(() => {
   const map = new Map();
   players.forEach((p) => {
@@ -238,7 +239,7 @@ const matchMap = useMemo(() => {
   return map;
 }, [allMatches]);
 
-// ✅ Fast getters
+// âœ… Fast getters
 const getPlayerObj = (id) => playerMap.get(String(id));
 const getMatchObj = (id) => matchMap.get(String(id));
 
@@ -660,7 +661,7 @@ const getMatchObj = (id) => matchMap.get(String(id));
                 <div>
                   <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{series.title || "Untitled Series"}</h3>
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    {(series.sport || "other").toUpperCase()} {series.teamA && series.teamB ? `• ${series.teamA} vs ${series.teamB}` : ""}
+                    {(series.sport || "other").toUpperCase()} {series.teamA && series.teamB ? `â€¢ ${series.teamA} vs ${series.teamB}` : ""}
                   </p>
                 </div>
               </div>
@@ -684,7 +685,7 @@ const getMatchObj = (id) => matchMap.get(String(id));
               )}
               {series.isPremium && (
                 <span className="inline-flex items-center gap-1 rounded-xl border border-violet-300 bg-violet-50 px-2 py-1 text-xs text-violet-600 dark:bg-violet-500/10">
-                  👑 Premium
+                  ðŸ‘‘ Premium
                 </span>
               )}
               {series.isHomeScreen && (
@@ -863,7 +864,7 @@ const getMatchObj = (id) => matchMap.get(String(id));
                       onChange={(e) => onFormChange("isPremium", e.target.checked)}
                       className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
                     />
-                    <span className="text-violet-700 dark:text-violet-300">👑 Premium Content <span className="text-xs text-slate-400">(subscription required)</span></span>
+                    <span className="text-violet-700 dark:text-violet-300">ðŸ‘‘ Premium Content <span className="text-xs text-slate-400">(subscription required)</span></span>
                   </label>
 
                   <label className="block text-sm md:col-span-2">
@@ -1260,7 +1261,7 @@ const getMatchObj = (id) => matchMap.get(String(id));
                           )}
                           {selectedSeries.isPremium && (
                             <span className="flex items-center gap-1 rounded-lg bg-violet-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
-                              👑 Premium
+                              ðŸ‘‘ Premium
                             </span>
                           )}
                         </div>
@@ -1300,7 +1301,7 @@ const getMatchObj = (id) => matchMap.get(String(id));
                             <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Timeline</p>
                             <p className="mt-1 text-sm text-slate-200">
                               {selectedSeries.startDate ? new Date(selectedSeries.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "TBA"}
-                              <span className="mx-2 text-slate-600">—</span>
+                              <span className="mx-2 text-slate-600">â€”</span>
                               {selectedSeries.endDate ? new Date(selectedSeries.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "TBA"}
                             </p>
                           </div>

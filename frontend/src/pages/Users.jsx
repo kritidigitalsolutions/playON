@@ -91,6 +91,7 @@ function Users() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchUsers(debouncedQuery);
   }, [debouncedQuery]);

@@ -54,6 +54,7 @@ function Teams() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadTeams(); }, []);
 
   const stats = useMemo(() => {
