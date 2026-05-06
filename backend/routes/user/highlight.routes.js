@@ -1,9 +1,15 @@
 const express = require("express");
 const router = express.Router();
 
-const { getHighlightsByMatch } = require("../../controllers/highlight.controller");
+const {
+  getHighlightsByMatch,
+  getSingleHighlight
+} = require("../../controllers/highlight.controller");
 
-// GET /api/highlights?matchId=xxx
+// All / filtered highlights
 router.get("/", getHighlightsByMatch);
+
+// Single highlight
+router.get("/:id", getSingleHighlight);
 
 module.exports = router;

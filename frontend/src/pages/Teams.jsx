@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, Pencil, Plus, RefreshCw, Shield, ToggleLeft, ToggleRight, Trash2, X } from "lucide-react";
 import api from "../api/axios";
@@ -40,7 +40,7 @@ function Teams() {
   const [deleting, setDeleting] = useState(false);
   const [actionId, setActionId] = useState("");
 
-  const loadTeams = async () => {
+  const loadTeams = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -52,9 +52,9 @@ function Teams() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { loadTeams(); }, []);
+  useEffect(() => { loadTeams(); }, [loadTeams]);
 
   const stats = useMemo(() => {
     const active = teams.filter(t => t.isActive).length;

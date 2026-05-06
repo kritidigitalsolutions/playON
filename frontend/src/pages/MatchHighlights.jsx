@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronDown, Clock, Edit2, Film, Link, Play,
@@ -258,7 +258,7 @@ export default function MatchHighlights() {
   const [deleting, setDeleting] = useState(null);
   const [error, setError] = useState("");
 
-  const loadMatches = async () => {
+  const loadMatches = useCallback(async () => {
     try {
       setLoadingMatches(true);
       const res = await api.get("/admin/matches", { params:{ limit:"all" }});
@@ -267,9 +267,9 @@ export default function MatchHighlights() {
       if (list.length && !selectedMatchId) setSelectedMatchId(list[0]._id);
     } catch { setError("Could not load matches."); }
     finally { setLoadingMatches(false); }
-  };
+  }, [selectedMatchId]);
 
-  const loadHighlights = async (mid) => {
+  const loadHighlights = useCallback(async (mid) => {
     if (!mid) return;
     setLoadingHl(true); setError("");
     try {
@@ -279,10 +279,10 @@ export default function MatchHighlights() {
       setError(e?.response?.data?.message || "Failed to load highlights");
       setHighlights([]);
     } finally { setLoadingHl(false); }
-  };
+  }, []);
 
-  useEffect(() => { loadMatches(); }, []);
-  useEffect(() => { if (selectedMatchId) loadHighlights(selectedMatchId); }, [selectedMatchId]);
+  useEffect(() => { loadMatches(); }, [loadMatches]);
+  useEffect(() => { if (selectedMatchId) loadHighlights(selectedMatchId); }, [selectedMatchId, loadHighlights]);
 
   const selectedMatch = matches.find(m => m._id === selectedMatchId);
 

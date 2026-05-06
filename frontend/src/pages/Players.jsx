@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, Pencil, Plus, RefreshCw, Star, Trash2, UserRound, X } from "lucide-react";
 import api from "../api/axios";
@@ -37,7 +37,7 @@ function Players() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  const loadPlayers = async () => {
+  const loadPlayers = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -50,11 +50,11 @@ function Players() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadPlayers();
-  }, []);
+  }, [loadPlayers]);
 
   const stats = useMemo(() => {
     const active = players.filter((item) => item.status === "active").length;
