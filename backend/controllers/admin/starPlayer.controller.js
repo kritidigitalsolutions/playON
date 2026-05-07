@@ -1,5 +1,7 @@
 const Highlight = require("../../models/starPlayer.model");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
+const deleteFromFirebase = require("../../utils/deleteFromFirebase");
+
 const autoNotify = require("../../utils/autoNotify");
 const Sport = require("../../models/sport.model");
 const Player = require("../../models/player.model");
@@ -211,8 +213,13 @@ exports.updateHighlight = async (req, res) => {
 
     // Thumbnail update
     if (req.file) {
+      const existing = await Highlight.findById(req.params.id);
+      if (existing?.thumbnail) {
+        await deleteFromFirebase(existing.thumbnail);
+      }
       data.thumbnail = await uploadToFirebase(req.file, "highlights");
     }
+
 
     // Type validation
     if (data.type && !["youtube", "mp4", "iframe", "other"].includes(data.type)) {
@@ -265,7 +272,7 @@ exports.updateHighlight = async (req, res) => {
 // ----------------------------------------
 exports.deleteHighlight = async (req, res) => {
   try {
-    const highlight = await Highlight.findByIdAndDelete(req.params.id);
+    const highlight = await Highlight.findById(req.params.id);
 
     if (!highlight) {
       return res.status(404).json({
@@ -273,6 +280,13 @@ exports.deleteHighlight = async (req, res) => {
         message: "Highlight not found"
       });
     }
+
+    if (highlight.thumbnail) {
+      await deleteFromFirebase(highlight.thumbnail);
+    }
+
+    await Highlight.findByIdAndDelete(req.params.id);
+
 
     res.json({
       success: true,

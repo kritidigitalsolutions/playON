@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { 
-  Plus, 
-  RefreshCw, 
-  Trash2, 
-  Pencil, 
-  X, 
+import {
+  Plus,
+  RefreshCw,
+  Trash2,
+  Pencil,
+  X,
   ExternalLink,
   Mic,
   Star,
   Image as ImageIcon,
-  PlayCircle
+  PlayCircle,
+  MessageSquare
 } from "lucide-react";
 import api from "../api/axios";
+import CommentModal from "../components/CommentModal";
+
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
 import Loader from "../components/Loader";
@@ -52,6 +55,8 @@ function Podcasts() {
   const [form, setForm] = useState(defaultForm);
   const [formErrors, setFormErrors] = useState({});
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [commentTarget, setCommentTarget] = useState(null);
+
   const [deleting, setDeleting] = useState(false);
 
   const loadPodcasts = async () => {
@@ -85,6 +90,11 @@ function Podcasts() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setError("Thumbnail image is too large. Max 2MB allowed.");
+        e.target.value = "";
+        return;
+      }
       setForm(p => ({
         ...p,
         thumbnailFile: file,
@@ -92,6 +102,7 @@ function Podcasts() {
       }));
     }
   };
+
 
   const openCreate = () => {
     setEditMode(false);
@@ -143,7 +154,7 @@ function Podcasts() {
     try {
       setSubmitting(true);
       setError("");
-      
+
       const formData = new FormData();
       formData.append("sportId", form.sportId);
       formData.append("title", form.title.trim());
@@ -155,19 +166,19 @@ function Podcasts() {
       formData.append("isFeatured", form.isFeatured);
       formData.append("isPremium", String(Boolean(form.isPremium)));
       formData.append("status", form.status);
-      
+
       if (form.thumbnailFile) {
         formData.append("thumbnail", form.thumbnailFile);
       }
 
       const res = editMode && form._id
         ? await api.put(`/admin/podcasts/${form._id}`, formData, {
-            headers: { "Content-Type": "multipart/form-data" }
-          })
+          headers: { "Content-Type": "multipart/form-data" }
+        })
         : await api.post("/admin/podcasts", formData, {
-            headers: { "Content-Type": "multipart/form-data" }
-          });
-      
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+
       if (res?.data?.success) {
         await loadPodcasts();
         closeModal();
@@ -197,7 +208,7 @@ function Podcasts() {
     try {
       const res = await api.patch(`/admin/podcasts/${id}/feature`);
       if (res?.data?.success) {
-        setPodcasts(prev => prev.map(p => 
+        setPodcasts(prev => prev.map(p =>
           p._id === id ? { ...p, isFeatured: res.data.isFeatured } : p
         ));
       }
@@ -233,113 +244,80 @@ function Podcasts() {
         </div>
       )}
 
-      {loading ? (
-        <Loader lines={5} />
-      ) : podcasts.length === 0 ? (
-        <div className="rounded-2xl bg-white p-12 text-center dark:bg-slate-900">
-          <Mic size={48} className="mx-auto mb-4 text-slate-300" />
-          <p className="text-slate-500">No podcasts found. Add one to show in the app.</p>
-        </div>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {podcasts.map((podcast, index) => (
-            <motion.div
-              key={podcast._id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.05 }}
-              className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md dark:bg-slate-900"
-            >
-              <div className="relative aspect-video overflow-hidden bg-slate-100 dark:bg-slate-800">
-                {podcast.thumbnail ? (
-                  <img 
-                    src={podcast.thumbnail} 
-                    alt={podcast.title} 
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <PlayCircle size={48} className="text-slate-300" />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <div className="absolute top-3 right-3 flex gap-2">
-                  {podcast.isPremium && (
-                    <span className="flex items-center rounded-full bg-violet-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
-                      👑 Premium
-                    </span>
-                  )}
-                  <button
-                    onClick={() => toggleFeatured(podcast._id)}
-                    className={`flex h-8 w-8 items-center justify-center rounded-full shadow-sm backdrop-blur ${podcast.isFeatured ? 'bg-amber-400 text-white' : 'bg-white/50 text-slate-600 hover:bg-white/80'}`}
-                    title={podcast.isFeatured ? 'Remove from Featured' : 'Mark as Featured'}
-                  >
-                    <Star size={14} className={podcast.isFeatured ? 'fill-current' : ''} />
-                  </button>
-                  <span className={`flex items-center rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm ${podcast.status === 'active' ? "bg-emerald-500" : "bg-slate-500"}`}>
-                    {podcast.status}
-                  </span>
-                </div>
-                {podcast.duration && (
-                  <div className="absolute bottom-3 right-3 rounded bg-black/70 px-2 py-1 text-xs text-white">
-                    {podcast.duration}
-                  </div>
-                )}
-                {podcast.type && (
-                  <div className="absolute bottom-3 left-3 rounded bg-indigo-500/90 px-2 py-1 text-xs font-semibold uppercase text-white shadow-sm">
-                    {podcast.type}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-1 flex-col p-5">
-                <div className="mb-2">
-                  <h3 className="line-clamp-2 font-semibold text-slate-900 dark:text-slate-100" title={podcast.title}>{podcast.title}</h3>
-                  {podcast.sportId?.name && (
-                    <p className="mt-1 text-xs text-rose-500 font-medium">
-                      Sport: {podcast.sportId.name}
-                    </p>
-                  )}
-                  {podcast.category && (
-                    <p className="mt-1 text-xs text-indigo-500 dark:text-indigo-400 uppercase tracking-wider font-medium">
-                      {podcast.category}
-                    </p>
-                  )}
-                </div>
-
-                <p className="mb-4 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">
-                  {podcast.description || "No description provided."}
-                </p>
-
-                <div className="mt-auto flex items-center gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
-                  <a 
-                    href={podcast.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="admin-action-btn-square"
-                    title="Open Link"
-                  >
-                    <ExternalLink size={16} />
-                  </a>
-                  <button 
-                    onClick={() => openEdit(podcast)}
-                    className="admin-action-btn-sm flex-1 py-2"
-                  >
-                    <Pencil size={14} /> Edit
-                  </button>
-                  <button 
-                    onClick={() => setDeleteTarget(podcast)}
-                    className="admin-action-btn-danger-square"
-                    title="Delete Podcast"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
+      <section className="rounded-2xl bg-white shadow-sm dark:bg-slate-900 overflow-hidden border border-slate-100 dark:border-slate-800">
+        {loading ? (
+          <div className="p-10 text-center text-sm text-slate-500">Loading podcasts...</div>
+        ) : podcasts.length === 0 ? (
+          <div className="p-10 text-center text-sm text-slate-500">No podcasts found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+              <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Podcast / Episode</th>
+                  <th className="px-4 py-3 font-medium">Type / Category</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {podcasts.map((podcast) => (
+                  <tr key={podcast._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                          {podcast.thumbnail ? (
+                            <img src={podcast.thumbnail} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-slate-300"><PlayCircle size={16} /></div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate max-w-[200px]" title={podcast.title}>{podcast.title}</p>
+                          <div className="mt-0.5 flex flex-wrap gap-1">
+                            {podcast.isFeatured && <span className="text-[9px] font-bold text-amber-500 uppercase">Featured</span>}
+                            {podcast.isPremium && <span className="text-[9px] font-bold text-violet-500 uppercase">Premium</span>}
+                            {podcast.duration && <span className="text-[9px] font-bold text-slate-400 uppercase">{podcast.duration}</span>}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <p className="text-[10px] font-bold uppercase tracking-tight text-indigo-500">
+                          {podcast.type}
+                        </p>
+                        <p className="mt-1 text-[10px] text-slate-500 truncate max-w-[150px] uppercase">{podcast.category || "No Category"}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase ${podcast.status === 'active' ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10" : "bg-slate-100 text-slate-500 dark:bg-slate-800"}`}>
+                        {podcast.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <a href={podcast.url} target="_blank" rel="noreferrer" className="admin-action-btn-sm h-8 w-8 rounded-full !p-0 inline-flex items-center justify-center" title="Open Link">
+                          <ExternalLink size={14} />
+                        </a>
+                        <button onClick={() => setCommentTarget(podcast)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Comments">
+                          <MessageSquare size={14} />
+                        </button>
+                        <button onClick={() => openEdit(podcast)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Edit">
+                          <Pencil size={14} />
+                        </button>
+                        <button onClick={() => setDeleteTarget(podcast)} className="admin-action-btn-danger-sm h-8 w-8 rounded-full !p-0" title="Delete">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {/* Create / Edit Modal */}
       <AnimatePresence>
@@ -363,9 +341,9 @@ function Podcasts() {
               <form onSubmit={savePodcast} className="space-y-4">
                 <label className="block text-sm">
                   <span className="mb-1 block text-slate-500 dark:text-slate-400">Sport *</span>
-                  <select 
-                    value={form.sportId} 
-                    onChange={e => onFormChange("sportId", e.target.value)} 
+                  <select
+                    value={form.sportId}
+                    onChange={e => onFormChange("sportId", e.target.value)}
                     className={fieldCls}
                   >
                     <option value="">Select Sport...</option>
@@ -376,32 +354,32 @@ function Podcasts() {
 
                 <label className="block text-sm">
                   <span className="mb-1 block text-slate-500 dark:text-slate-400">Title *</span>
-                  <input 
-                    value={form.title} 
-                    onChange={e => onFormChange("title", e.target.value)} 
-                    className={fieldCls} 
-                    placeholder="Podcast title" 
+                  <input
+                    value={form.title}
+                    onChange={e => onFormChange("title", e.target.value)}
+                    className={fieldCls}
+                    placeholder="Podcast title"
                   />
                   {formErrors.title && <span className="mt-1 block text-xs text-rose-500">{formErrors.title}</span>}
                 </label>
 
                 <label className="block text-sm">
                   <span className="mb-1 block text-slate-500 dark:text-slate-400">Description</span>
-                  <textarea 
-                    value={form.description} 
-                    onChange={e => onFormChange("description", e.target.value)} 
-                    className={`${fieldCls} h-20 py-2 resize-none`} 
-                    placeholder="Brief description..." 
+                  <textarea
+                    value={form.description}
+                    onChange={e => onFormChange("description", e.target.value)}
+                    className={`${fieldCls} h-20 py-2 resize-none`}
+                    placeholder="Brief description..."
                   />
                 </label>
 
                 <label className="block text-sm">
                   <span className="mb-1 block text-slate-500 dark:text-slate-400">URL / Link *</span>
-                  <input 
-                    value={form.url} 
-                    onChange={e => onFormChange("url", e.target.value)} 
-                    className={fieldCls} 
-                    placeholder="https://..." 
+                  <input
+                    value={form.url}
+                    onChange={e => onFormChange("url", e.target.value)}
+                    className={fieldCls}
+                    placeholder="https://..."
                   />
                   {formErrors.url && <span className="mt-1 block text-xs text-rose-500">{formErrors.url}</span>}
                 </label>
@@ -409,9 +387,9 @@ function Podcasts() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Type</span>
-                    <select 
-                      value={form.type} 
-                      onChange={e => onFormChange("type", e.target.value)} 
+                    <select
+                      value={form.type}
+                      onChange={e => onFormChange("type", e.target.value)}
                       className={fieldCls}
                     >
                       {PODCAST_TYPES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
@@ -420,11 +398,11 @@ function Podcasts() {
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Duration</span>
-                    <input 
-                      value={form.duration} 
-                      onChange={e => onFormChange("duration", e.target.value)} 
-                      className={fieldCls} 
-                      placeholder="e.g. 45:00" 
+                    <input
+                      value={form.duration}
+                      onChange={e => onFormChange("duration", e.target.value)}
+                      className={fieldCls}
+                      placeholder="e.g. 45:00"
                     />
                   </label>
                 </div>
@@ -432,19 +410,19 @@ function Podcasts() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Category</span>
-                    <input 
-                      value={form.category} 
-                      onChange={e => onFormChange("category", e.target.value)} 
-                      className={fieldCls} 
-                      placeholder="e.g. Sports Talk" 
+                    <input
+                      value={form.category}
+                      onChange={e => onFormChange("category", e.target.value)}
+                      className={fieldCls}
+                      placeholder="e.g. Sports Talk"
                     />
                   </label>
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Status</span>
-                    <select 
-                      value={form.status} 
-                      onChange={e => onFormChange("status", e.target.value)} 
+                    <select
+                      value={form.status}
+                      onChange={e => onFormChange("status", e.target.value)}
                       className={fieldCls}
                     >
                       <option value="active">Active</option>
@@ -454,21 +432,21 @@ function Podcasts() {
                 </div>
 
                 <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm">
-                  <input 
-                    type="checkbox" 
-                    checked={form.isFeatured} 
-                    onChange={e => onFormChange("isFeatured", e.target.checked)} 
-                    className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" 
+                  <input
+                    type="checkbox"
+                    checked={form.isFeatured}
+                    onChange={e => onFormChange("isFeatured", e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400"
                   />
                   <span className="text-slate-700 dark:text-slate-200">Feature this podcast</span>
                 </label>
 
                 <label className="flex items-center gap-3 rounded-xl border border-violet-200 bg-violet-50/50 px-4 py-3 text-sm dark:border-violet-500/30 dark:bg-violet-500/10">
-                  <input 
-                    type="checkbox" 
-                    checked={form.isPremium} 
-                    onChange={e => onFormChange("isPremium", e.target.checked)} 
-                    className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500" 
+                  <input
+                    type="checkbox"
+                    checked={form.isPremium}
+                    onChange={e => onFormChange("isPremium", e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
                   />
                   <span className="text-violet-700 dark:text-violet-300">👑 Premium Content <span className="text-xs text-slate-400">(subscription required to listen)</span></span>
                 </label>
@@ -479,8 +457,8 @@ function Podcasts() {
                     {form.thumbnailPreview ? (
                       <>
                         <img src={form.thumbnailPreview} alt="Preview" className="h-full w-full object-cover" />
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           onClick={() => setForm(p => ({ ...p, thumbnailFile: null, thumbnailPreview: "" }))}
                           className="absolute top-2 right-2 rounded-lg bg-black/50 p-1.5 text-white hover:bg-black/70"
                         >
@@ -521,8 +499,15 @@ function Podcasts() {
         onConfirm={handleDelete}
         confirmLabel={deleting ? "Deleting..." : "Delete Podcast"}
       />
+      <CommentModal
+        open={Boolean(commentTarget)}
+        onClose={() => setCommentTarget(null)}
+        itemId={commentTarget?._id}
+        itemName={commentTarget?.title}
+      />
     </div>
   );
 }
+
 
 export default Podcasts;

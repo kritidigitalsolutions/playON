@@ -2,6 +2,8 @@ const Notification = require("../../models/notification.model");
 const User = require("../../models/user.model");
 const sendNotification = require("../../utils/sendNotification");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
+const deleteFromFirebase = require("../../utils/deleteFromFirebase");
+
 
 // Send notification
 exports.sendNotification = async (req, res) => {
@@ -134,10 +136,7 @@ exports.getNotifications = async (req, res) => {
 // Delete / archive
 exports.deleteNotification = async (req, res) => {
   try {
-    const notification =
-      await Notification.findByIdAndDelete(
-        req.params.id
-      );
+    const notification = await Notification.findById(req.params.id);
 
     if (!notification) {
       return res.status(404).json({
@@ -145,6 +144,13 @@ exports.deleteNotification = async (req, res) => {
         message: "Notification not found"
       });
     }
+
+    if (notification.metadata?.image) {
+      await deleteFromFirebase(notification.metadata.image);
+    }
+
+    await Notification.findByIdAndDelete(req.params.id);
+
 
     res.json({
       success: true,

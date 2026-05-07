@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { 
-  Circle, 
+import {
+  Circle,
   Eye,
-  Pencil, 
-  Plus, 
-  Radio, 
-  RefreshCw, 
-  Shield, 
-  Trash2, 
-  Trophy, 
-  X 
+  Pencil,
+  Plus,
+  Radio,
+  RefreshCw,
+  Shield,
+  Trash2,
+  Trophy,
+  X
 } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
@@ -125,7 +125,7 @@ function Sports() {
       const res = editMode && form._id
         ? await api.put(`/admin/sports/${form._id}`, payload)
         : await api.post("/admin/sports", payload);
-      
+
       if (res?.data?.success) {
         await loadSports();
         closeModal();
@@ -194,11 +194,11 @@ function Sports() {
       ) : null}
 
       <div className="mb-6">
-        <input 
-          value={search} 
+        <input
+          value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search sports by name..."
-          className="h-11 w-full max-w-md rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100" 
+          className="h-11 w-full max-w-md rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100"
         />
       </div>
 
@@ -236,19 +236,19 @@ function Sports() {
                 </div>
 
                 <div className="mt-5 flex items-center gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
-                  <button 
+                  <button
                     onClick={() => setSelectedSport(sport)}
                     className="admin-action-btn-square h-8 w-8"
                   >
                     <Eye size={14} />
                   </button>
-                  <button 
+                  <button
                     onClick={() => openEdit(sport)}
                     className="admin-action-btn-sm h-8 flex-1"
                   >
                     <Pencil size={14} /> Edit
                   </button>
-                  <button 
+                  <button
                     onClick={() => setDeleteTarget(sport)}
                     className="admin-action-btn-danger-square h-8 w-8"
                   >
@@ -281,21 +281,21 @@ function Sports() {
               <form onSubmit={saveSport} className="space-y-4">
                 <label className="block text-sm">
                   <span className="mb-1 block text-slate-500 dark:text-slate-400">Sport Name *</span>
-                  <input 
-                    value={form.name} 
-                    onChange={e => onFormChange("name", e.target.value)} 
-                    className={fieldCls} 
-                    placeholder="e.g. Cricket" 
+                  <input
+                    value={form.name}
+                    onChange={e => onFormChange("name", e.target.value)}
+                    className={fieldCls}
+                    placeholder="e.g. Cricket"
                   />
                   {formErrors.name && <span className="mt-1 block text-xs text-rose-500">{formErrors.name}</span>}
                 </label>
 
                 <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm">
-                  <input 
-                    type="checkbox" 
-                    checked={form.isActive} 
-                    onChange={e => onFormChange("isActive", e.target.checked)} 
-                    className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" 
+                  <input
+                    type="checkbox"
+                    checked={form.isActive}
+                    onChange={e => onFormChange("isActive", e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400"
                   />
                   <span className="text-slate-700 dark:text-slate-200">Active / Visible to users</span>
                 </label>
@@ -355,8 +355,8 @@ function Sports() {
               </div>
 
               <div className="mt-6 flex gap-3">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => {
                     const s = selectedSport;
                     setSelectedSport(null);
@@ -366,8 +366,8 @@ function Sports() {
                 >
                   Edit Sport
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setSelectedSport(null)}
                   className="admin-secondary-btn flex-1 py-2.5"
                 >

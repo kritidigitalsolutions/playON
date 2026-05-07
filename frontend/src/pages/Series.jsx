@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, Flame, Pencil, Plus, RefreshCw, Star, Trash2, Film, X, Calendar, MapPin, Trophy, Users, Clock, Info, Home } from "lucide-react";
+import { Eye, Flame, Pencil, Plus, RefreshCw, Star, Trash2, Film, X, Calendar, MapPin, Trophy, Users, Clock, Info, Home, MessageSquare } from "lucide-react";
+
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
 import { STATUS_STYLES } from "../utils/constants";
 import { getBadgeClass } from "../utils/helpers";
+import CommentModal from "../components/CommentModal";
+
 
 const defaultForm = {
   _id: "",
@@ -109,6 +112,8 @@ function Series() {
   const [deleting, setDeleting] = useState(false);
   const [tempPlayerA, setTempPlayerA] = useState("");
   const [tempPlayerB, setTempPlayerB] = useState("");
+  const [commentTarget, setCommentTarget] = useState(null);
+
   const [selectedMatches, setSelectedMatches] = useState([]);
   const [allMatches, setAllMatches] = useState([]);
   const [tempMatch, setTempMatch] = useState("");
@@ -143,24 +148,24 @@ function Series() {
     loadSeries();
   }, []);
 
- const stats = useMemo(() => {
-  const upcoming = seriesList.filter((item) => item.status === "upcoming").length;
-  const live = seriesList.filter((item) => item.status === "live").length;
-  const completed = seriesList.filter((item) => item.status === "completed").length;
-  const featured = seriesList.filter((item) => item.isFeatured).length;
-  const trending = seriesList.filter((item) => item.isTrending).length;
-  const homeScreen = seriesList.filter((item) => item.isHomeScreen).length;
+  const stats = useMemo(() => {
+    const upcoming = seriesList.filter((item) => item.status === "upcoming").length;
+    const live = seriesList.filter((item) => item.status === "live").length;
+    const completed = seriesList.filter((item) => item.status === "completed").length;
+    const featured = seriesList.filter((item) => item.isFeatured).length;
+    const trending = seriesList.filter((item) => item.isTrending).length;
+    const homeScreen = seriesList.filter((item) => item.isHomeScreen).length;
 
-  return {
-    total: seriesList.length,
-    upcoming,
-    live,
-    completed,
-    featured,
-    trending,
-    homeScreen
-  };
-}, [seriesList]);
+    return {
+      total: seriesList.length,
+      upcoming,
+      live,
+      completed,
+      featured,
+      trending,
+      homeScreen
+    };
+  }, [seriesList]);
 
 
   const filteredSeries = useMemo(() => {
@@ -222,26 +227,26 @@ function Series() {
     }));
   };
 
-// ✅ Optimized lookup maps (O(1) instead of O(n))
-const playerMap = useMemo(() => {
-  const map = new Map();
-  players.forEach((p) => {
-    map.set(String(p._id), p);
-  });
-  return map;
-}, [players]);
+  // ✅ Optimized lookup maps (O(1) instead of O(n))
+  const playerMap = useMemo(() => {
+    const map = new Map();
+    players.forEach((p) => {
+      map.set(String(p._id), p);
+    });
+    return map;
+  }, [players]);
 
-const matchMap = useMemo(() => {
-  const map = new Map();
-  allMatches.forEach((m) => {
-    map.set(String(m._id), m);
-  });
-  return map;
-}, [allMatches]);
+  const matchMap = useMemo(() => {
+    const map = new Map();
+    allMatches.forEach((m) => {
+      map.set(String(m._id), m);
+    });
+    return map;
+  }, [allMatches]);
 
-// ✅ Fast getters
-const getPlayerObj = (id) => playerMap.get(String(id));
-const getMatchObj = (id) => matchMap.get(String(id));
+  // ✅ Fast getters
+  const getPlayerObj = (id) => playerMap.get(String(id));
+  const getMatchObj = (id) => matchMap.get(String(id));
 
   const getSeriesMatchIds = (series) => {
     if (Array.isArray(series?.matchIds)) return series.matchIds.map((item) => (typeof item === "object" ? item._id : item));
@@ -626,101 +631,79 @@ const getMatchObj = (id) => matchMap.get(String(id));
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <section className="rounded-2xl bg-white shadow-sm dark:bg-slate-900 overflow-hidden border border-slate-100 dark:border-slate-800">
         {loading ? (
-          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
-            Loading series...
+          <div className="p-10 text-center text-sm text-slate-500">Loading series...</div>
+        ) : !filteredSeries.length ? (
+          <div className="p-10 text-center text-sm text-slate-500">No series found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+              <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Series / Tournament</th>
+                  <th className="px-4 py-3 font-medium">Teams / Sport</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {filteredSeries.map((series) => (
+                  <tr key={series._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                          {series.tournamentLogo || series.banner ? (
+                            <img src={series.tournamentLogo || series.banner} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-slate-300"><Trophy size={16} /></div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate max-w-[250px]" title={series.title}>{series.title}</p>
+                          <div className="mt-0.5 flex flex-wrap gap-1">
+                            {series.isFeatured && <span className="text-[9px] font-bold text-amber-500 uppercase">Featured</span>}
+                            {series.isTrending && <span className="text-[9px] font-bold text-emerald-500 uppercase">Trending</span>}
+                            {series.isPremium && <span className="text-[9px] font-bold text-violet-500 uppercase">Premium</span>}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100 uppercase">{series.sport}</p>
+                        <p className="text-[10px] text-slate-500 truncate max-w-[150px]">{series.teamA && series.teamB ? `${series.teamA} vs ${series.teamB}` : "No Teams"}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase ${getBadgeClass(series.status, STATUS_STYLES)}`}>
+                        {series.status || "upcoming"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => openView(series)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View">
+                          <Eye size={14} />
+                        </button>
+                        <button onClick={() => openEdit(series)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Edit">
+                          <Pencil size={14} />
+                        </button>
+                        <button onClick={() => setCommentTarget(series)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Comments">
+                          <MessageSquare size={14} />
+                        </button>
+                        <button onClick={() => setDeleteTarget(series)} className="admin-action-btn-danger-sm h-8 w-8 rounded-full !p-0" title="Delete">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ) : null}
+        )}
+      </section>
 
-        {!loading && !filteredSeries.length ? (
-          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
-            No series found for this filter.
-          </div>
-        ) : null}
-
-        {filteredSeries.map((series, index) => (
-          <motion.div
-            key={series._id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <div className="h-12 w-12 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:bg-slate-800">
-                  {series.tournamentLogo || series.banner ? (
-                    <img src={series.tournamentLogo || series.banner} alt={series.title || "Series"} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-slate-400">
-                      <Film size={18} />
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{series.title || "Untitled Series"}</h3>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    {(series.sport || "other").toUpperCase()} {series.teamA && series.teamB ? `• ${series.teamA} vs ${series.teamB}` : ""}
-                  </p>
-                </div>
-              </div>
-              <span className={`rounded-full px-2.5 py-1 text-xs ${getBadgeClass(series.status, STATUS_STYLES)}`}>
-                {series.status || "upcoming"}
-              </span>
-            </div>
-
-            <p className="mt-3 line-clamp-2 text-sm text-slate-600 dark:text-slate-300">{series.description || "No description added yet."}</p>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              {series.isFeatured && (
-                <span className="inline-flex items-center gap-1 rounded-xl border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-amber-600 dark:bg-amber-500/10">
-                  <Star size={12} className="fill-current" /> Featured
-                </span>
-              )}
-              {series.isTrending && (
-                <span className="inline-flex items-center gap-1 rounded-xl border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs text-emerald-600 dark:bg-emerald-500/10">
-                  <Flame size={12} className="fill-current" /> Trending
-                </span>
-              )}
-              {series.isPremium && (
-                <span className="inline-flex items-center gap-1 rounded-xl border border-violet-300 bg-violet-50 px-2 py-1 text-xs text-violet-600 dark:bg-violet-500/10">
-                  👑 Premium
-                </span>
-              )}
-              {series.isHomeScreen && (
-                <span className="inline-flex items-center gap-1 rounded-xl border border-indigo-300 bg-indigo-50 px-2 py-1 text-xs text-indigo-600 dark:bg-indigo-500/10">
-                  <Home size={12} className="fill-current" /> Home Screen
-                </span>
-              )}
-            </div>
-
-            <div className="mt-4 flex items-center gap-2">  
-              <button
-                type="button"
-                onClick={() => openView(series)}
-                className="admin-action-btn"
-              >
-                <Eye size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => openEdit(series)}
-                className="admin-action-btn"
-              >
-                <Pencil size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setDeleteTarget(series)}
-                className="admin-action-btn-danger"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          </motion.div>
-        ))}
-      </div>
 
       <AnimatePresence>
         {modalOpen ? (
@@ -872,9 +855,18 @@ const getMatchObj = (id) => matchMap.get(String(id));
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => onFormChange("imageFile", e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file && file.size > 2 * 1024 * 1024) {
+                          setError("Banner image is too large. Max 2MB allowed.");
+                          e.target.value = "";
+                          return;
+                        }
+                        onFormChange("imageFile", file || null);
+                      }}
                       className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
                     />
+
                   </label>
 
                   <label className="block text-sm md:col-span-2">
@@ -882,9 +874,18 @@ const getMatchObj = (id) => matchMap.get(String(id));
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => onFormChange("tournamentLogoFile", e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file && file.size > 2 * 1024 * 1024) {
+                          setError("Tournament logo is too large. Max 2MB allowed.");
+                          e.target.value = "";
+                          return;
+                        }
+                        onFormChange("tournamentLogoFile", file || null);
+                      }}
                       className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
                     />
+
                   </label>
 
                   <label className="block text-sm md:col-span-2">
@@ -1117,22 +1118,78 @@ const getMatchObj = (id) => matchMap.get(String(id));
 
                 <label className="block text-sm">
                   <span className="mb-1 block text-slate-500 dark:text-slate-400">Team A Logo</span>
-                  <input type="file" accept="image/*" onChange={(e) => onNewMatchFileChange("teamALogoFile", e.target.files?.[0])} className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && file.size > 2 * 1024 * 1024) {
+                        setNewMatchError("Team A logo is too large. Max 2MB allowed.");
+                        e.target.value = "";
+                        return;
+                      }
+                      onNewMatchFileChange("teamALogoFile", file || null);
+                    }}
+                    className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
+                  />
+
                 </label>
 
                 <label className="block text-sm">
                   <span className="mb-1 block text-slate-500 dark:text-slate-400">Team B Logo</span>
-                  <input type="file" accept="image/*" onChange={(e) => onNewMatchFileChange("teamBLogoFile", e.target.files?.[0])} className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && file.size > 2 * 1024 * 1024) {
+                        setNewMatchError("Team B logo is too large. Max 2MB allowed.");
+                        e.target.value = "";
+                        return;
+                      }
+                      onNewMatchFileChange("teamBLogoFile", file || null);
+                    }}
+                    className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
+                  />
+
                 </label>
 
                 <label className="block text-sm">
                   <span className="mb-1 block text-slate-500 dark:text-slate-400">Thumbnail</span>
-                  <input type="file" accept="image/*" onChange={(e) => onNewMatchFileChange("thumbnailFile", e.target.files?.[0])} className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && file.size > 2 * 1024 * 1024) {
+                        setNewMatchError("Thumbnail is too large. Max 2MB allowed.");
+                        e.target.value = "";
+                        return;
+                      }
+                      onNewMatchFileChange("thumbnailFile", file || null);
+                    }}
+                    className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
+                  />
+
                 </label>
 
                 <label className="block text-sm">
                   <span className="mb-1 block text-slate-500 dark:text-slate-400">Banner</span>
-                  <input type="file" accept="image/*" onChange={(e) => onNewMatchFileChange("bannerFile", e.target.files?.[0])} className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && file.size > 2 * 1024 * 1024) {
+                        setNewMatchError("Banner is too large. Max 2MB allowed.");
+                        e.target.value = "";
+                        return;
+                      }
+                      onNewMatchFileChange("bannerFile", file || null);
+                    }}
+                    className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
+                  />
+
                 </label>
 
                 <div className="md:col-span-2">
@@ -1201,25 +1258,25 @@ const getMatchObj = (id) => matchMap.get(String(id));
 
       <AnimatePresence>
         {selectedSeries ? (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm"
           >
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }} 
-              animate={{ opacity: 1, scale: 1, y: 0 }} 
-              exit={{ opacity: 0, scale: 0.95, y: 20 }} 
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-900 shadow-2xl"
             >
               <div className="flex h-full flex-col">
                 {/* Header/Banner Area */}
                 <div className="relative h-64 w-full shrink-0">
                   {selectedSeries.banner ? (
-                    <img 
-                      src={selectedSeries.banner} 
-                      alt={selectedSeries.title} 
+                    <img
+                      src={selectedSeries.banner}
+                      alt={selectedSeries.title}
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -1228,10 +1285,10 @@ const getMatchObj = (id) => matchMap.get(String(id));
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
-                  
-                  <button 
-                    type="button" 
-                    onClick={() => setSelectedSeries(null)} 
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSeries(null)}
                     className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-md transition hover:bg-black/40"
                   >
                     <X size={20} />
@@ -1334,7 +1391,7 @@ const getMatchObj = (id) => matchMap.get(String(id));
                           <Users size={16} className="text-slate-400" />
                           <h4 className="text-sm font-semibold text-slate-200">Participating Squads</h4>
                         </div>
-                        
+
                         <div className="grid gap-6 sm:grid-cols-2">
                           {/* Team A */}
                           <div className="rounded-2xl bg-white/5 p-4">
@@ -1406,7 +1463,7 @@ const getMatchObj = (id) => matchMap.get(String(id));
                                 {new Date(match.matchDate).toLocaleDateString()}
                               </span>
                             </div>
-                            
+
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex-1 text-right">
                                 <p className="text-xs font-bold text-slate-200 line-clamp-1">{match.teamA}</p>
@@ -1449,8 +1506,15 @@ const getMatchObj = (id) => matchMap.get(String(id));
         onConfirm={handleDelete}
         confirmLabel={deleting ? "Deleting..." : "Delete Series"}
       />
+      <CommentModal
+        open={Boolean(commentTarget)}
+        onClose={() => setCommentTarget(null)}
+        itemId={commentTarget?._id}
+        itemName={commentTarget?.title}
+      />
     </div>
   );
 }
+
 
 export default Series;

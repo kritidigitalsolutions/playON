@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -10,6 +9,7 @@ import {
   Eye,
   Flame,
   ImageIcon,
+  MessageSquare,
   Pencil,
   Plus,
   RefreshCw,
@@ -25,6 +25,7 @@ import api from "../api/axios";
 import useDebounce from "../hooks/useDebounce";
 import PageHeader from "../components/PageHeader";
 import WatchModal from "../components/WatchModal";
+import CommentModal from "../components/CommentModal";
 
 const PAGE_SIZE = 8;
 const DEFAULT_SPORT_SLUGS = ["cricket", "football", "basketball", "kabaddi", "tennis", "volleyball", "other"];
@@ -37,6 +38,7 @@ const FALLBACK_MATCHES = [
     teamA: "India",
     teamB: "Australia",
     teamALogo: "",
+
     teamBLogo: "",
     venue: "Mumbai",
     matchDate: "2026-04-20T12:00:00.000Z",
@@ -266,13 +268,27 @@ function Toasts({ toasts, onRemove }) {
   );
 }
 
-function ImageUploadField({ label, preview, onChange, previewAlt, previewClassName = "object-cover" }) {
+function ImageUploadField({ label, preview, onChange, previewAlt, previewClassName = "object-cover", pushToast }) {
   return (
     <div className="block text-sm">
       <span className="mb-1 block text-slate-500 dark:text-slate-400">{label}</span>
       <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm transition hover:border-slate-300 dark:hover:border-slate-600">
         <Upload size={15} /> Upload
-        <input type="file" accept="image/*" className="hidden" onChange={(e) => onChange(e.target.files?.[0])} />
+        <input 
+          type="file" 
+          accept="image/*" 
+          className="hidden" 
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file && file.size > 2 * 1024 * 1024) {
+              if (pushToast) pushToast("Image is too large. Max 2MB allowed.", "error");
+              e.target.value = "";
+              return;
+            }
+            onChange(file);
+          }} 
+        />
+
       </label>
       {preview ? (
         <img
@@ -328,7 +344,9 @@ function Matches() {
   const [formErrors, setFormErrors] = useState({});
   const [form, setForm] = useState(defaultForm);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [commentTarget, setCommentTarget] = useState(null);
   const [filters, setFilters] = useState({ status: "all", sport: "all", spotlight: "all", sort: "newest" });
+
   const [toasts, setToasts] = useState([]);
   const [seriesOptions, setSeriesOptions] = useState([]);
   const [sportsCatalog, setSportsCatalog] = useState([]);
@@ -550,6 +568,11 @@ function Matches() {
       setSelectedMatch(match);
     }
   };
+
+  const openComments = (match) => {
+    setCommentTarget(match);
+  };
+
 
   // const handleWatch = async (match) => {
   //   try {
@@ -916,7 +939,7 @@ const handleWatch = async (match) => {
         ) : pageData.length ? (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-700">
-              <thead className="bg-slate-50 dark:bg-slate-950">
+              <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
                 <tr className="text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   <th className="px-4 py-3">Match</th>
                   <th className="px-4 py-3">Date & Venue</th>
@@ -977,7 +1000,7 @@ const handleWatch = async (match) => {
   type="button"
   onClick={() => handleWatch(match)}
   disabled={match.status !== "live"}
-  className={`admin-action-btn-square
+  className={`admin-action-btn-sm h-8 w-8 rounded-full !p-0
     ${
       match.status === "live"
         ? ""
@@ -986,19 +1009,22 @@ const handleWatch = async (match) => {
 >
   <Play size={15} />
 </button>
-                        <button type="button" onClick={() => openView(match)} className="admin-action-btn-square">
+                        <button type="button" onClick={() => openView(match)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0">
                           <Eye size={15} />
                         </button>
-                        <button type="button" onClick={() => openEdit(match)} className="admin-action-btn-square">
+                        <button type="button" onClick={() => openComments(match)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0">
+                          <MessageSquare size={15} />
+                        </button>
+                        <button type="button" onClick={() => openEdit(match)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0">
                           <Pencil size={15} />
                         </button>
-                        <button type="button" onClick={() => toggleFeatured(match)} className={classNames("admin-action-btn-square", match.isFeatured ? "bg-amber-100 text-amber-600 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-400 dark:hover:bg-amber-500/25" : "")}>
+                        <button type="button" onClick={() => toggleFeatured(match)} className={classNames("admin-action-btn-sm h-8 w-8 rounded-full !p-0", match.isFeatured ? "bg-amber-100 text-amber-600 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-400 dark:hover:bg-amber-500/25" : "")}>
                           <Star size={15} className={match.isFeatured ? "fill-current" : ""} />
                         </button>
                         <button type="button" onClick={() => updateStatus(match, match.status === "live" ? "completed" : "live")} className="admin-action-btn-sm">
                           {match.status === "live" ? "End" : "Go Live"}
                         </button>
-                        <button type="button" onClick={() => setDeleteTarget(match)} className="admin-action-btn-danger-square">
+                        <button type="button" onClick={() => setDeleteTarget(match)} className="admin-action-btn-danger-sm h-8 w-8 rounded-full !p-0">
                           <Trash2 size={15} />
                         </button>
                       </div>
@@ -1018,11 +1044,11 @@ const handleWatch = async (match) => {
         <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3">
           <p className="text-xs text-slate-500 dark:text-slate-400">Showing {pageData.length} of {filteredMatches.length} matches</p>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={page === 1} className="admin-action-btn-square">
+            <button type="button" onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={page === 1} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0">
               <ChevronLeft size={15} />
             </button>
             <span className="min-w-[70px] text-center text-sm text-slate-600 dark:text-slate-300">{page} / {totalPages}</span>
-            <button type="button" onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))} disabled={page === totalPages} className="admin-action-btn-square">
+            <button type="button" onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))} disabled={page === totalPages} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0">
               <ChevronRight size={15} />
             </button>
           </div>
@@ -1355,6 +1381,7 @@ const handleWatch = async (match) => {
                     previewAlt="Team A logo preview"
                     previewClassName="object-contain p-2"
                     onChange={(file) => onFileChange("teamALogoFile", "teamALogoPreview", file)}
+                    pushToast={pushToast}
                   />
 
                   <ImageUploadField
@@ -1363,6 +1390,7 @@ const handleWatch = async (match) => {
                     previewAlt="Team B logo preview"
                     previewClassName="object-contain p-2"
                     onChange={(file) => onFileChange("teamBLogoFile", "teamBLogoPreview", file)}
+                    pushToast={pushToast}
                   />
 
                   <ImageUploadField
@@ -1370,6 +1398,7 @@ const handleWatch = async (match) => {
                     preview={form.thumbnailPreview}
                     previewAlt="Thumbnail preview"
                     onChange={(file) => onFileChange("thumbnailFile", "thumbnailPreview", file)}
+                    pushToast={pushToast}
                   />
 
                   <ImageUploadField
@@ -1377,6 +1406,7 @@ const handleWatch = async (match) => {
                     preview={form.bannerPreview}
                     previewAlt="Banner preview"
                     onChange={(file) => onFileChange("bannerFile", "bannerPreview", file)}
+                    pushToast={pushToast}
                   />
                 </div>
 
@@ -1494,6 +1524,8 @@ const handleWatch = async (match) => {
         ) : null}
       </AnimatePresence>
 
+
+
       <AnimatePresence>
         {deleteTarget ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
@@ -1516,6 +1548,12 @@ const handleWatch = async (match) => {
       </AnimatePresence>
 
       <WatchModal isOpen={!!watchData} onClose={() => setWatchData(null)} watchData={watchData} />
+      <CommentModal
+        open={Boolean(commentTarget)}
+        onClose={() => setCommentTarget(null)}
+        itemId={commentTarget?._id}
+        itemName={commentTarget?.title || `${commentTarget?.teamA} vs ${commentTarget?.teamB}`}
+      />
     </div>
   );
 }

@@ -1,59 +1,47 @@
-// const multer = require("multer");
-// const path = require("path");
-
-// // Store file in RAM temporarily
-// const storage = multer.memoryStorage();
-
-// const fileFilter = (req, file, cb) => {
-//   const allowedExt = /jpg|jpeg|png|webp/;
-
-//   const ext = allowedExt.test(
-//     path.extname(file.originalname).toLowerCase()
-//   );
-
-//   const mime =
-//     file.mimetype === "image/jpeg" ||
-//     file.mimetype === "image/jpg" ||
-//     file.mimetype === "image/png" ||
-//     file.mimetype === "image/avif" ||
-//     file.mimetype === "image/webp";
-
-//   if (ext && mime) {
-//     cb(null, true);
-//   } else {
-//     cb(new Error("Only image files are allowed"));
-//   }
-// };
-
-// const upload = multer({
-//   storage,
-//   fileFilter,
-//   limits: {
-//     fileSize: 4 * 1024 * 1024
-//   }
-// });
-
-// module.exports = upload;
 const multer = require("multer");
 const path = require("path");
 
-// Store file in RAM temporarily
+// Store image temporarily in RAM
+// Safe because images are small
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-  // Accept ANY image MIME type
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed"));
+  // Allow only image MIME types
+  if (!file.mimetype.startsWith("image/")) {
+    return cb(
+      new Error("Only image files are allowed")
+    );
   }
+
+  // Allowed extensions
+  const allowedExt =
+    /jpg|jpeg|png|webp|avif/i;
+
+  const ext = allowedExt.test(
+    path
+      .extname(file.originalname)
+      .toLowerCase()
+  );
+
+  if (!ext) {
+    return cb(
+      new Error(
+        "Only JPG, JPEG, PNG, WEBP, AVIF allowed"
+      )
+    );
+  }
+
+  cb(null, true);
 };
 
 const upload = multer({
   storage,
+
   fileFilter,
+
   limits: {
-    fileSize: 4 * 1024 * 1024  // 4MB limit per file
+    // 2MB per image
+    fileSize: 2 * 1024 * 1024
   }
 });
 

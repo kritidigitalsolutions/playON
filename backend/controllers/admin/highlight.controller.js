@@ -1,176 +1,754 @@
 const Highlight = require("../../models/highlight.model");
 const Match = require("../../models/match.model");
-const uploadToFirebase = require("../../utils/uploadToFirebase");
+const Series = require("../../models/series.model");
 
+const uploadToFirebase = require("../../utils/uploadToFirebase");
+const deleteFromFirebase = require("../../utils/deleteFromFirebase");
+
+// Parse boolean helper
 const parseBoolean = (v) => {
-  if (v === true || v === "true") return true;
-  if (v === false || v === "false") return false;
+  if (v === true || v === "true") {
+    return true;
+  }
+
+  if (v === false || v === "false") {
+    return false;
+  }
+
   return false;
 };
 
-// Helper: resolve full URL (Firebase URLs are already absolute)
-const resolveUrl = (req, url) => {
-  if (!url) return "";
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  return `${req.protocol}://${req.get("host")}/${url.replace(/\\/g, "/")}`;
+// Validate URL
+const isValidUrl = (url) => {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
+// Parse tags helper
+const parseTags = (tags) => {
+  if (!tags) return [];
+
+  try {
+    return typeof tags === "string"
+      ? JSON.parse(tags)
+      : tags;
+  } catch {
+    return String(tags)
+      .split(",")
+      .map((t) =>
+        t.trim().toLowerCase()
+      )
+      .filter(Boolean);
+  }
+};
+
+// Resolve URL helper
+const resolveUrl = (req, url) => {
+  if (!url) return "";
+
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://")
+  ) {
+    return url;
+  }
+
+  return `${req.protocol}://${req.get(
+    "host"
+  )}/${url.replace(/\\/g, "/")}`;
+};
+
+// Format response
 const formatHighlight = (req, doc) => {
-  const h = doc.toObject ? doc.toObject() : doc;
+  const h = doc.toObject
+    ? doc.toObject()
+    : doc;
+
   return {
     ...h,
-    videoUrl: resolveUrl(req, h.videoUrl),
-    thumbnail: resolveUrl(req, h.thumbnail)
+
+    videoUrl: resolveUrl(
+      req,
+      h.videoUrl
+    ),
+
+    thumbnail: resolveUrl(
+      req,
+      h.thumbnail
+    )
   };
 };
 
+// CREATE HIGHLIGHT
 // POST /api/admin/highlights
-exports.createHighlight = async (req, res) => {
-  try {
-    const { matchId, title, description, category, sourceType, videoUrl, duration, tags, isPremium, order } = req.body;
+exports.createHighlight =
+  async (req, res) => {
+    try {
+      const {
+        matchId,
+        seriesId,
+        title,
+        description,
+        category,
+        sourceType,
+        videoUrl,
+        duration,
+        tags,
+        isPremium,
+        isFeatured,
+        order
+      } = req.body;
 
-    if (!matchId || !title) {
-      return res.status(400).json({ success: false, message: "matchId and title are required" });
-    }
+      // Validation
+      if (
+        (!matchId &&
+          !seriesId) ||
+        !title
+      ) {
+        return res.status(400).json({
+          success: false,
 
-    const match = await Match.findById(matchId);
-    if (!match) return res.status(404).json({ success: false, message: "Match not found" });
-
-    let finalVideoUrl = videoUrl || "";
-    let finalThumbnail = "";
-
-    // Handle uploaded video file
-    if (sourceType === "upload") {
-      if (!req.files?.videoFile?.[0]) {
-        return res.status(400).json({ success: false, message: "Video file is required when sourceType is upload" });
+          message:
+            "Either matchId or seriesId and title are required"
+        });
       }
-      finalVideoUrl = await uploadToFirebase(req.files.videoFile[0], "highlights/videos");
-    } else {
-      // URL mode
-      if (!finalVideoUrl?.trim()) {
-        return res.status(400).json({ success: false, message: "videoUrl is required when sourceType is url" });
+
+      // Match validation
+      if (matchId) {
+        const match =
+          await Match.findById(
+            matchId
+          );
+
+        if (!match) {
+          return res.status(404).json({
+            success: false,
+
+            message:
+              "Match not found"
+          });
+        }
       }
-    }
 
-    // Optional thumbnail image
-    if (req.files?.thumbnail?.[0]) {
-      finalThumbnail = await uploadToFirebase(req.files.thumbnail[0], "highlights/thumbnails");
-    }
+      // Series validation
+      if (seriesId) {
+        const series =
+          await Series.findById(
+            seriesId
+          );
 
-    // Parse tags
-    let parsedTags = [];
-    if (tags) {
-      try {
-        parsedTags = typeof tags === "string" ? JSON.parse(tags) : tags;
-      } catch {
-        parsedTags = String(tags).split(",").map(t => t.trim()).filter(Boolean);
+        if (!series) {
+          return res.status(404).json({
+            success: false,
+
+            message:
+              "Series not found"
+          });
+        }
       }
+
+      const finalSourceType =
+        sourceType || "url";
+
+      let finalVideoUrl = "";
+      let finalThumbnail = "";
+
+      // VIDEO UPLOAD MODE
+      if (
+        finalSourceType ===
+        "upload"
+      ) {
+        if (
+          !req.files?.videoFile?.[0]
+        ) {
+          return res.status(400).json({
+            success: false,
+
+            message:
+              "Video file is required"
+          });
+        }
+
+        finalVideoUrl =
+          await uploadToFirebase(
+            req.files.videoFile[0],
+            "highlights/videos"
+          );
+      }
+
+      // VIDEO URL MODE
+      else {
+        if (!videoUrl?.trim()) {
+          return res.status(400).json({
+            success: false,
+
+            message:
+              "videoUrl is required"
+          });
+        }
+
+        if (
+          !isValidUrl(videoUrl)
+        ) {
+          return res.status(400).json({
+            success: false,
+
+            message:
+              "Invalid video URL"
+          });
+        }
+
+        finalVideoUrl =
+          videoUrl.trim();
+      }
+
+      // OPTIONAL THUMBNAIL
+      if (
+        req.files?.thumbnail?.[0]
+      ) {
+        finalThumbnail =
+          await uploadToFirebase(
+            req.files.thumbnail[0],
+            "highlights/thumbnails"
+          );
+      }
+
+      const highlight =
+        await Highlight.create({
+          matchId:
+            matchId || null,
+
+          seriesId:
+            seriesId || null,
+
+          title: title.trim(),
+
+          description:
+            description?.trim() ||
+            "",
+
+          category:
+            category || "other",
+
+          sourceType:
+            finalSourceType,
+
+          videoUrl:
+            finalVideoUrl,
+
+          thumbnail:
+            finalThumbnail,
+
+          duration:
+            Number(duration) ||
+            0,
+
+          tags: parseTags(tags),
+
+          isPremium:
+            parseBoolean(
+              isPremium
+            ),
+
+          isFeatured:
+            parseBoolean(
+              isFeatured
+            ),
+
+          order:
+            Number(order) || 0,
+
+          createdBy:
+            req.admin._id
+        });
+
+      res.status(201).json({
+        success: true,
+
+        message:
+          "Highlight created",
+
+        highlight:
+          formatHighlight(
+            req,
+            highlight
+          )
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+
+        message:
+          error.message
+      });
     }
+  };
 
-    const highlight = await Highlight.create({
-      matchId,
-      title: title.trim(),
-      description: description?.trim() || "",
-      category: category || "other",
-      sourceType: sourceType || "url",
-      videoUrl: finalVideoUrl,
-      thumbnail: finalThumbnail,
-      duration: duration?.trim() || "",
-      tags: parsedTags,
-      isPremium: parseBoolean(isPremium),
-      order: Number(order) || 0,
-      createdBy: req.admin._id
-    });
+// GET HIGHLIGHTS
+// GET /api/admin/highlights
+exports.getHighlights =
+  async (req, res) => {
+    try {
+      const {
+        matchId,
+        seriesId,
+        page = 1,
+        limit = 10
+      } = req.query;
 
-    res.status(201).json({ success: true, message: "Highlight created", highlight: formatHighlight(req, highlight) });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+      const filter = {
+        isDeleted: { $ne: true }
+      };
 
-// GET /api/admin/highlights?matchId=xxx
-exports.getHighlights = async (req, res) => {
-  try {
-    const { matchId } = req.query;
-    const filter = matchId ? { matchId } : {};
 
-    const highlights = await Highlight.find(filter)
-      .populate("matchId", "title teamA teamB sport status")
-      .sort({ order: 1, createdAt: -1 });
+      if (matchId) {
+        filter.matchId = matchId;
+      }
 
-    res.json({
-      success: true,
-      count: highlights.length,
-      highlights: highlights.map(h => formatHighlight(req, h))
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+      if (seriesId) {
+        filter.seriesId =
+          seriesId;
+      }
 
+      const pageNum = Math.max(
+        Number(page),
+        1
+      );
+
+      const limitNum = Math.min(
+        Math.max(Number(limit), 1),
+        100
+      );
+
+      const skip =
+        (pageNum - 1) *
+        limitNum;
+
+      const [highlights, total] =
+        await Promise.all([
+          Highlight.find(filter)
+
+            .populate(
+              "matchId",
+              "title teamA teamB sport status"
+            )
+
+            .populate(
+              "seriesId",
+              "title sport banner tournamentLogo status"
+            )
+
+
+            .sort({
+              order: 1,
+              createdAt: -1
+            })
+
+            .skip(skip)
+
+            .limit(limitNum)
+
+            .lean(),
+
+          Highlight.countDocuments(
+            filter
+          )
+        ]);
+
+      res.json({
+        success: true,
+
+        total,
+
+        page: pageNum,
+
+        limit: limitNum,
+
+        totalPages: Math.ceil(
+          total / limitNum
+        ),
+
+        count:
+          highlights.length,
+
+        highlights:
+          highlights.map((h) =>
+            formatHighlight(
+              req,
+              h
+            )
+          )
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+
+        message:
+          error.message
+      });
+    }
+  };
+
+// GET SINGLE HIGHLIGHT
 // GET /api/admin/highlights/:id
-exports.getSingleHighlight = async (req, res) => {
-  try {
-    const highlight = await Highlight.findById(req.params.id).populate("matchId", "title teamA teamB sport status");
-    if (!highlight) return res.status(404).json({ success: false, message: "Highlight not found" });
-    res.json({ success: true, highlight: formatHighlight(req, highlight) });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+exports.getSingleHighlight =
+  async (req, res) => {
+    try {
+      const highlight =
+        await Highlight.findOne({
+          _id: req.params.id,
 
-// PATCH /api/admin/highlights/:id
-exports.updateHighlight = async (req, res) => {
-  try {
-    const existing = await Highlight.findById(req.params.id);
-    if (!existing) return res.status(404).json({ success: false, message: "Highlight not found" });
+          isDeleted: false
+        })
 
-    const { title, description, category, sourceType, videoUrl, duration, tags, isPremium, order } = req.body;
+          .populate(
+            "matchId",
+            "title teamA teamB sport status"
+          )
 
-    const updateData = {};
-    if (title !== undefined) updateData.title = title.trim();
-    if (description !== undefined) updateData.description = description.trim();
-    if (category !== undefined) updateData.category = category;
-    if (duration !== undefined) updateData.duration = duration.trim();
-    if (isPremium !== undefined) updateData.isPremium = parseBoolean(isPremium);
-    if (order !== undefined) updateData.order = Number(order) || 0;
+          .populate(
+            "seriesId",
+            "name title tournamentName sport category"
+          );
 
-    // Handle sourceType change or update
-    const effectiveSourceType = sourceType || existing.sourceType;
-    updateData.sourceType = effectiveSourceType;
+      if (!highlight) {
+        return res.status(404).json({
+          success: false,
 
-    if (effectiveSourceType === "upload" && req.files?.videoFile?.[0]) {
-      updateData.videoUrl = await uploadToFirebase(req.files.videoFile[0], "highlights/videos");
-    } else if (effectiveSourceType === "url" && videoUrl !== undefined) {
-      updateData.videoUrl = videoUrl.trim();
-    }
-
-    if (req.files?.thumbnail?.[0]) {
-      updateData.thumbnail = await uploadToFirebase(req.files.thumbnail[0], "highlights/thumbnails");
-    }
-
-    if (tags !== undefined) {
-      try {
-        updateData.tags = typeof tags === "string" ? JSON.parse(tags) : tags;
-      } catch {
-        updateData.tags = String(tags).split(",").map(t => t.trim()).filter(Boolean);
+          message:
+            "Highlight not found"
+        });
       }
+
+      res.json({
+        success: true,
+
+        highlight:
+          formatHighlight(
+            req,
+            highlight
+          )
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+
+        message:
+          error.message
+      });
     }
+  };
 
-    const highlight = await Highlight.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
-    res.json({ success: true, message: "Highlight updated", highlight: formatHighlight(req, highlight) });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+// UPDATE HIGHLIGHT
+// PATCH /api/admin/highlights/:id
+exports.updateHighlight =
+  async (req, res) => {
+    try {
+      const existing =
+        await Highlight.findOne({
+          _id: req.params.id,
 
+          isDeleted: false
+        });
+
+      if (!existing) {
+        return res.status(404).json({
+          success: false,
+
+          message:
+            "Highlight not found"
+        });
+      }
+
+      const {
+        matchId,
+        seriesId,
+        title,
+        description,
+        category,
+        sourceType,
+        videoUrl,
+        duration,
+        tags,
+        isPremium,
+        isFeatured,
+        order
+      } = req.body;
+
+      const updateData = {};
+
+      // Match validation
+      if (matchId) {
+        const match =
+          await Match.findById(
+            matchId
+          );
+
+        if (!match) {
+          return res.status(404).json({
+            success: false,
+
+            message:
+              "Match not found"
+          });
+        }
+
+        updateData.matchId =
+          matchId;
+      }
+
+      // Series validation
+      if (seriesId) {
+        const series =
+          await Series.findById(
+            seriesId
+          );
+
+        if (!series) {
+          return res.status(404).json({
+            success: false,
+
+            message:
+              "Series not found"
+          });
+        }
+
+        updateData.seriesId =
+          seriesId;
+      }
+
+      if (title !== undefined) {
+        updateData.title =
+          title.trim();
+      }
+
+      if (
+        description !== undefined
+      ) {
+        updateData.description =
+          description.trim();
+      }
+
+      if (category !== undefined) {
+        updateData.category =
+          category;
+      }
+
+      if (duration !== undefined) {
+        updateData.duration =
+          Number(duration) ||
+          0;
+      }
+
+      if (
+        isPremium !== undefined
+      ) {
+        updateData.isPremium =
+          parseBoolean(
+            isPremium
+          );
+      }
+
+      if (
+        isFeatured !==
+        undefined
+      ) {
+        updateData.isFeatured =
+          parseBoolean(
+            isFeatured
+          );
+      }
+
+      if (order !== undefined) {
+        updateData.order =
+          Number(order) || 0;
+      }
+
+      if (tags !== undefined) {
+        updateData.tags =
+          parseTags(tags);
+      }
+
+      const effectiveSourceType =
+        sourceType ||
+        existing.sourceType;
+
+      updateData.sourceType =
+        effectiveSourceType;
+
+      // NEW VIDEO UPLOAD
+      if (
+        effectiveSourceType ===
+          "upload" &&
+        req.files?.videoFile?.[0]
+      ) {
+        if (
+          existing.sourceType ===
+            "upload" &&
+          existing.videoUrl
+        ) {
+          await deleteFromFirebase(
+            existing.videoUrl
+          );
+        }
+
+        updateData.videoUrl =
+          await uploadToFirebase(
+            req.files.videoFile[0],
+            "highlights/videos"
+          );
+      }
+
+      // NEW VIDEO URL
+      else if (
+        effectiveSourceType ===
+          "url" &&
+        videoUrl !== undefined
+      ) {
+        if (
+          !isValidUrl(videoUrl)
+        ) {
+          return res.status(400).json({
+            success: false,
+
+            message:
+              "Invalid video URL"
+          });
+        }
+
+        if (
+          existing.sourceType ===
+            "upload" &&
+          existing.videoUrl
+        ) {
+          await deleteFromFirebase(
+            existing.videoUrl
+          );
+        }
+
+        updateData.videoUrl =
+          videoUrl.trim();
+      }
+
+      // NEW THUMBNAIL
+      if (
+        req.files?.thumbnail?.[0]
+      ) {
+        if (
+          existing.thumbnail
+        ) {
+          await deleteFromFirebase(
+            existing.thumbnail
+          );
+        }
+
+        updateData.thumbnail =
+          await uploadToFirebase(
+            req.files.thumbnail[0],
+            "highlights/thumbnails"
+          );
+      }
+
+      const highlight =
+        await Highlight.findByIdAndUpdate(
+          req.params.id,
+          updateData,
+          {
+            new: true,
+            runValidators: true
+          }
+        );
+
+      res.json({
+        success: true,
+
+        message:
+          "Highlight updated",
+
+        highlight:
+          formatHighlight(
+            req,
+            highlight
+          )
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+
+        message:
+          error.message
+      });
+    }
+  };
+
+// DELETE HIGHLIGHT
 // DELETE /api/admin/highlights/:id
-exports.deleteHighlight = async (req, res) => {
-  try {
-    const highlight = await Highlight.findByIdAndDelete(req.params.id);
-    if (!highlight) return res.status(404).json({ success: false, message: "Highlight not found" });
-    res.json({ success: true, message: "Highlight deleted" });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+exports.deleteHighlight =
+  async (req, res) => {
+    try {
+      const highlight =
+        await Highlight.findOne({
+          _id: req.params.id,
+
+          isDeleted: false
+        });
+
+      if (!highlight) {
+        return res.status(404).json({
+          success: false,
+
+          message:
+            "Highlight not found"
+        });
+      }
+
+      // Delete uploaded video
+      if (
+        highlight.sourceType ===
+          "upload" &&
+        highlight.videoUrl
+      ) {
+        await deleteFromFirebase(
+          highlight.videoUrl
+        );
+      }
+
+      // Delete thumbnail
+      if (highlight.thumbnail) {
+        await deleteFromFirebase(
+          highlight.thumbnail
+        );
+      }
+
+      // Soft delete
+      highlight.isDeleted = true;
+
+      highlight.deletedAt =
+        new Date();
+
+      await highlight.save();
+
+      res.json({
+        success: true,
+
+        message:
+          "Highlight deleted"
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+
+        message:
+          error.message
+      });
+    }
+  };

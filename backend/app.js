@@ -167,7 +167,10 @@ app.use("/api/highlights", require("./routes/user/highlight.routes"));
 //comments
 const commentRoutes = require("./routes/user/comment.routes");
 app.use("/api/comments", commentRoutes);
-
+app.use(
+  "/api/admin/comments",
+  require("./routes/admin/comment.routes")
+);
 startAutoLiveMatches();
 
 module.exports = app;

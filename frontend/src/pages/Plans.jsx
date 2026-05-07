@@ -16,7 +16,7 @@ const defaultForm = {
   matchId: "",
   teamId: "",
   seriesId: "",
-  durationDays: "30",                             
+  durationDays: "30",
   features: "",
   buttonText: "Unlock Now",
   description: "",
@@ -465,103 +465,71 @@ function Plans() {
           No plans found for this filter.
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {filteredPlans.map((plan, index) => (
-            <motion.div
-              key={plan._id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.04 }}
-              className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{plan.title || "Untitled Plan"}</h3>
-                    {plan.badge && (
-                      <span className="rounded-full bg-violet-500/10 px-2.5 py-1 text-xs font-medium text-violet-500">{plan.badge}</span>
-                    )}
-                    {plan.planType && (
-                      <span className={`rounded-lg border px-2 py-0.5 text-[11px] font-semibold ${PLAN_TYPE_COLORS[plan.planType] || ""}`}>
-                        {PLAN_TYPE_LABELS[plan.planType] || plan.planType}
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    {formatMoney(plan.price, plan.currency)} - {plan.durationDays} days
-                  </p>
-                </div>
-                <span
-                  className={`rounded-full px-2.5 py-1 text-xs ${plan.isActive
-                    ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-500"
-                    : "border border-slate-500/20 bg-slate-500/10 text-slate-500"
-                    }`}
-                >
-                  {plan.isActive ? "Active" : "Inactive"}
-                </span>
-              </div>
+        <section className="rounded-2xl bg-white shadow-sm dark:bg-slate-900 overflow-hidden border border-slate-100 dark:border-slate-800">
+          {loading ? (
+            <div className="p-10 text-center text-sm text-slate-500">Loading plans...</div>
+          ) : !filteredPlans.length ? (
+            <div className="p-10 text-center text-sm text-slate-500">No plans found.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+                <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Plan / Type</th>
+                    <th className="px-4 py-3 font-medium">Price / Duration</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                  {filteredPlans.map((plan) => (
+                    <tr key={plan._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{plan.title}</p>
+                            {plan.badge && <span className="text-[9px] font-bold text-violet-500 uppercase px-1.5 py-0.5 bg-violet-500/10 rounded-md">{plan.badge}</span>}
+                          </div>
+                          <span className={`text-[9px] font-bold uppercase tracking-tight px-1.5 py-0.5 rounded-md inline-block w-fit ${PLAN_TYPE_COLORS[plan.planType] || ""}`}>
+                            {PLAN_TYPE_LABELS[plan.planType] || plan.planType}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{formatMoney(plan.price, plan.currency)}</p>
+                          <p className="text-[10px] text-slate-500">{plan.durationDays} Days</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase ${plan.isActive ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10" : "bg-slate-100 text-slate-500 dark:bg-slate-800"}`}>
+                          {plan.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => toggleStatus(plan)} disabled={actionPlanId === plan._id} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title={plan.isActive ? "Deactivate" : "Activate"}>
+                            {plan.isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
+                          </button>
+                          <button onClick={() => openView(plan)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View">
+                            <Eye size={14} />
+                          </button>
+                          <button onClick={() => openEdit(plan)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Edit">
+                            <Pencil size={14} />
+                          </button>
+                          <button onClick={() => setDeleteTarget(plan)} className="admin-action-btn-danger-sm h-8 w-8 rounded-full !p-0" title="Delete">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
 
-              <p className="mt-3 line-clamp-2 text-sm text-slate-600 dark:text-slate-300">
-                {plan.description || "No description added yet."}
-              </p>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                {(plan.features || []).slice(0, 3).map((feature) => (
-                  <span key={feature} className="rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-600 dark:text-slate-300">
-                    {feature}
-                  </span>
-                ))}
-                {plan.features?.length > 3 ? (
-                  <span className="rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-500 dark:text-slate-400">
-                    +{plan.features.length - 3} more
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => toggleStatus(plan)}
-                  disabled={actionPlanId === plan._id}
-                  className="admin-action-btn"
-                >
-                  {plan.isActive ? <ToggleRight size={15} /> : <ToggleLeft size={15} />}
-                  {plan.isActive ? "Deactivate" : "Activate"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updateSortOrder(plan, (Number(plan.sortOrder) || 0) + 1)}
-                  disabled={actionPlanId === plan._id}
-                  className="admin-action-btn"
-                >
-                  <ArrowDownUp size={14} />
-                  Sort {plan.sortOrder ?? 0}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openView(plan)}
-                  className="admin-action-btn"
-                >
-                  <Eye size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openEdit(plan)}
-                  className="admin-action-btn"
-                >
-                  <Pencil size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeleteTarget(plan)}
-                  className="admin-action-btn-danger"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
       )}
 
       <AnimatePresence>

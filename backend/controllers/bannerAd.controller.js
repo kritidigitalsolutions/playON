@@ -1,5 +1,7 @@
 const bannerService = require("../services/bannerAd.service");
 const uploadToFirebase = require("../utils/uploadToFirebase");
+const deleteFromFirebase = require("../utils/deleteFromFirebase");
+
 const User = require("../models/user.model");
 
 // Create Banner
@@ -54,7 +56,12 @@ exports.getBanners = async (req, res) => {
 // Delete
 exports.deleteBanner = async (req, res) => {
   try {
+    const banner = await bannerService.getBannerById(req.params.id);
+    if (banner?.image) {
+      await deleteFromFirebase(banner.image);
+    }
     await bannerService.deleteBanner(req.params.id);
+
 
     res.status(200).json({
       success: true,
@@ -99,8 +106,13 @@ exports.updateBanner = async (req, res) => {
     };
 
     if (req.file) {
+      const existing = await bannerService.getBannerById(req.params.id);
+      if (existing?.image) {
+        await deleteFromFirebase(existing.image);
+      }
       updateData.image = await uploadToFirebase(req.file, "banner-ads");
     }
+
 
     const data = await bannerService.updateBanner(req.params.id, updateData);
 

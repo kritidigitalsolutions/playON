@@ -9,6 +9,8 @@ const {
   createMatch,
   getAllMatches,
   getSingleMatch,
+  getMatchComments,
+  deleteMatchComment,
   updateMatch,
   deleteMatch,
   toggleFeatured,
@@ -37,6 +39,20 @@ router.get(
   isAdmin,
   hasPermission("matches", "view"),
   getAllMatches
+);
+
+router.get(
+  "/:id/comments",
+  isAdmin,
+  hasPermission("matches", "view"),
+  getMatchComments
+);
+
+router.delete(
+  "/:id/comments/:commentId",
+  isAdmin,
+  hasPermission("matches", "delete"),
+  deleteMatchComment
 );
 
 router.get(

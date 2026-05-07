@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { 
-  ExternalLink, 
+import {
+  ExternalLink,
   Eye,
-  Image as ImageIcon, 
-  Link as LinkIcon, 
-  MousePointer2, 
+  Image as ImageIcon,
+  Link as LinkIcon,
+  MousePointer2,
   Pencil,
-  Plus, 
-  RefreshCw, 
-  Trash2, 
-  X 
+  Plus,
+  RefreshCw,
+  Trash2,
+  X
 } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
@@ -75,6 +75,11 @@ function Banners() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setError("Banner image is too large. Max 2MB allowed.");
+        e.target.value = "";
+        return;
+      }
       setForm(p => ({
         ...p,
         imageFile: file,
@@ -82,6 +87,7 @@ function Banners() {
       }));
     }
   };
+
 
   const openCreate = () => {
     setEditMode(false);
@@ -127,7 +133,7 @@ function Banners() {
     try {
       setSubmitting(true);
       setError("");
-      
+
       const formData = new FormData();
       formData.append("title", form.title.trim());
       formData.append("link", form.link.trim());
@@ -140,12 +146,12 @@ function Banners() {
 
       const res = editMode && form._id
         ? await api.put(`/admin/banner-ads/${form._id}`, formData, {
-            headers: { "Content-Type": "multipart/form-data" }
-          })
+          headers: { "Content-Type": "multipart/form-data" }
+        })
         : await api.post("/admin/banner-ads", formData, {
-            headers: { "Content-Type": "multipart/form-data" }
-          });
-      
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+
       if (res?.data?.success) {
         await loadBanners();
         closeModal();
@@ -198,90 +204,77 @@ function Banners() {
         </div>
       ) : null}
 
-      {loading ? (
-        <Loader lines={5} />
-      ) : banners.length === 0 ? (
-        <div className="rounded-2xl bg-white p-12 text-center dark:bg-slate-900">
-          <ImageIcon size={48} className="mx-auto mb-4 text-slate-300" />
-          <p className="text-slate-500">No banners found. Create one to show ads in the app.</p>
-        </div>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {banners.map((banner, index) => (
-            <motion.div
-              key={banner._id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.05 }}
-              className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md dark:bg-slate-900"
-            >
-              <div className="relative aspect-[16/7] overflow-hidden bg-slate-100 dark:bg-slate-800">
-                <img 
-                  src={banner.image} 
-                  alt={banner.title} 
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <div className="absolute top-3 right-3 flex gap-2">
-                  <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm ${banner.isActive ? "bg-emerald-500" : "bg-slate-500"}`}>
-                    {banner.isActive ? "Active" : "Hidden"}
-                  </span>
-                </div>
-              </div>
+      <section className="rounded-2xl bg-white shadow-sm dark:bg-slate-900 overflow-hidden border border-slate-100 dark:border-slate-800">
+        {loading ? (
+          <div className="p-10 text-center text-sm text-slate-500">Loading banners...</div>
+        ) : banners.length === 0 ? (
+          <div className="p-10 text-center text-sm text-slate-500">No banners found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+              <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Banner / Preview</th>
+                  <th className="px-4 py-3 font-medium">Position / Stats</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {banners.map((banner) => (
+                  <tr key={banner._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                          {banner.image ? (
+                            <img src={banner.image} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-slate-300"><ImageIcon size={16} /></div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate max-w-[200px]" title={banner.title}>{banner.title}</p>
+                          {banner.link && <p className="text-[10px] text-slate-400 truncate max-w-[200px]">{banner.link}</p>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <p className="text-[10px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400">
+                          {banner.position.replace("_", " ")}
+                        </p>
+                        <div className="mt-1 flex items-center gap-1.5 text-[10px] text-indigo-500 font-medium">
+                          <MousePointer2 size={10} />
+                          <span>{banner.clicks || 0} Clicks</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase ${banner.isActive ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10" : "bg-slate-100 text-slate-500 dark:bg-slate-800"}`}>
+                        {banner.isActive ? "Active" : "Hidden"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => setSelectedBanner(banner)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View">
+                          <Eye size={14} />
+                        </button>
+                        <button onClick={() => openEdit(banner)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Edit">
+                          <Pencil size={14} />
+                        </button>
+                        <button onClick={() => setDeleteTarget(banner)} className="admin-action-btn-danger-sm h-8 w-8 rounded-full !p-0" title="Delete">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
-              <div className="flex flex-1 flex-col p-5">
-                <div className="mb-3 flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-slate-100">{banner.title}</h3>
-                    <p className="text-xs text-slate-400 mt-0.5 capitalize">
-                      Position: {banner.position.replace("_", " ")}
-                    </p>
-                  </div>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500 dark:bg-indigo-500/10">
-                    <ImageIcon size={16} />
-                  </div>
-                </div>
-
-                <div className="mb-4 flex flex-wrap gap-3">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                    <MousePointer2 size={12} className="text-indigo-400" />
-                    <span>{banner.clicks || 0} Clicks</span>
-                  </div>
-                  {banner.link && (
-                    <div className="flex items-center gap-1.5 text-xs text-indigo-500">
-                      <LinkIcon size={12} />
-                      <span className="truncate max-w-[150px]">{banner.link}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-auto flex items-center gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
-                  <button 
-                    onClick={() => setSelectedBanner(banner)}
-                    className="admin-action-btn-square"
-                    title="View Details"
-                  >
-                    <Eye size={16} />
-                  </button>
-                  <button 
-                    onClick={() => openEdit(banner)}
-                    className="admin-action-btn-sm flex-1 py-2"
-                  >
-                    <Pencil size={14} /> Edit
-                  </button>
-                  <button 
-                    onClick={() => setDeleteTarget(banner)}
-                    className="admin-action-btn-danger-square"
-                    title="Delete Banner"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
 
       {/* View Modal */}
       <AnimatePresence>
@@ -292,7 +285,7 @@ function Banners() {
               className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-900">
               <div className="relative aspect-[16/7] w-full bg-slate-100 dark:bg-slate-800">
                 <img src={selectedBanner.image} alt={selectedBanner.title} className="h-full w-full object-contain" />
-                <button 
+                <button
                   onClick={() => setSelectedBanner(null)}
                   className="absolute top-4 right-4 rounded-full bg-black/50 p-2 text-white transition hover:bg-black/70"
                 >
@@ -330,10 +323,10 @@ function Banners() {
                 {selectedBanner.link && (
                   <div className="mb-6">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400 mb-2">Target URL</p>
-                    <a 
-                      href={selectedBanner.link} 
-                      target="_blank" 
-                      rel="noreferrer" 
+                    <a
+                      href={selectedBanner.link}
+                      target="_blank"
+                      rel="noreferrer"
                       className="flex items-center justify-between rounded-xl bg-indigo-50/50 p-3 text-sm text-indigo-600 transition hover:bg-indigo-50 dark:bg-indigo-900/10 dark:text-indigo-400"
                     >
                       <span className="truncate">{selectedBanner.link}</span>
@@ -343,7 +336,7 @@ function Banners() {
                 )}
 
                 <div className="flex gap-3">
-                  <button 
+                  <button
                     onClick={() => {
                       const b = selectedBanner;
                       setSelectedBanner(null);
@@ -353,7 +346,7 @@ function Banners() {
                   >
                     Edit Banner
                   </button>
-                  <button 
+                  <button
                     onClick={() => setSelectedBanner(null)}
                     className="admin-secondary-btn flex-1 py-3"
                   >
@@ -388,11 +381,11 @@ function Banners() {
               <form onSubmit={saveBanner} className="space-y-4">
                 <label className="block text-sm">
                   <span className="mb-1 block text-slate-500 dark:text-slate-400">Banner Title *</span>
-                  <input 
-                    value={form.title} 
-                    onChange={e => onFormChange("title", e.target.value)} 
-                    className={fieldCls} 
-                    placeholder="e.g. IPL Final Special Offer" 
+                  <input
+                    value={form.title}
+                    onChange={e => onFormChange("title", e.target.value)}
+                    className={fieldCls}
+                    placeholder="e.g. IPL Final Special Offer"
                   />
                   {formErrors.title && <span className="mt-1 block text-xs text-rose-500">{formErrors.title}</span>}
                 </label>
@@ -400,9 +393,9 @@ function Banners() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Display Position</span>
-                    <select 
-                      value={form.position} 
-                      onChange={e => onFormChange("position", e.target.value)} 
+                    <select
+                      value={form.position}
+                      onChange={e => onFormChange("position", e.target.value)}
                       className={fieldCls}
                     >
                       {POSITIONS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
@@ -411,11 +404,11 @@ function Banners() {
 
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Sort Order</span>
-                    <input 
-                      type="number" 
-                      value={form.sortOrder} 
-                      onChange={e => onFormChange("sortOrder", e.target.value)} 
-                      className={fieldCls} 
+                    <input
+                      type="number"
+                      value={form.sortOrder}
+                      onChange={e => onFormChange("sortOrder", e.target.value)}
+                      className={fieldCls}
                     />
                   </label>
                 </div>
@@ -424,21 +417,21 @@ function Banners() {
                   <span className="mb-1 block text-slate-500 dark:text-slate-400">Target URL (Link)</span>
                   <div className="relative">
                     <LinkIcon size={14} className="absolute top-3.5 left-3 text-slate-400" />
-                    <input 
-                      value={form.link} 
-                      onChange={e => onFormChange("link", e.target.value)} 
-                      className={`${fieldCls} pl-9`} 
-                      placeholder="https://..." 
+                    <input
+                      value={form.link}
+                      onChange={e => onFormChange("link", e.target.value)}
+                      className={`${fieldCls} pl-9`}
+                      placeholder="https://..."
                     />
                   </div>
                 </label>
 
                 <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm">
-                  <input 
-                    type="checkbox" 
-                    checked={form.isActive} 
-                    onChange={e => onFormChange("isActive", e.target.checked)} 
-                    className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" 
+                  <input
+                    type="checkbox"
+                    checked={form.isActive}
+                    onChange={e => onFormChange("isActive", e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400"
                   />
                   <span className="text-slate-700 dark:text-slate-200">Banner is active</span>
                 </label>
@@ -449,8 +442,8 @@ function Banners() {
                     {form.imagePreview ? (
                       <>
                         <img src={form.imagePreview} alt="Preview" className="h-full w-full object-cover" />
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           onClick={() => setForm(p => ({ ...p, imageFile: null, imagePreview: "" }))}
                           className="absolute top-2 right-2 rounded-lg bg-black/50 p-1.5 text-white hover:bg-black/70"
                         >

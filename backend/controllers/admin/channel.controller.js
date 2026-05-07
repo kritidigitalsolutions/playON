@@ -1,6 +1,8 @@
 const channelService = require("../../services/channel.service");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
+const deleteFromFirebase = require("../../utils/deleteFromFirebase");
 const autoNotify = require("../../utils/autoNotify");
+
 
 const makeSlug = (text = "") =>
   text
@@ -178,18 +180,28 @@ exports.updateChannel = async (req, res) => {
     }
 
     if (req.files?.thumbnail?.[0]) {
+      const existing = await channelService.getChannelById(req.params.id);
+      if (existing?.thumbnail) {
+        await deleteFromFirebase(existing.thumbnail);
+      }
       data.thumbnail = await uploadToFirebase(
         req.files.thumbnail[0],
         "channels"
       );
     }
 
+
     if (req.files?.logo?.[0]) {
+      const existing = await channelService.getChannelById(req.params.id);
+      if (existing?.logo) {
+        await deleteFromFirebase(existing.logo);
+      }
       data.logo = await uploadToFirebase(
         req.files.logo[0],
         "channels"
       );
     }
+
 
     const channel = await channelService.updateChannel(
       req.params.id,
@@ -219,9 +231,7 @@ exports.updateChannel = async (req, res) => {
 // Delete
 exports.deleteChannel = async (req, res) => {
   try {
-    const channel = await channelService.deleteChannel(
-      req.params.id
-    );
+    const channel = await channelService.getChannelById(req.params.id);
 
     if (!channel) {
       return res.status(404).json({
@@ -229,6 +239,12 @@ exports.deleteChannel = async (req, res) => {
         message: "Channel not found"
       });
     }
+
+    if (channel.thumbnail) await deleteFromFirebase(channel.thumbnail);
+    if (channel.logo) await deleteFromFirebase(channel.logo);
+
+    await channelService.deleteChannel(req.params.id);
+
 
     res.json({
       success: true,

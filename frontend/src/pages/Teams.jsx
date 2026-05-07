@@ -222,65 +222,77 @@ function Teams() {
       </div>
 
       {/* Grid */}
-      {loading ? <Loader lines={6} /> : !filtered.length ? (
-        <div className="rounded-2xl bg-white p-8 text-center text-sm text-slate-500 dark:bg-slate-900">
-          No teams found.
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filtered.map((team, i) => (
-            <motion.div key={team._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  {team.logo ? (
-                    <img src={team.logo} alt={team.name} className="h-12 w-12 rounded-xl border border-slate-200 object-cover" />
-                  ) : (
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
-                      <Shield size={20} />
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-slate-100">{team.name}</h3>
-                    {team.shortName && <p className="text-xs text-slate-400">{team.shortName}</p>}
-                  </div>
-                </div>
-                <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${SPORT_COLORS[team.sport] || SPORT_COLORS.other}`}>
-                  {team.sport}
-                </span>
-              </div>
+      <section className="rounded-2xl bg-white shadow-sm dark:bg-slate-900 overflow-hidden border border-slate-100 dark:border-slate-800">
+        {loading ? (
+          <div className="p-10 text-center text-sm text-slate-500">Loading teams...</div>
+        ) : !filtered.length ? (
+          <div className="p-10 text-center text-sm text-slate-500">No teams found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+              <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Team</th>
+                  <th className="px-4 py-3 font-medium">Sport / Country</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {filtered.map((team) => (
+                  <tr key={team._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                          {team.logo ? (
+                            <img src={team.logo} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-slate-300"><Shield size={16} /></div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate" title={team.name}>{team.name}</p>
+                          {team.shortName && <p className="text-[10px] text-slate-400 uppercase">{team.shortName}</p>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <p className={`text-[10px] font-bold uppercase tracking-tight px-1.5 py-0.5 rounded-md inline-block w-fit ${SPORT_COLORS[team.sport] || SPORT_COLORS.other}`}>
+                          {team.sport}
+                        </p>
+                        <p className="mt-1 text-[10px] text-slate-500">{team.country || "-"}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase ${team.isActive ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10" : "bg-slate-100 text-slate-500 dark:bg-slate-800"}`}>
+                        {team.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => toggleStatus(team)} disabled={actionId === team._id} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title={team.isActive ? "Deactivate" : "Activate"}>
+                          {team.isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
+                        </button>
+                        <button onClick={() => setSelectedTeam(team)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View">
+                          <Eye size={14} />
+                        </button>
+                        <button onClick={() => openEdit(team)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Edit">
+                          <Pencil size={14} />
+                        </button>
+                        <button onClick={() => setDeleteTarget(team)} className="admin-action-btn-danger-sm h-8 w-8 rounded-full !p-0" title="Delete">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
-              <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
-                {team.country && <span>🌍 {team.country}</span>}
-                <span className={`rounded-full px-2 py-0.5 ${team.isActive ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10" : "bg-slate-100 text-slate-500 dark:bg-slate-800"}`}>
-                  {team.isActive ? "Active" : "Inactive"}
-                </span>
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button type="button" onClick={() => toggleStatus(team)} disabled={actionId === team._id}
-                  className="admin-action-btn-sm">
-                  {team.isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
-                  {team.isActive ? "Deactivate" : "Activate"}
-                </button>
-                <button type="button" onClick={() => setSelectedTeam(team)}
-                  className="admin-action-btn-sm">
-                  <Eye size={14} />
-                </button>
-                <button type="button" onClick={() => openEdit(team)}
-                  className="admin-action-btn-sm">
-                  <Pencil size={14} />
-                </button>
-                <button type="button" onClick={() => setDeleteTarget(team)}
-                  className="admin-action-btn-danger-sm">
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
 
       {/* Create / Edit Modal */}
       <AnimatePresence>

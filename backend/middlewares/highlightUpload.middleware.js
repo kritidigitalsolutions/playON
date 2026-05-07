@@ -1,27 +1,89 @@
 const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
-const storage = multer.memoryStorage();
+// Create temp folder if not exists
+const tempDir = "temp";
+
+if (!fs.existsSync(tempDir)) {
+  fs.mkdirSync(tempDir);
+}
+
+// Store files temporarily on disk
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, tempDir);
+  },
+
+  filename: function (req, file, cb) {
+    const uniqueName =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9);
+
+    cb(
+      null,
+      uniqueName +
+        path.extname(file.originalname)
+    );
+  }
+});
 
 const fileFilter = (req, file, cb) => {
-  if (file.fieldname === "thumbnail" && file.mimetype.startsWith("image/")) {
-    return cb(null, true);
+  // Thumbnail image validation
+  if (file.fieldname === "thumbnail") {
+    if (file.mimetype.startsWith("image/")) {
+      return cb(null, true);
+    }
+
+    return cb(
+      new Error(
+        'Thumbnail must be an image file'
+      )
+    );
   }
-  if (
-    file.fieldname === "videoFile" &&
-    (file.mimetype.startsWith("video/") || file.mimetype === "application/octet-stream")
-  ) {
-    return cb(null, true);
+
+  // Video validation
+  if (file.fieldname === "videoFile") {
+    const allowedVideo =
+      /mp4|mov|mkv|webm/i;
+
+    const ext = allowedVideo.test(
+      path
+        .extname(file.originalname)
+        .toLowerCase()
+    );
+
+    const mime =
+      file.mimetype.startsWith("video/");
+
+    if (ext && mime) {
+      return cb(null, true);
+    }
+
+    return cb(
+      new Error(
+        "Only MP4, MOV, MKV, WEBM videos are allowed"
+      )
+    );
   }
-  cb(new Error(`Unsupported file type for field "${file.fieldname}"`));
+
+  return cb(
+    new Error(
+      `Unsupported field: ${file.fieldname}`
+    )
+  );
 };
 
 const highlightUpload = multer({
   storage,
+
   fileFilter,
+
   limits: {
-    fileSize: 500 * 1024 * 1024 // 500 MB per file
+    // Max upload size per file
+    fileSize: 100 * 1024 * 1024 // 100MB
   }
 });
 
-// .fields([{ name: "thumbnail", maxCount: 1 }, { name: "videoFile", maxCount: 1 }])
 module.exports = highlightUpload;

@@ -1,5 +1,7 @@
 const playerService = require("../../services/player.service");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
+const deleteFromFirebase = require("../../utils/deleteFromFirebase");
+
 
 const makeSlug = (text = "") =>
   text
@@ -117,11 +119,16 @@ exports.updatePlayer = async (req, res) => {
     }
 
     if (req.file) {
+      const existing = await playerService.getPlayerById(req.params.id);
+      if (existing?.image) {
+        await deleteFromFirebase(existing.image);
+      }
       data.image = await uploadToFirebase(
         req.file,
         "players"
       );
     }
+
 
     const player = await playerService.updatePlayer(
       req.params.id,
@@ -151,9 +158,7 @@ exports.updatePlayer = async (req, res) => {
 // Delete
 exports.deletePlayer = async (req, res) => {
   try {
-    const player = await playerService.deletePlayer(
-      req.params.id
-    );
+    const player = await playerService.getPlayerById(req.params.id);
 
     if (!player) {
       return res.status(404).json({
@@ -161,6 +166,13 @@ exports.deletePlayer = async (req, res) => {
         message: "Player not found"
       });
     }
+
+    if (player.image) {
+      await deleteFromFirebase(player.image);
+    }
+
+    await playerService.deletePlayer(req.params.id);
+
 
     res.json({
       success: true,

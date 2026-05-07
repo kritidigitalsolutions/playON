@@ -310,87 +310,75 @@ function Players() {
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <section className="rounded-2xl bg-white shadow-sm dark:bg-slate-900 overflow-hidden border border-slate-100 dark:border-slate-800">
         {loading ? (
-          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
-            Loading players...
+          <div className="p-10 text-center text-sm text-slate-500">Loading players...</div>
+        ) : !filteredPlayers.length ? (
+          <div className="p-10 text-center text-sm text-slate-500">No players found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+              <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Player</th>
+                  <th className="px-4 py-3 font-medium">Details</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {filteredPlayers.map((player) => (
+                  <tr key={player._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+                          {player.image ? (
+                            <img src={player.image} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-slate-300"><UserRound size={16} /></div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate" title={player.name}>{player.name}</p>
+                          <p className="text-[10px] text-slate-400 uppercase">{(player.sport || "other")}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{player.team || "No Team"}</p>
+                        <p className="text-[10px] text-slate-500">{player.position || "-"}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase ${getBadgeClass(player.status, STATUS_STYLES)}`}>
+                        {player.status || "inactive"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => openView(player)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View">
+                          <Eye size={14} />
+                        </button>
+                        <button onClick={() => openEdit(player)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Edit">
+                          <Pencil size={14} />
+                        </button>
+                        <button onClick={() => toggleFeatured(player)} disabled={actionPlayerId === player._id} className={`admin-action-btn-sm h-8 w-8 rounded-full !p-0 ${player.featured ? "!bg-amber-50 !text-amber-500 dark:!bg-amber-500/10" : ""}`} title="Feature">
+                          <Star size={14} className={player.featured ? "fill-current" : ""} />
+                        </button>
+                        <button onClick={() => setDeleteTarget(player)} className="admin-action-btn-danger-sm h-8 w-8 rounded-full !p-0" title="Delete">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ) : null}
+        )}
+      </section>
 
-        {!loading && !filteredPlayers.length ? (
-          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
-            No players found for this filter.
-          </div>
-        ) : null}
-
-        {filteredPlayers.map((player, index) => (
-          <motion.div
-            key={player._id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <div className="h-12 w-12 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:bg-slate-800">
-                  {player.image ? (
-                    <img src={player.image} alt={player.name || "Player"} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-slate-400">
-                      <UserRound size={18} />
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{player.name || "Unnamed Player"}</h3>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    {(player.sport || "other").toUpperCase()} - {player.team || "No team"}
-                  </p>
-                </div>
-              </div>
-              <span className={`rounded-full px-2.5 py-1 text-xs ${getBadgeClass(player.status, STATUS_STYLES)}`}>
-                {player.status || "inactive"}
-              </span>
-            </div>
-
-            <p className="mt-3 line-clamp-2 text-sm text-slate-600 dark:text-slate-300">{player.bio || "No bio added yet."}</p>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => toggleFeatured(player)}
-                disabled={actionPlayerId === player._id}
-                className="admin-action-btn-warning"
-              >
-                <Star size={14} className={player.featured ? "fill-current" : ""} />
-                {player.featured ? "Featured" : "Feature"}
-              </button>
-              <button
-                type="button"
-                onClick={() => openView(player)}
-                className="admin-action-btn"
-              >
-                <Eye size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => openEdit(player)}
-                className="admin-action-btn"
-              >
-                <Pencil size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setDeleteTarget(player)}
-                className="admin-action-btn-danger"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          </motion.div>
-        ))}
-      </div>
 
       <AnimatePresence>
         {modalOpen ? (
@@ -478,9 +466,18 @@ function Players() {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => onFormChange("imageFile", e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file && file.size > 2 * 1024 * 1024) {
+                          setError("Player image is too large. Max 2MB allowed.");
+                          e.target.value = "";
+                          return;
+                        }
+                        onFormChange("imageFile", file || null);
+                      }}
                       className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
                     />
+
                   </label>
 
                   <label className="block text-sm md:col-span-2">

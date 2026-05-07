@@ -1,6 +1,7 @@
 const Series = require("../../models/series.model");
 const Match = require("../../models/match.model");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
+const deleteFromFirebase = require("../../utils/deleteFromFirebase");
 const autoNotify = require("../../utils/autoNotify");
 
 // helper
@@ -364,6 +365,7 @@ exports.updateSeries = async (req, res) => {
     }
 
     if (req.files?.banner?.[0]) {
+      if (series.banner) await deleteFromFirebase(series.banner);
       const bannerUrl = await uploadToFirebase(
         req.files.banner[0],
         "series"
@@ -371,13 +373,16 @@ exports.updateSeries = async (req, res) => {
       series.banner = bannerUrl;
     }
 
+
     if (req.files?.tournamentLogo?.[0]) {
+      if (series.tournamentLogo) await deleteFromFirebase(series.tournamentLogo);
       const tournamentLogoUrl = await uploadToFirebase(
         req.files.tournamentLogo[0],
         "series"
       );
       series.tournamentLogo = tournamentLogoUrl;
     }
+
 
     await series.save();
     await series.populate([
@@ -447,6 +452,9 @@ exports.deleteSeries = async (req, res) => {
       { seriesId: null }
     );
 
+    if (series.banner) await deleteFromFirebase(series.banner);
+    if (series.tournamentLogo) await deleteFromFirebase(series.tournamentLogo);
+
     await Series.findByIdAndDelete(id);
 
     res.json({
@@ -461,3 +469,4 @@ exports.deleteSeries = async (req, res) => {
     });
   }
 };
+

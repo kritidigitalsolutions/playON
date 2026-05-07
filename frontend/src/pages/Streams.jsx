@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, Pencil, Play, Plus, RefreshCw, Square, Trash2, X } from "lucide-react";
 import api from "../api/axios";
@@ -540,7 +540,21 @@ const handleWatch = async (stream) => {
 
                   <label className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Thumbnail</span>
-                    <input type="file" accept="image/*" onChange={(e) => onFormChange("thumbnailFile", e.target.files?.[0] || null)} className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file && file.size > 2 * 1024 * 1024) {
+                          setError("Thumbnail is too large. Max 2MB allowed.");
+                          e.target.value = "";
+                          return;
+                        }
+                        onFormChange("thumbnailFile", file || null);
+                      }}
+                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
+                    />
+
                   </label>
 
                   <label className="block text-sm md:col-span-2">

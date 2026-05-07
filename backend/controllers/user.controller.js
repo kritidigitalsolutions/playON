@@ -1,5 +1,7 @@
 const User = require("../models/user.model");
 const uploadToFirebase = require("../utils/uploadToFirebase");
+const deleteFromFirebase = require("../utils/deleteFromFirebase");
+
 
 // COMPLETE PROFILE / FIRST TIME SETUP
 exports.completeProfile = async (req, res) => {
@@ -109,11 +111,16 @@ exports.updateProfile = async (req, res) => {
 
     // 📸 Profile image upload
     if (req.file) {
+      const existingUser = await User.findById(req.user.userId);
+      if (existingUser?.profilePic) {
+        await deleteFromFirebase(existingUser.profilePic);
+      }
       updateData.profilePic = await uploadToFirebase(
         req.file,
         "profiles"
       );
     }
+
 
     const updatedUser = await User.findOneAndUpdate(
       {

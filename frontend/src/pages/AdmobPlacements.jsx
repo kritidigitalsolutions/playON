@@ -270,77 +270,65 @@ function AdmobPlacements() {
         </div>
       </div>
 
-      {loading ? (
-        <Loader lines={5} />
-      ) : placements.length === 0 ? (
-        <div className="rounded-2xl bg-white p-12 text-center dark:bg-slate-900">
-          <Megaphone size={48} className="mx-auto mb-4 text-slate-300" />
-          <p className="text-slate-500">No AdMob placements found. Create one to configure ad units.</p>
-        </div>
-      ) : (
-        <div className="grid gap-4 xl:grid-cols-2">
-          {placements.map((placement, index) => (
-            <motion.div
-              key={placement._id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.04 }}
-              className="rounded-2xl bg-white p-5 shadow-sm transition hover:shadow-md dark:bg-slate-900"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${placement.isActive ? "bg-emerald-500/10 text-emerald-500" : "bg-slate-500/10 text-slate-500"}`}>
-                      {placement.isActive ? "Active" : "Inactive"}
-                    </span>
-                    <span className="rounded-full bg-indigo-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-500">
-                      {getFormatLabel(placement.format)}
-                    </span>
-                  </div>
-                  <h3 className="truncate text-base font-semibold text-slate-900 dark:text-slate-100">{placement.title}</h3>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    Position: {getPositionLabel(placement.position)}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => togglePlacement(placement)}
-                    disabled={actionId === placement._id}
-                    className="admin-action-btn-square"
-                    title={placement.isActive ? "Deactivate" : "Activate"}
-                  >
-                    {placement.isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
-                  </button>
-                  <button type="button" onClick={() => openEdit(placement)} className="admin-action-btn-square" title="Edit">
-                    <Pencil size={16} />
-                  </button>
-                  <button type="button" onClick={() => setDeleteTarget(placement)} className="admin-action-btn-danger-square" title="Delete">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
+      <section className="rounded-2xl bg-white shadow-sm dark:bg-slate-900 overflow-hidden border border-slate-100 dark:border-slate-800">
+        {loading ? (
+          <div className="p-10 text-center text-sm text-slate-500">Loading placements...</div>
+        ) : placements.length === 0 ? (
+          <div className="p-10 text-center text-sm text-slate-500">No placements found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+              <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Placement / Title</th>
+                  <th className="px-4 py-3 font-medium">Position / Format</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {placements.map((placement) => (
+                  <tr key={placement._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{placement.title}</p>
+                        <p className="text-[10px] text-slate-400 truncate max-w-[250px] font-mono">{placement.adUnitId}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <p className="text-[10px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400">
+                          {getPositionLabel(placement.position)}
+                        </p>
+                        <p className="mt-1 text-[10px] text-indigo-500 font-bold uppercase">{getFormatLabel(placement.format)}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase ${placement.isActive ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10" : "bg-slate-100 text-slate-500 dark:bg-slate-800"}`}>
+                        {placement.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => togglePlacement(placement)} disabled={actionId === placement._id} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title={placement.isActive ? "Deactivate" : "Activate"}>
+                          {placement.isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
+                        </button>
+                        <button onClick={() => openEdit(placement)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Edit">
+                          <Pencil size={14} />
+                        </button>
+                        <button onClick={() => setDeleteTarget(placement)} className="admin-action-btn-danger-sm h-8 w-8 rounded-full !p-0" title="Delete">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
-              <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr),120px]">
-                <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-950/60">
-                  <p className="mb-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-slate-400">
-                    <Hash size={11} /> Ad Unit ID
-                  </p>
-                  <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">{placement.adUnitId}</p>
-                </div>
-                <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-950/60">
-                  <p className="text-[10px] uppercase tracking-wide text-slate-400">Sort Order</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{placement.sortOrder || 0}</p>
-                </div>
-              </div>
-
-              {placement.notes ? (
-                <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">{placement.notes}</p>
-              ) : null}
-            </motion.div>
-          ))}
-        </div>
-      )}
 
       <AnimatePresence>
         {modalOpen ? (

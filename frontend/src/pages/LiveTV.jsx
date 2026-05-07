@@ -553,18 +553,16 @@ function LiveTV() {
           <button
             type="button"
             onClick={() => setCategoryFilter("all")}
-            className={`inline-flex h-8 items-center gap-2 rounded-full border px-3 text-xs transition ${
-              categoryFilter === "all"
+            className={`inline-flex h-8 items-center gap-2 rounded-full border px-3 text-xs transition ${categoryFilter === "all"
                 ? "border-green-400 bg-green-50 text-green-700 dark:border-green-600 dark:bg-green-900/30 dark:text-green-400"
                 : "border-slate-200 text-slate-600 hover:border-slate-300 dark:text-slate-300"
-            }`}
+              }`}
           >
             All
-            <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${
-              categoryFilter === "all"
+            <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${categoryFilter === "all"
                 ? "bg-green-200 text-green-700 dark:bg-green-700 dark:text-green-200"
                 : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-            }`}
+              }`}
             >
               {channels.length}
             </span>
@@ -573,25 +571,22 @@ function LiveTV() {
           {categoryCards.map((category) => (
             <div
               key={category._id}
-              className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs transition ${
-                categoryFilter === category.slug
+              className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs transition ${categoryFilter === category.slug
                   ? "border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-900/30"
                   : "border-slate-200"
-              }`}
+                }`}
             >
               <button
                 type="button"
                 onClick={() => setCategoryFilter(category.slug)}
-                className={`flex items-center gap-2 ${
-                  categoryFilter === category.slug ? "font-medium text-green-700 dark:text-green-400" : "text-slate-600 dark:text-slate-300"
-                }`}
+                className={`flex items-center gap-2 ${categoryFilter === category.slug ? "font-medium text-green-700 dark:text-green-400" : "text-slate-600 dark:text-slate-300"
+                  }`}
               >
                 {category.name}
-                <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${
-                  categoryFilter === category.slug
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${categoryFilter === category.slug
                     ? "bg-green-200 text-green-700 dark:bg-green-700 dark:text-green-200"
                     : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-                }`}
+                  }`}
                 >
                   {category.count}
                 </span>
@@ -637,102 +632,81 @@ function LiveTV() {
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <section className="rounded-2xl bg-white shadow-sm dark:bg-slate-900 overflow-hidden border border-slate-100 dark:border-slate-800">
         {loading ? (
-          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
-            Loading channels...
+          <div className="p-10 text-center text-sm text-slate-500">Loading channels...</div>
+        ) : !filteredChannels.length ? (
+          <div className="p-10 text-center text-sm text-slate-500">No channels found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+              <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Channel</th>
+                  <th className="px-4 py-3 font-medium">Source / Category</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {filteredChannels.map((channel) => (
+                  <tr key={channel._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                          {channel.logo || channel.thumbnail ? (
+                            <img src={channel.logo || channel.thumbnail} alt="" className="h-full w-full object-contain" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-slate-300"><Tv size={16} /></div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate" title={channel.name}>{channel.name}</p>
+                          <div className="mt-0.5 flex items-center gap-2">
+                            <span className="text-[10px] text-slate-400">{formatNumber(channel.viewerCount || 0)} viewers</span>
+                            {channel.isPremium && <span className="text-[9px] font-bold text-violet-500 uppercase tracking-tighter">Premium</span>}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100 uppercase">{channel.streamType}</p>
+                        <p className="text-[10px] text-slate-500">{toTitleCase(channel.category)}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase ${getBadgeClass(channel.status, STATUS_STYLES)}`}>
+                        {channel.status || "offline"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => toggleLive(channel)} disabled={actionChannelId === channel._id} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title={channel.status === "live" ? "Go Offline" : "Go Live"}>
+                          {channel.status === "live" ? <Square size={14} /> : <Play size={14} />}
+                        </button>
+                        <button onClick={() => handleWatch(channel)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Watch">
+                          <Eye size={14} />
+                        </button>
+                        <button onClick={() => openEdit(channel)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Edit">
+                          <Pencil size={14} />
+                        </button>
+                        <button onClick={() => toggleFeatured(channel)} disabled={actionChannelId === channel._id} className={`admin-action-btn-sm h-8 w-8 rounded-full !p-0 ${channel.featured ? "!bg-amber-50 !text-amber-500 dark:!bg-amber-500/10" : ""}`} title="Feature">
+                          <Star size={14} className={channel.featured ? "fill-current" : ""} />
+                        </button>
+                        <button onClick={() => setDeleteTarget(channel)} className="admin-action-btn-danger-sm h-8 w-8 rounded-full !p-0" title="Delete">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ) : null}
+        )}
+      </section>
 
-        {!loading && !filteredChannels.length ? (
-          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
-            No channels found for this filter.
-          </div>
-        ) : null}
-
-        {filteredChannels.map((channel, index) => (
-          <motion.div
-            key={channel._id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{channel.name || "Untitled Channel"}</h3>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  {(channel.category || "other").toUpperCase()} - {channel.streamType || "other"}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                {channel.isPremium && (
-                  <span className="inline-flex items-center rounded-full bg-violet-600 px-2.5 py-1 text-[10px] font-bold uppercase text-white">
-                    👑 Premium
-                  </span>
-                )}
-                <span className={`rounded-full px-2.5 py-1 text-xs ${getBadgeClass(channel.status, STATUS_STYLES)}`}>
-                  {channel.status || "offline"}
-                </span>
-              </div>
-            </div>
-
-            <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">
-              <Tv size={14} className="mr-1 inline" />
-              {formatNumber(channel.viewerCount || 0)} viewers
-            </p>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => toggleLive(channel)}
-                disabled={actionChannelId === channel._id}
-                className="flex items-center gap-1 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-3 py-2 text-sm text-white disabled:opacity-70"
-              >
-                {channel.status === "live" ? <Square size={14} /> : <Play size={14} />}
-                {actionChannelId === channel._id ? "Updating..." : channel.status === "live" ? "Go Offline" : "Go Live"}
-              </button>
-              <button
-                type="button"
-                onClick={() => toggleFeatured(channel)}
-                disabled={actionChannelId === channel._id}
-                className="admin-action-btn-warning"
-              >
-                <Star size={14} className={channel.featured ? "fill-current" : ""} />
-                {channel.featured ? "Featured" : "Feature"}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleWatch(channel)}
-                className="admin-action-btn"
-              >
-                Watch
-              </button>
-              <button
-                type="button"
-                onClick={() => openView(channel)}
-                className="admin-action-btn"
-              >
-                <Eye size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => openEdit(channel)}
-                className="admin-action-btn"
-              >
-                <Pencil size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setDeleteTarget(channel)}
-                className="admin-action-btn-danger"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          </motion.div>
-        ))}
-      </div>
 
       <AnimatePresence>
         {modalOpen ? (

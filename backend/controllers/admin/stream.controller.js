@@ -1,5 +1,6 @@
 const streamService = require("../../services/stream.service");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
+const deleteFromFirebase = require("../../utils/deleteFromFirebase");
 const autoNotify = require("../../utils/autoNotify");
 
 // helper
@@ -18,6 +19,7 @@ const fileUrl = (req, filePath) => {
 };
 
 const formatStream = (req, doc) => {
+  if (!doc) return null;
   const stream = doc.toObject ? doc.toObject() : doc;
 
   return {
@@ -29,17 +31,17 @@ const formatStream = (req, doc) => {
 // Create
 exports.createStream = async (req, res) => {
   try {
-   let thumbnail = "";
+    let thumbnail = "";
 
-if (req.file) {
-  thumbnail = await uploadToFirebase(req.file, "streams");
-}
+    if (req.file) {
+      thumbnail = await uploadToFirebase(req.file, "streams");
+    }
 
-const data = {
-  ...req.body,
-  thumbnail,
-  createdBy: req.admin._id
-};
+    const data = {
+      ...req.body,
+      thumbnail,
+      createdBy: req.admin._id
+    };
     const stream = await streamService.createStream(data);
 
     res.status(201).json({
@@ -103,9 +105,13 @@ exports.updateStream = async (req, res) => {
     const data = {
       ...req.body
     };
-if (req.file) {
-  data.thumbnail = await uploadToFirebase(req.file, "streams");
-}
+    if (req.file) {
+      const existing = await streamService.getStreamById(req.params.id);
+      if (existing?.thumbnail) {
+        await deleteFromFirebase(existing.thumbnail);
+      }
+      data.thumbnail = await uploadToFirebase(req.file, "streams");
+    }
 
     const stream = await streamService.updateStream(req.params.id, data);
 
@@ -132,7 +138,7 @@ if (req.file) {
 // Delete
 exports.deleteStream = async (req, res) => {
   try {
-    const stream = await streamService.deleteStream(req.params.id);
+    const stream = await streamService.getStreamById(req.params.id);
 
     if (!stream) {
       return res.status(404).json({
@@ -140,6 +146,12 @@ exports.deleteStream = async (req, res) => {
         message: "Stream not found"
       });
     }
+
+    if (stream.thumbnail) {
+      await deleteFromFirebase(stream.thumbnail);
+    }
+
+    await streamService.deleteStream(req.params.id);
 
     res.json({
       success: true,
@@ -165,17 +177,17 @@ exports.goLive = async (req, res) => {
       });
     }
 
-await autoNotify({
-  title: "Live Stream Started",
-  message: `${stream.title || stream.matchId?.title || "Stream"} is live now.`,
-  type: "STREAM",
-  metadata: {
-  streamId: stream._id,
-  matchId: stream.matchId?._id || stream.matchId,
-  actionUrl: stream.matchId?._id || stream.matchId ? `/matches/${stream.matchId?._id || stream.matchId}/watch` : "",
-  image: stream.thumbnail || ""
-}
-});
+    await autoNotify({
+      title: "Live Stream Started",
+      message: `${stream.title || stream.matchId?.title || "Stream"} is live now.`,
+      type: "STREAM",
+      metadata: {
+        streamId: stream._id,
+        matchId: stream.matchId?._id || stream.matchId,
+        actionUrl: stream.matchId?._id || stream.matchId ? `/matches/${stream.matchId?._id || stream.matchId}/watch` : "",
+        image: stream.thumbnail || ""
+      }
+    });
 
     res.json({
       success: true,
@@ -226,11 +238,11 @@ exports.watchStream = async (req, res) => {
       });
     }
     if (stream.status !== "live") {
-  return res.status(400).json({
-    success: false,
-    message: "Stream is not live yet"
-  });
-}
+      return res.status(400).json({
+        success: false,
+        message: "Stream is not live yet"
+      });
+    }
 
     res.json({
       success: true,

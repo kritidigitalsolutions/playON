@@ -1,5 +1,11 @@
 const BannerAd = require("../models/bannerAd.model");
 
+// Single
+exports.getBannerById = async (id) => {
+  return await BannerAd.findById(id);
+};
+
+
 // Create
 exports.createBanner = async (data) => {
   return await BannerAd.create(data);

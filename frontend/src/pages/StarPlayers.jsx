@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, Pencil, Plus, RefreshCw, Star, Trash2, Video, X } from "lucide-react";
+import { Eye, MessageSquare, Pencil, Plus, RefreshCw, Star, Trash2, Video, X } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
+import CommentModal from "../components/CommentModal";
 import PageHeader from "../components/PageHeader";
+
 
 const defaultForm = {
   _id: "",
@@ -46,7 +48,9 @@ function StarPlayers() {
   const [formErrors, setFormErrors] = useState({});
   const [selectedHighlight, setSelectedHighlight] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [commentTarget, setCommentTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
 
   // Player Creation Modal State
   const [playerModalOpen, setPlayerModalOpen] = useState(false);
@@ -290,90 +294,76 @@ function StarPlayers() {
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <section className="rounded-2xl bg-white shadow-sm dark:bg-slate-900 overflow-hidden border border-slate-100 dark:border-slate-800">
         {loading ? (
-          <div className="col-span-full rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
-            Loading highlights...
+          <div className="p-10 text-center text-sm text-slate-500">Loading highlights...</div>
+        ) : !filteredHighlights.length ? (
+          <div className="p-10 text-center text-sm text-slate-500">No highlights found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+              <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Highlight</th>
+                  <th className="px-4 py-3 font-medium">Player / Sport</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {filteredHighlights.map((hl) => (
+                  <tr key={hl._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="relative h-10 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+                          {hl.thumbnail ? (
+                            <img src={hl.thumbnail} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-slate-300"><Video size={14} /></div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate max-w-[250px]" title={hl.title}>{hl.title}</p>
+                          {hl.duration && <span className="text-[10px] text-slate-400">{hl.duration}</span>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{hl.playerName}</p>
+                        <p className="text-[10px] text-slate-500">{hl.sportId?.name || "Unknown"}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {hl.isFeatured && <span className="inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold text-amber-600">Featured</span>}
+                        {hl.isPremium && <span className="inline-flex rounded-full bg-violet-500/10 px-2 py-0.5 text-[9px] font-bold text-violet-600">Premium</span>}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => setSelectedHighlight(hl)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View">
+                          <Eye size={14} />
+                        </button>
+                        <button onClick={() => openEdit(hl)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Edit">
+                          <Pencil size={14} />
+                        </button>
+                        <button onClick={() => setCommentTarget(hl)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Comments">
+                          <MessageSquare size={14} />
+                        </button>
+                        <button onClick={() => setDeleteTarget(hl)} className="admin-action-btn-danger-sm h-8 w-8 rounded-full !p-0" title="Delete">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ) : null}
+        )}
+      </section>
 
-        {!loading && !filteredHighlights.length ? (
-          <div className="col-span-full rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
-            No highlights found.
-          </div>
-        ) : null}
-
-        {filteredHighlights.map((hl, index) => (
-          <motion.div
-            key={hl._id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-slate-900"
-          >
-            <div className="relative h-60 w-full bg-slate-950 dark:bg-slate-950">
-              {hl.thumbnail ? (
-                <img src={hl.thumbnail} alt={hl.title} className="h-full w-full object-contain" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-slate-400">
-                  <Video size={32} />
-                </div>
-              )}
-              {hl.isFeatured && (
-                <div className="absolute left-2 top-2 rounded-lg bg-amber-500 px-2 py-1 text-xs font-bold text-white shadow-sm flex items-center gap-1">
-                  <Star size={12} className="fill-current" /> Featured
-                </div>
-              )}
-              {hl.isPremium && (
-                <div className="absolute right-2 top-2 rounded-lg bg-violet-600 px-2 py-1 text-xs font-bold text-white shadow-sm flex items-center gap-1">
-                  👑 Premium
-                </div>
-              )}
-              {hl.duration && (
-                <div className="absolute bottom-2 right-2 rounded-md bg-black/70 px-1.5 py-0.5 text-xs font-medium text-white">
-                  {hl.duration}
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-1 flex-col p-4">
-              <h3 className="line-clamp-2 text-base font-semibold text-slate-900 dark:text-slate-100" title={hl.title}>
-                {hl.title}
-              </h3>
-              <p className="mt-1 text-sm font-medium text-indigo-500 dark:text-indigo-400">
-                {hl.playerName} {hl.team ? `(${hl.team})` : ""}
-              </p>
-              <p className="mt-2 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">
-                Sport: {hl.sportId?.name || "Unknown"}
-              </p>
-
-              <div className="mt-auto pt-4 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedHighlight(hl)}
-                  className="admin-action-btn"
-                >
-                  <Eye size={14} /> View
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openEdit(hl)}
-                  className="admin-action-btn"
-                >
-                  <Pencil size={14} /> Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeleteTarget(hl)}
-                  className="admin-action-btn-danger"
-                >
-                  <Trash2 size={14} /> Delete
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
 
       <AnimatePresence>
         {modalOpen ? (
@@ -533,9 +523,18 @@ function StarPlayers() {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => onFormChange("thumbnailFile", e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file && file.size > 2 * 1024 * 1024) {
+                          setError("Thumbnail is too large. Max 2MB allowed.");
+                          e.target.value = "";
+                          return;
+                        }
+                        onFormChange("thumbnailFile", file || null);
+                      }}
                       className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800"
                     />
+
                   </label>
 
                   <label className="block text-sm flex items-center gap-2 mt-2">
@@ -707,9 +706,18 @@ function StarPlayers() {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => setPlayerForm(p => ({ ...p, imageFile: e.target.files?.[0] || null }))}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file && file.size > 2 * 1024 * 1024) {
+                          setError("Player image is too large. Max 2MB allowed.");
+                          e.target.value = "";
+                          return;
+                        }
+                        setPlayerForm(p => ({ ...p, imageFile: file || null }));
+                      }}
                       className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
                     />
+
                   </label>
 
                   <label className="block text-sm md:col-span-2">
@@ -745,7 +753,15 @@ function StarPlayers() {
         onConfirm={handleDelete}
         confirmLabel={deleting ? "Deleting..." : "Delete Highlight"}
       />
+
+      <CommentModal
+        open={Boolean(commentTarget)}
+        onClose={() => setCommentTarget(null)}
+        itemId={commentTarget?._id}
+        itemName={commentTarget?.title}
+      />
     </div>
+
   );
 }
 

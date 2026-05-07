@@ -3,32 +3,25 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  isAuth
-} = require("../../middlewares/auth.middleware");
+  isAdmin
+} = require("../../middlewares/admin.middleware");
 
 const {
-  addComment,
   getComments,
   deleteComment
-} = require("../../controllers/comment.controller");
-
-// ADD COMMENT
-router.post(
-  "/",
-  isAuth,
-  addComment
-);
+} = require("../../controllers/admin/comment.controller");
 
 // GET COMMENTS
 router.get(
   "/:itemId",
+  isAdmin,
   getComments
 );
 
-// USER DELETE COMMENT
+// ADMIN DELETE COMMENT
 router.delete(
   "/:commentId",
-  isAuth,
+  isAdmin,
   deleteComment
 );
 

@@ -1,7 +1,10 @@
 const matchService = require("../../services/match.service");
 const matchStreamSync = require("../../services/matchStreamSync.service");
+const Comment = require("../../models/comment.model");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
+const deleteFromFirebase = require("../../utils/deleteFromFirebase");
 const autoNotify = require("../../utils/autoNotify");
+
 
 // helpers
 const parseBoolean = (value) => {
@@ -225,6 +228,69 @@ exports.getSingleMatch = async (req, res) => {
   }
 };
 
+exports.getMatchComments = async (req, res) => {
+  try {
+    const match = await matchService.getMatchById(req.params.id);
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: "Match not found"
+      });
+    }
+
+    const comments = await Comment.find({ itemId: req.params.id })
+      .populate("userId", "fullName profilePic email")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: comments.length,
+      comments
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+exports.deleteMatchComment = async (req, res) => {
+  try {
+    const match = await matchService.getMatchById(req.params.id);
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: "Match not found"
+      });
+    }
+
+    const comment = await Comment.findOneAndDelete({
+      _id: req.params.commentId,
+      itemId: req.params.id
+    });
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Comment deleted successfully"
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 // Update
 exports.updateMatch = async (req, res) => {
   try {
@@ -259,32 +325,48 @@ exports.updateMatch = async (req, res) => {
     }
 
     if (req.files?.thumbnail?.[0]) {
+      if (existingMatch.thumbnail) {
+        await deleteFromFirebase(existingMatch.thumbnail);
+      }
       data.thumbnail = await uploadToFirebase(
         req.files.thumbnail[0],
         "matches"
       );
     }
 
+
     if (req.files?.banner?.[0]) {
+      if (existingMatch.banner) {
+        await deleteFromFirebase(existingMatch.banner);
+      }
       data.banner = await uploadToFirebase(
         req.files.banner[0],
         "matches"
       );
     }
 
+
     if (req.files?.teamALogo?.[0]) {
+      if (existingMatch.teamALogo) {
+        await deleteFromFirebase(existingMatch.teamALogo);
+      }
       data.teamALogo = await uploadToFirebase(
         req.files.teamALogo[0],
         "matches"
       );
     }
 
+
     if (req.files?.teamBLogo?.[0]) {
+      if (existingMatch.teamBLogo) {
+        await deleteFromFirebase(existingMatch.teamBLogo);
+      }
       data.teamBLogo = await uploadToFirebase(
         req.files.teamBLogo[0],
         "matches"
       );
     }
+
 
     const match = await matchService.updateMatch(req.params.id, data);
 
@@ -335,6 +417,12 @@ exports.deleteMatch = async (req, res) => {
         message: "Match not found"
       });
     }
+
+    if (match.thumbnail) await deleteFromFirebase(match.thumbnail);
+    if (match.banner) await deleteFromFirebase(match.banner);
+    if (match.teamALogo) await deleteFromFirebase(match.teamALogo);
+    if (match.teamBLogo) await deleteFromFirebase(match.teamBLogo);
+
     await matchStreamSync.deleteStreamsForMatch(match._id);
 
     res.json({

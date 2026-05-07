@@ -1,5 +1,8 @@
 const Podcast = require("../../models/podcast.model");
 const Sport = require("../../models/sport.model");
+const uploadToFirebase = require("../../utils/uploadToFirebase");
+const deleteFromFirebase = require("../../utils/deleteFromFirebase");
+
 
 // CREATE PODCAST
 exports.createPodcast = async (req, res) => {
@@ -30,9 +33,9 @@ exports.createPodcast = async (req, res) => {
     let thumbnail = "";
 
     if (req.file) {
-      const uploadToFirebase = require("../../utils/uploadToFirebase");
       thumbnail = await uploadToFirebase(req.file, "podcasts");
     }
+
 
     const podcast = await Podcast.create({
       sportId,
@@ -116,9 +119,13 @@ exports.updatePodcast = async (req, res) => {
     }
 
     if (req.file) {
-      const uploadToFirebase = require("../../utils/uploadToFirebase");
+      const existing = await Podcast.findById(req.params.id);
+      if (existing?.thumbnail) {
+        await deleteFromFirebase(existing.thumbnail);
+      }
       updateData.thumbnail = await uploadToFirebase(req.file, "podcasts");
     }
+
 
     const podcast = await Podcast.findByIdAndUpdate(
       req.params.id,
@@ -150,7 +157,7 @@ exports.updatePodcast = async (req, res) => {
 // DELETE PODCAST
 exports.deletePodcast = async (req, res) => {
   try {
-    const podcast = await Podcast.findByIdAndDelete(req.params.id);
+    const podcast = await Podcast.findById(req.params.id);
 
     if (!podcast) {
       return res.status(404).json({
@@ -158,6 +165,13 @@ exports.deletePodcast = async (req, res) => {
         message: "Podcast not found"
       });
     }
+
+    if (podcast.thumbnail) {
+      await deleteFromFirebase(podcast.thumbnail);
+    }
+
+    await Podcast.findByIdAndDelete(req.params.id);
+
 
     res.json({
       success: true,
