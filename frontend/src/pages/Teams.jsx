@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, Pencil, Plus, RefreshCw, Shield, ToggleLeft, ToggleRight, Trash2, X } from "lucide-react";
+import { Eye, Pencil, Plus, RefreshCw, Shield, ToggleLeft, ToggleRight, Trash2, X, Upload } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
@@ -19,7 +19,8 @@ const SPORT_COLORS = {
 
 const defaultForm = {
   _id: "", name: "", slug: "", shortName: "", sport: "cricket",
-  country: "", logo: "", isActive: true, sortOrder: "0"
+  country: "", logo: "", isActive: true, sortOrder: "0",
+  logoFile: null, logoPreview: ""
 };
 
 function Teams() {
@@ -86,7 +87,8 @@ function Teams() {
     setForm({
       _id: t._id || "", name: t.name || "", slug: t.slug || "", shortName: t.shortName || "",
       sport: t.sport || "cricket", country: t.country || "", logo: t.logo || "",
-      isActive: Boolean(t.isActive), sortOrder: String(t.sortOrder ?? 0)
+      isActive: Boolean(t.isActive), sortOrder: String(t.sortOrder ?? 0),
+      logoFile: null, logoPreview: t.logo || ""
     });
     setModalOpen(true);
   };
@@ -107,14 +109,30 @@ function Teams() {
     try {
       setSubmitting(true);
       setError("");
-      const payload = {
-        name: form.name.trim(), slug: form.slug.trim(), shortName: form.shortName.trim(),
-        sport: form.sport, country: form.country.trim(), logo: form.logo.trim(),
-        isActive: Boolean(form.isActive), sortOrder: Number(form.sortOrder || 0)
-      };
+      let payload;
+      let config = {};
+
+      if (form.logoFile) {
+        payload = new FormData();
+        payload.append("name", form.name.trim());
+        payload.append("slug", form.slug.trim());
+        payload.append("shortName", form.shortName.trim());
+        payload.append("sport", form.sport);
+        payload.append("country", form.country.trim());
+        payload.append("isActive", String(Boolean(form.isActive)));
+        payload.append("sortOrder", String(Number(form.sortOrder || 0)));
+        payload.append("logoFile", form.logoFile);
+        config = { headers: { "Content-Type": "multipart/form-data" } };
+      } else {
+        payload = {
+          name: form.name.trim(), slug: form.slug.trim(), shortName: form.shortName.trim(),
+          sport: form.sport, country: form.country.trim(), logo: form.logo.trim(),
+          isActive: Boolean(form.isActive), sortOrder: Number(form.sortOrder || 0)
+        };
+      }
       const res = editMode && form._id
-        ? await api.put(`/admin/teams/${form._id}`, payload)
-        : await api.post("/admin/teams", payload);
+        ? await api.put(`/admin/teams/${form._id}`, payload, config)
+        : await api.post("/admin/teams", payload, config);
       const saved = res?.data?.team;
       if (saved?._id) {
         setTeams(prev => editMode
@@ -335,8 +353,46 @@ function Teams() {
                   </label>
 
                   <label className="block text-sm md:col-span-2">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Logo URL</span>
-                    <input value={form.logo} onChange={e => onFormChange("logo", e.target.value)} className={fieldCls} placeholder="https://..." />
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Logo</span>
+                    <div className="flex gap-3 items-center">
+                      <div className="flex-1">
+                        <input value={form.logo} onChange={e => {
+                          onFormChange("logo", e.target.value);
+                          if (e.target.value) onFormChange("logoPreview", e.target.value);
+                          if (!e.target.value && !form.logoFile) onFormChange("logoPreview", "");
+                        }} className={fieldCls} placeholder="Logo URL (e.g. https://...)" disabled={!!form.logoFile} />
+                      </div>
+                      <span className="text-sm font-medium text-slate-400">OR</span>
+                      <div className="relative">
+                        <input type="file" accept="image/*" onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            if (file.size > 2 * 1024 * 1024) {
+                              setError("Logo image is too large. Max 2MB allowed.");
+                              e.target.value = "";
+                              return;
+                            }
+                            setForm(p => ({
+                              ...p,
+                              logoFile: file,
+                              logo: "",
+                              logoPreview: URL.createObjectURL(file)
+                            }));
+                          }
+                        }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                        <div className="h-11 px-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800 dark:border-slate-700 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                          <Upload size={16} /> Upload from local device
+                        </div>
+                      </div>
+                    </div>
+                    {form.logoPreview && (
+                      <div className="mt-3 relative inline-block">
+                        <img src={form.logoPreview} alt="Preview" className="h-16 w-16 rounded-xl object-cover border border-slate-200 dark:border-slate-700" />
+                        <button type="button" onClick={() => setForm(p => ({...p, logoFile: null, logo: "", logoPreview: ""}))} className="absolute -top-2 -right-2 h-6 w-6 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 shadow-sm">
+                          <X size={12} />
+                        </button>
+                      </div>
+                    )}
                   </label>
 
                   <label className="block text-sm">

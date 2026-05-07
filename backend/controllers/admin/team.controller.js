@@ -1,8 +1,14 @@
 const teamService = require("../../services/team.service");
+const uploadToFirebase = require("../../utils/uploadToFirebase");
+const deleteFromFirebase = require("../../utils/deleteFromFirebase");
 
 exports.createTeam = async (req, res) => {
   try {
-    const team = await teamService.createTeam(req.body);
+    const data = { ...req.body };
+    if (req.file) {
+      data.logo = await uploadToFirebase(req.file, "teams");
+    }
+    const team = await teamService.createTeam(data);
 
     res.status(201).json({
       success: true,
@@ -58,9 +64,19 @@ exports.getSingleTeam = async (req, res) => {
 
 exports.updateTeam = async (req, res) => {
   try {
+    const data = { ...req.body };
+
+    if (req.file) {
+      const existing = await teamService.getById(req.params.id);
+      if (existing?.logo) {
+        try { await deleteFromFirebase(existing.logo); } catch (e) {}
+      }
+      data.logo = await uploadToFirebase(req.file, "teams");
+    }
+
     const team = await teamService.updateTeam(
       req.params.id,
-      req.body
+      data
     );
 
     if (!team) {
@@ -85,6 +101,19 @@ exports.updateTeam = async (req, res) => {
 
 exports.deleteTeam = async (req, res) => {
   try {
+    const teamExists = await teamService.getById(req.params.id);
+
+    if (!teamExists) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found"
+      });
+    }
+
+    if (teamExists.logo) {
+      try { await deleteFromFirebase(teamExists.logo); } catch (e) {}
+    }
+
     const team = await teamService.deleteTeam(req.params.id);
 
     if (!team) {

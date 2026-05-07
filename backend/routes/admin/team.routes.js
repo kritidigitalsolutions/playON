@@ -3,6 +3,7 @@ const router = express.Router();
 
 const { isAdmin } = require("../../middlewares/admin.middleware");
 const { hasPermission } = require("../../middlewares/permission.middleware");
+const upload = require("../../middlewares/upload.middleware");
 
 const {
   createTeam,
@@ -18,6 +19,7 @@ router.post(
   "/",
   isAdmin,
   hasPermission("matches", "create"),
+  upload.single("logoFile"),
   createTeam
 );
 
@@ -42,6 +44,7 @@ router.put(
   "/:id",
   isAdmin,
   hasPermission("matches", "edit"),
+  upload.single("logoFile"),
   updateTeam
 );
 

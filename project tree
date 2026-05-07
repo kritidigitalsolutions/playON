@@ -1,7 +1,5 @@
-Play ON/
+playON/
     ├── backend/
-    │   ├── api/
-    │   │   └── index.js
     │   ├── config/
     │   │   ├── db.js
     │   │   ├── firebase.js
@@ -10,7 +8,9 @@ Play ON/
     │   │   ├── admin/
     │   │   │   ├── channel.controller.js
     │   │   │   ├── channelCategory.controller.js
+    │   │   │   ├── comment.controller.js
     │   │   │   ├── dashboard.controller.js
+    │   │   │   ├── highlight.controller.js
     │   │   │   ├── legal.controller.js
     │   │   │   ├── match.controller.js
     │   │   │   ├── notification.controller.js
@@ -31,11 +31,13 @@ Play ON/
     │   │   │   ├── admin.auth.controller.js
     │   │   │   └── admin.settings.controller.js
     │   │   ├── account.controller.js
+    │   │   ├── admobPlacement.controller.js
     │   │   ├── auth.controller.js
     │   │   ├── bannerAd.controller.js
     │   │   ├── channel.controller.js
     │   │   ├── channelCategory.controller.js
     │   │   ├── comment.controller.js
+    │   │   ├── highlight.controller.js
     │   │   ├── legal.controller.js
     │   │   ├── match.controller.js
     │   │   ├── notification.controller.js
@@ -62,6 +64,7 @@ Play ON/
     │   ├── middlewares/
     │   │   ├── admin.middleware.js
     │   │   ├── auth.middleware.js
+    │   │   ├── highlightUpload.middleware.js
     │   │   ├── permission.middleware.js
     │   │   ├── subscription.middleware.js
     │   │   ├── superAdmin.middleware.js
@@ -69,10 +72,12 @@ Play ON/
     │   ├── models/
     │   │   ├── admin.model.js
     │   │   ├── adminOtp.model.js
+    │   │   ├── admobPlacement.model.js
     │   │   ├── bannerAd.model.js
     │   │   ├── channel.model.js
     │   │   ├── channelCategory.model.js
     │   │   ├── comment.model.js
+    │   │   ├── highlight.model.js
     │   │   ├── legal.model.js
     │   │   ├── match.model.js
     │   │   ├── notification.model.js
@@ -95,9 +100,12 @@ Play ON/
     │   ├── routes/
     │   │   ├── admin/
     │   │   │   ├── admin.routes.js
+    │   │   │   ├── admobPlacement.routes.js
     │   │   │   ├── bannerAd.routes.js
     │   │   │   ├── channel.routes.js
     │   │   │   ├── channelCategory.routes.js
+    │   │   │   ├── comment.routes.js
+    │   │   │   ├── highlight.routes.js
     │   │   │   ├── legal.routes.js
     │   │   │   ├── match.routes.js
     │   │   │   ├── notification.routes.js
@@ -115,11 +123,13 @@ Play ON/
     │   │   │   └── team.routes.js
     │   │   └── user/
     │   │       ├── account.routes.js
+    │   │       ├── admobPlacement.routes.js
     │   │       ├── auth.routes.js
     │   │       ├── bannerAd.routes.js
     │   │       ├── channel.routes.js
     │   │       ├── channelCategory.routes.js
     │   │       ├── comment.routes.js
+    │   │       ├── highlight.routes.js
     │   │       ├── legal.routes.js
     │   │       ├── match.routes.js
     │   │       ├── notification.routes.js
@@ -141,9 +151,12 @@ Play ON/
     │   │       └── watchlist.routes.js
     │   ├── services/
     │   │   ├── providers/
+    │   │   │   ├── highlightly.provider.js
     │   │   │   └── mock.provider.js
+    │   │   ├── admobPlacement.service.js
     │   │   ├── bannerAd.service.js
     │   │   ├── channel.service.js
+    │   │   ├── highlightlySync.service.js
     │   │   ├── legal.service.js
     │   │   ├── match.service.js
     │   │   ├── matchStreamSync.service.js
@@ -157,6 +170,7 @@ Play ON/
     │   │   └── team.service.js
     │   ├── utils/
     │   │   ├── autoNotify.js
+    │   │   ├── deleteFromFirebase.js
     │   │   ├── referralReward.js
     │   │   ├── sendNotification.js
     │   │   └── uploadToFirebase.js
@@ -169,8 +183,6 @@ Play ON/
     │   ├── public/
     │   │   ├── favicon.ico
     │   │   ├── index.html
-    │   │   ├── logo192.png
-    │   │   ├── logo512.png
     │   │   ├── manifest.json
     │   │   └── robots.txt
     │   ├── src/
@@ -178,6 +190,7 @@ Play ON/
     │   │   │   └── axios.js
     │   │   ├── components/
     │   │   │   ├── ChartCard.jsx
+    │   │   │   ├── CommentModal.jsx
     │   │   │   ├── ConfirmModal.jsx
     │   │   │   ├── DataTable.jsx
     │   │   │   ├── EmptyState.jsx
@@ -198,6 +211,7 @@ Play ON/
     │   │   │   └── AdminLayout.jsx
     │   │   ├── pages/
     │   │   │   ├── ActivateTV.jsx
+    │   │   │   ├── AdmobPlacements.jsx
     │   │   │   ├── Banners.jsx
     │   │   │   ├── Dashboard.jsx
     │   │   │   ├── ForgotPassword.jsx
@@ -234,6 +248,7 @@ Play ON/
     │   │   ├── index.css
     │   │   └── index.js
     │   ├── .gitignore
+    │   ├── fix_encoding.js
     │   ├── package-lock.json
     │   ├── package.json
     │   ├── postcss.config.js
