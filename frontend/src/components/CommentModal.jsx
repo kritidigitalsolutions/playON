@@ -68,11 +68,13 @@ export default function CommentModal({
     }
   };
 
-  useEffect(() => {
-    if (open && itemId) {
-      loadComments();
-    }
-  }, [open, itemId]);
+ useEffect(() => {
+  if (open && itemId) {
+    loadComments();
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [open, itemId]);
 
   // DELETE COMMENT
   const deleteComment = async (

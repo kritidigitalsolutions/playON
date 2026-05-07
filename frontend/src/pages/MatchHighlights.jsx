@@ -349,7 +349,13 @@ export default function MatchHighlights() {
   const [deleting, setDeleting] = useState(null);
   const [commentTarget, setCommentTarget] = useState(null);
   const [error, setError] = useState("");
-  const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 20 });
+const [, setPagination] =
+  useState({
+    total: 0,
+    page: 1,
+    limit: 20,
+    totalPages: 1
+  });
 
 
 
