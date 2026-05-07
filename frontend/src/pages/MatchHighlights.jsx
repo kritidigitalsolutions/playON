@@ -9,6 +9,7 @@ import PageHeader from "../components/PageHeader";
 import CommentModal from "../components/CommentModal";
 
 
+
 const cx = (...p) => p.filter(Boolean).join(" ");
 
 const CAT_LABELS = { full_match: "Full Match", batting: "Batting", bowling: "Bowling", fielding: "Fielding", goal: "Goal", save: "Save", other: "Other" };
@@ -348,7 +349,7 @@ export default function MatchHighlights() {
   const [deleting, setDeleting] = useState(null);
   const [commentTarget, setCommentTarget] = useState(null);
   const [error, setError] = useState("");
-  // const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 20 });
+  const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 20 });
 
 
 
