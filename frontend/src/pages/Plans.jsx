@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownUp, Eye, Pencil, Plus, RefreshCw, ToggleLeft, ToggleRight, Trash2, X } from "lucide-react";
+import { Eye, Pencil, Plus, RefreshCw, ToggleLeft, ToggleRight, Trash2, X } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import Loader from "../components/Loader";
@@ -348,35 +348,6 @@ function Plans() {
     }
   };
 
-  const updateSortOrder = async (plan, nextSortOrder) => {
-    if (!plan?._id) {
-      return;
-    }
-
-    try {
-      setActionPlanId(plan._id);
-      setError("");
-      const response = await api.patch(`/admin/plans/${plan._id}/sort`, {
-        sortOrder: Number(nextSortOrder)
-      });
-      const updated = response?.data?.plan;
-
-      if (updated?._id) {
-        setPlans((prev) =>
-          prev
-            .map((item) => (item._id === updated._id ? updated : item))
-            .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
-        );
-        setSelectedPlan((prev) => (prev?._id === updated._id ? updated : prev));
-      } else {
-        await loadPlans();
-      }
-    } catch (apiError) {
-      setError(apiError?.response?.data?.message || "Unable to update sort order.");
-    } finally {
-      setActionPlanId("");
-    }
-  };
 
   return (
     <div>

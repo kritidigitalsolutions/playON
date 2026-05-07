@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, MessageSquare, Pencil, Plus, RefreshCw, Star, Trash2, Video, X } from "lucide-react";
+import { Eye, MessageSquare, Pencil, Plus, RefreshCw, Trash2, Video, X } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import CommentModal from "../components/CommentModal";

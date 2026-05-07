@@ -7,8 +7,6 @@ import {
   Pencil,
   X,
   ExternalLink,
-  Mic,
-  Star,
   Image as ImageIcon,
   PlayCircle,
   MessageSquare
@@ -18,7 +16,6 @@ import CommentModal from "../components/CommentModal";
 
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
-import Loader from "../components/Loader";
 
 const PODCAST_TYPES = [
   { value: "youtube", label: "YouTube" },
@@ -204,18 +201,6 @@ function Podcasts() {
     }
   };
 
-  const toggleFeatured = async (id) => {
-    try {
-      const res = await api.patch(`/admin/podcasts/${id}/feature`);
-      if (res?.data?.success) {
-        setPodcasts(prev => prev.map(p =>
-          p._id === id ? { ...p, isFeatured: res.data.isFeatured } : p
-        ));
-      }
-    } catch (e) {
-      setError(e?.response?.data?.message || "Unable to update featured status.");
-    }
-  };
 
   const fieldCls = "h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100";
 

@@ -4,7 +4,6 @@ import { Eye, Pencil, Plus, RefreshCw, Shield, ToggleLeft, ToggleRight, Trash2, 
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
-import Loader from "../components/Loader";
 
 const SPORTS = ["cricket", "football", "basketball", "kabaddi", "tennis", "volleyball", "other"];
 
