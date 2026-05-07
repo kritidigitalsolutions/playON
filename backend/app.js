@@ -171,6 +171,8 @@ app.use(
   "/api/admin/comments",
   require("./routes/admin/comment.routes")
 );
-startAutoLiveMatches();
+if (!process.env.VERCEL) {
+  startAutoLiveMatches();
+}
 
 module.exports = app;
