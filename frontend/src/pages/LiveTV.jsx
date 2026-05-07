@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { FolderKanban, Eye, Pencil, Play, Plus, RefreshCw, Square, Star, Trash2, Tv, X } from "lucide-react";
+import { FolderKanban, Eye, Pencil, Play, Plus, RefreshCw, Square, Star, Trash2, Tv, X, PlayCircle } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
@@ -55,6 +55,7 @@ function LiveTV() {
   const [actionChannelId, setActionChannelId] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [selectedDetails, setSelectedDetails] = useState(null);
   const [watchData, setWatchData] = useState(null);
   const [categoryForm, setCategoryForm] = useState(defaultCategoryForm);
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
@@ -685,8 +686,11 @@ function LiveTV() {
                         <button onClick={() => toggleLive(channel)} disabled={actionChannelId === channel._id} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title={channel.status === "live" ? "Go Offline" : "Go Live"}>
                           {channel.status === "live" ? <Square size={14} /> : <Play size={14} />}
                         </button>
-                        <button onClick={() => handleWatch(channel)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Watch">
+                        <button onClick={() => setSelectedDetails(channel)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View Details">
                           <Eye size={14} />
+                        </button>
+                        <button onClick={() => handleWatch(channel)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Watch Stream">
+                          <PlayCircle size={14} />
                         </button>
                         <button onClick={() => openEdit(channel)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Edit">
                           <Pencil size={14} />
@@ -947,6 +951,87 @@ function LiveTV() {
             </motion.div>
           </motion.div>
         ) : null}
+      </AnimatePresence>
+
+      {/* View Details Modal */}
+      <AnimatePresence>
+        {selectedDetails && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+              className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900 overflow-y-auto max-h-[90vh] pretty-scroll">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Live TV Details</h2>
+                <button type="button" onClick={() => setSelectedDetails(null)} className="text-slate-500 hover:text-slate-800"><X size={18} /></button>
+              </div>
+
+              <div className="flex items-center gap-4">
+                {selectedDetails.logo || selectedDetails.thumbnail ? (
+                  <img src={selectedDetails.logo || selectedDetails.thumbnail} alt={selectedDetails.name} className="h-16 w-16 rounded-2xl border border-slate-200 object-cover" />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
+                    <Tv size={28} />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 truncate" title={selectedDetails.name}>{selectedDetails.name}</h3>
+                  <p className="text-sm text-slate-400 truncate">{toTitleCase(selectedDetails.category)}</p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                {[
+                  { label: "Status", value: selectedDetails.status },
+                  { label: "Stream Type", value: selectedDetails.streamType },
+                  { label: "Quality", value: selectedDetails.quality },
+                  { label: "Viewers", value: formatNumber(selectedDetails.viewerCount || 0) },
+                  { label: "Featured", value: selectedDetails.featured ? "Yes" : "No" },
+                  { label: "Premium", value: selectedDetails.isPremium ? "Yes" : "No" }
+                ].map(({ label, value }) => (
+                  <div key={label} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p>
+                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize">{String(value)}</p>
+                  </div>
+                ))}
+                
+                {selectedDetails.description && (
+                  <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Description</p>
+                     <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-3">{selectedDetails.description}</p>
+                  </div>
+                )}
+                
+                {selectedDetails.streamUrl && (
+                  <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Stream URL</p>
+                     <p className="mt-0.5 truncate text-sm font-mono text-indigo-500 select-all">{selectedDetails.streamUrl}</p>
+                  </div>
+                )}
+
+                {selectedDetails.backupUrl && (
+                  <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Backup URL</p>
+                     <p className="mt-0.5 truncate text-sm font-mono text-slate-600 dark:text-slate-400 select-all">{selectedDetails.backupUrl}</p>
+                  </div>
+                )}
+
+                {selectedDetails.rtmpUrl && (
+                  <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                     <p className="text-[10px] uppercase tracking-wide text-slate-400">RTMP URL</p>
+                     <p className="mt-0.5 truncate text-sm font-mono text-slate-600 dark:text-slate-400 select-all">{selectedDetails.rtmpUrl}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 flex gap-2">
+                <button type="button" onClick={() => { setSelectedDetails(null); openEdit(selectedDetails); }}
+                  className="admin-secondary-btn flex-1">Edit</button>
+                <button type="button" onClick={() => { setSelectedDetails(null); setDeleteTarget(selectedDetails); }}
+                  className="admin-action-btn-danger flex-1">Delete</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
       <ConfirmModal
         open={Boolean(deleteTarget)}
