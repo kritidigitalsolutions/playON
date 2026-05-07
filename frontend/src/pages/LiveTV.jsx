@@ -308,19 +308,19 @@ function LiveTV() {
     }
   };
 
-  const openView = async (channel) => {
-    if (!channel?._id) {
-      setSelectedChannel(channel || null);
-      return;
-    }
+  // const openView = async (channel) => {
+  //   if (!channel?._id) {
+  //     setSelectedChannel(channel || null);
+  //     return;
+  //   }
 
-    try {
-      const response = await api.get(`/admin/channels/${channel._id}`);
-      setSelectedChannel(response?.data?.channel || channel);
-    } catch {
-      setSelectedChannel(channel);
-    }
-  };
+  //   try {
+  //     const response = await api.get(`/admin/channels/${channel._id}`);
+  //     setSelectedChannel(response?.data?.channel || channel);
+  //   } catch {
+  //     setSelectedChannel(channel);
+  //   }
+  // };
 
   const handleWatch = async (channel) => {
     try {

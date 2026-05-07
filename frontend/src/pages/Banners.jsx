@@ -15,7 +15,7 @@ import {
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
-import Loader from "../components/Loader";
+// import Loader from "../components/Loader";
 
 const POSITIONS = [
   { label: "Home Top", value: "home_top" },

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Hash,
-  Megaphone,
+  // Hash,
+  // Megaphone,
   Pencil,
   Plus,
   RefreshCw,
@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
-import Loader from "../components/Loader";
+// import Loader from "../components/Loader";
 import PageHeader from "../components/PageHeader";
 
 const POSITIONS = [

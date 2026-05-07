@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronDown, Clock, Edit2, Film, Link, Play,
-  Plus, RefreshCw, Tag, Trash2, Upload, Video, X, Lock, MessageSquare, Eye
+  Plus, RefreshCw, Tag, Trash2, Upload, Video, X, MessageSquare, Eye
 } from "lucide-react";
 import api from "../api/axios";
 import PageHeader from "../components/PageHeader";
@@ -348,7 +348,7 @@ export default function MatchHighlights() {
   const [deleting, setDeleting] = useState(null);
   const [commentTarget, setCommentTarget] = useState(null);
   const [error, setError] = useState("");
-  const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 20 });
+  // const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 20 });
 
 
 
