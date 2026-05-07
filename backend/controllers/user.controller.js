@@ -2,7 +2,6 @@ const User = require("../models/user.model");
 const uploadToFirebase = require("../utils/uploadToFirebase");
 const deleteFromFirebase = require("../utils/deleteFromFirebase");
 
-
 // COMPLETE PROFILE / FIRST TIME SETUP
 exports.completeProfile = async (req, res) => {
   try {
@@ -11,7 +10,8 @@ exports.completeProfile = async (req, res) => {
     if (!fullName || fullName.trim().length < 3) {
       return res.status(400).json({
         success: false,
-        message: "Full name must be at least 3 characters"
+        message:
+          "Full name must be at least 3 characters"
       });
     }
 
@@ -30,24 +30,33 @@ exports.completeProfile = async (req, res) => {
     if (user.isProfileComplete === true) {
       return res.status(400).json({
         success: false,
-        message: "Profile already completed. Use update profile."
+        message:
+          "Profile already completed. Use update profile."
       });
     }
 
     user.fullName = fullName.trim();
-    user.favoriteSports = Array.isArray(favoriteSports)
+
+    user.favoriteSports = Array.isArray(
+      favoriteSports
+    )
       ? favoriteSports
       : favoriteSports
       ? [favoriteSports]
       : [];
 
+    // PROFILE COMPLETE
     user.isProfileComplete = true;
+
+    // ONBOARDING COMPLETE
+    user.onboardingCompleted = true;
 
     await user.save();
 
     res.json({
       success: true,
-      message: "Profile completed successfully",
+      message:
+        "Profile completed successfully",
       user
     });
 
@@ -60,7 +69,10 @@ exports.completeProfile = async (req, res) => {
 };
 
 // GET PROFILE
-exports.getProfile = async (req, res) => {
+exports.getProfile = async (
+  req,
+  res
+) => {
   try {
     const user = await User.findOne({
       _id: req.user.userId,
@@ -78,6 +90,7 @@ exports.getProfile = async (req, res) => {
       success: true,
       user
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -87,49 +100,79 @@ exports.getProfile = async (req, res) => {
 };
 
 // UPDATE PROFILE
-exports.updateProfile = async (req, res) => {
+exports.updateProfile = async (
+  req,
+  res
+) => {
   try {
-    const { fullName, email, favoriteSports } = req.body;
+    const {
+      fullName,
+      email,
+      favoriteSports
+    } = req.body;
 
     const updateData = {};
 
     if (fullName) {
-      updateData.fullName = fullName.trim();
-      updateData.isProfileComplete = true;
+      updateData.fullName =
+        fullName.trim();
+
+      updateData.isProfileComplete =
+        true;
+
+      // ALSO COMPLETE ONBOARDING
+      updateData.onboardingCompleted =
+        true;
     }
 
-    // 🔒 Allow email update only for mobile users
-    if (email && req.user.provider === "mobile") {
-      updateData.email = email.trim().toLowerCase();
+    // Allow email update only for mobile users
+    if (
+      email &&
+      req.user.provider === "mobile"
+    ) {
+      updateData.email = email
+        .trim()
+        .toLowerCase();
     }
 
     if (favoriteSports) {
-      updateData.favoriteSports = Array.isArray(favoriteSports)
-        ? favoriteSports
-        : [favoriteSports];
+      updateData.favoriteSports =
+        Array.isArray(
+          favoriteSports
+        )
+          ? favoriteSports
+          : [favoriteSports];
     }
 
-    // 📸 Profile image upload
+    // Profile image upload
     if (req.file) {
-      const existingUser = await User.findById(req.user.userId);
+      const existingUser =
+        await User.findById(
+          req.user.userId
+        );
+
       if (existingUser?.profilePic) {
-        await deleteFromFirebase(existingUser.profilePic);
+        await deleteFromFirebase(
+          existingUser.profilePic
+        );
       }
-      updateData.profilePic = await uploadToFirebase(
-        req.file,
-        "profiles"
-      );
+
+      updateData.profilePic =
+        await uploadToFirebase(
+          req.file,
+          "profiles"
+        );
     }
 
-
-    const updatedUser = await User.findOneAndUpdate(
-      {
-        _id: req.user.userId,
-        isDeleted: false
-      },
-      updateData,
-      { new: true }
-    );
+    const updatedUser =
+      await User.findOneAndUpdate(
+        {
+          _id: req.user.userId,
+          isDeleted: false
+        },
+        updateData,
+        { new: true }
+      );
 
     if (!updatedUser) {
       return res.status(404).json({
@@ -140,7 +183,8 @@ exports.updateProfile = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Profile updated successfully",
+      message:
+        "Profile updated successfully",
       user: updatedUser
     });
 
@@ -153,7 +197,10 @@ exports.updateProfile = async (req, res) => {
 };
 
 // SAVE FCM TOKEN
-exports.saveFcmToken = async (req, res) => {
+exports.saveFcmToken = async (
+  req,
+  res
+) => {
   try {
     const { token } = req.body;
 
@@ -167,6 +214,7 @@ exports.saveFcmToken = async (req, res) => {
       success: true,
       message: "Token saved"
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,

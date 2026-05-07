@@ -347,6 +347,7 @@ export default function MatchHighlights() {
   const [seriesMatchesOpen, setSeriesMatchesOpen] = useState(false);
   const [editHl, setEditHl] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const [selectedHighlight, setSelectedHighlight] = useState(null);
   const [commentTarget, setCommentTarget] = useState(null);
   const [error, setError] = useState("");
 const [, setPagination] =
@@ -614,7 +615,7 @@ const [, setPagination] =
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => setActiveHl(hl)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View">
+                        <button onClick={() => setSelectedHighlight(hl)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View Details">
                           <Eye size={14} />
                         </button>
                         <button onClick={() => setActiveHl(hl)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Play">
@@ -662,6 +663,69 @@ const [, setPagination] =
         highlight={editHl}
         onSaved={() => loadHighlights(selectedId)}
       />
+
+      {/* View Modal */}
+      <AnimatePresence>
+        {selectedHighlight && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Highlight Details</h2>
+                <button type="button" onClick={() => setSelectedHighlight(null)} className="text-slate-500 hover:text-slate-800"><X size={18} /></button>
+              </div>
+
+              <div className="flex items-center gap-4">
+                {selectedHighlight.thumbnail ? (
+                  <img src={selectedHighlight.thumbnail} alt={selectedHighlight.title} className="h-16 w-16 rounded-2xl border border-slate-200 object-cover" />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
+                    <Video size={28} />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 truncate" title={selectedHighlight.title}>{selectedHighlight.title}</h3>
+                  <p className="text-sm text-slate-400 truncate">{selectedHighlight.category ? CAT_LABELS[selectedHighlight.category] : "General"}</p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                {[
+                  { label: "Duration", value: selectedHighlight.duration ? `${Math.floor(selectedHighlight.duration / 60)}:${String(selectedHighlight.duration % 60).padStart(2, "0")}` : "-" },
+                  { label: "Views", value: selectedHighlight.views || 0 },
+                  { label: "Featured", value: selectedHighlight.isFeatured ? "Yes" : "No" },
+                  { label: "Premium", value: selectedHighlight.isPremium ? "Yes" : "No" }
+                ].map(({ label, value }) => (
+                  <div key={label} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p>
+                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize">{String(value)}</p>
+                  </div>
+                ))}
+                
+                <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                   <p className="text-[10px] uppercase tracking-wide text-slate-400">Description</p>
+                   <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-3">{selectedHighlight.description || "No description"}</p>
+                </div>
+                
+                {selectedHighlight.tags && selectedHighlight.tags.length > 0 && (
+                  <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Tags</p>
+                     <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-2">{selectedHighlight.tags.join(", ")}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 flex gap-2">
+                <button type="button" onClick={() => { setSelectedHighlight(null); openEdit(selectedHighlight); }}
+                  className="admin-secondary-btn flex-1">Edit</button>
+                <button type="button" onClick={() => { setSelectedHighlight(null); setDeleting(selectedHighlight._id); handleDelete(selectedHighlight._id); }}
+                  className="admin-action-btn-danger flex-1">Delete</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <CommentModal
         open={Boolean(commentTarget)}

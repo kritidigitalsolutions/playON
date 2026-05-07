@@ -9,7 +9,8 @@ import {
   ToggleLeft,
   ToggleRight,
   Trash2,
-  X
+  X,
+  Eye
 } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
@@ -60,6 +61,7 @@ function AdmobPlacements() {
   const [actionId, setActionId] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [selectedPlacement, setSelectedPlacement] = useState(null);
 
   const loadPlacements = async () => {
     try {
@@ -310,6 +312,9 @@ function AdmobPlacements() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
+                        <button onClick={() => setSelectedPlacement(placement)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View Details">
+                          <Eye size={14} />
+                        </button>
                         <button onClick={() => togglePlacement(placement)} disabled={actionId === placement._id} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title={placement.isActive ? "Deactivate" : "Activate"}>
                           {placement.isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                         </button>
@@ -455,6 +460,55 @@ function AdmobPlacements() {
             </motion.div>
           </motion.div>
         ) : null}
+      </AnimatePresence>
+
+      {/* View Modal */}
+      <AnimatePresence>
+        {selectedPlacement && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">AdMob Placement Details</h2>
+                <button type="button" onClick={() => setSelectedPlacement(null)} className="text-slate-500 hover:text-slate-800"><X size={18} /></button>
+              </div>
+
+              <div className="mb-5">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 truncate" title={selectedPlacement.title}>{selectedPlacement.title}</h3>
+                <p className="text-sm font-mono text-slate-500 mt-1 truncate p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-100 dark:border-slate-700 select-all">{selectedPlacement.adUnitId}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: "Position", value: getPositionLabel(selectedPlacement.position) },
+                  { label: "Format", value: getFormatLabel(selectedPlacement.format) },
+                  { label: "Status", value: selectedPlacement.isActive ? "Active" : "Inactive" },
+                  { label: "Sort Order", value: selectedPlacement.sortOrder || 0 }
+                ].map(({ label, value }) => (
+                  <div key={label} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p>
+                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize">{String(value)}</p>
+                  </div>
+                ))}
+                
+                {selectedPlacement.notes && (
+                  <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Notes</p>
+                     <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-3">{selectedPlacement.notes}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 flex gap-2">
+                <button type="button" onClick={() => { setSelectedPlacement(null); openEdit(selectedPlacement); }}
+                  className="admin-secondary-btn flex-1">Edit</button>
+                <button type="button" onClick={() => { setSelectedPlacement(null); setDeleteTarget(selectedPlacement); }}
+                  className="admin-action-btn-danger flex-1">Delete</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <ConfirmModal

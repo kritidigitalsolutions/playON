@@ -1,142 +1,149 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
-{
-  mobile: {
-    type: String,
-    default: null,
-    trim: true
-  },
+  {
+    mobile: {
+      type: String,
+      default: null,
+      trim: true
+    },
 
-  fullName: {
-    type: String,
-    default: "",
-    trim: true
-  },
+    fullName: {
+      type: String,
+      default: "",
+      trim: true
+    },
 
-  googleId: {
-    type: String,
-    default: null
-  },
+    googleId: {
+      type: String,
+      default: null
+    },
 
-  facebookId: {
-    type: String,
-    default: null
-  },
+    facebookId: {
+      type: String,
+      default: null
+    },
 
-  authProvider: {
-    type: String,
-    enum: ["mobile", "google", "facebook"],
-    default: "mobile"
-  },
+    authProvider: {
+      type: String,
+      enum: ["mobile", "google", "facebook"],
+      default: "mobile"
+    },
 
-  email: {
-    type: String,
-    default: null,
-    trim: true,
-    lowercase: true
-  },
+    email: {
+      type: String,
+      default: null,
+      trim: true,
+      lowercase: true
+    },
 
-  isProfileComplete: {
-    type: Boolean,
-    default: false
-  },
+    // Profile completed or not
+    isProfileComplete: {
+      type: Boolean,
+      default: false
+    },
 
-  favoriteSports: {
-    type: [String],
-    default: []
-  },
+    // NEW:
+    // Used for onboarding flow
+    onboardingCompleted: {
+      type: Boolean,
+      default: false
+    },
 
-  fcmToken: {
-    type: String,
-    default: ""
-  },
+    favoriteSports: {
+      type: [String],
+      default: []
+    },
 
-  profilePic: {
-    type: String,
-    default: ""
-  },
+    fcmToken: {
+      type: String,
+      default: ""
+    },
 
-  isDeleted: {
-    type: Boolean,
-    default: false
-  },
+    profilePic: {
+      type: String,
+      default: ""
+    },
 
-  deletedAt: {
-    type: Date,
-    default: null
-  },
+    isDeleted: {
+      type: Boolean,
+      default: false
+    },
 
-  deleteReason: {
-    type: String,
-    default: ""
-  },
+    deletedAt: {
+      type: Date,
+      default: null
+    },
 
-  accountStatus: {
-    type: String,
-    enum: ["active", "deleted"],
-    default: "active"
-  },
+    deleteReason: {
+      type: String,
+      default: ""
+    },
 
-  followedPlayers: [
-    {
+    accountStatus: {
+      type: String,
+      enum: ["active", "deleted"],
+      default: "active"
+    },
+
+    followedPlayers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Player"
+      }
+    ],
+
+    followedSeries: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Series"
+      }
+    ],
+
+    adsDisabled: {
+      type: Boolean,
+      default: false
+    },
+
+    adsExpiry: {
+      type: Date,
+      default: null
+    },
+
+    adFreePurchaseType: {
+      type: String,
+      enum: ["none", "temporary", "lifetime"],
+      default: "none"
+    },
+
+    // =====================
+    // REFERRAL SYSTEM
+    // =====================
+
+    referralCode: {
+      type: String,
+      trim: true,
+      uppercase: true,
+      default: null
+    },
+
+    referredBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Player"
+      ref: "User",
+      default: null
+    },
+
+    referralCount: {
+      type: Number,
+      default: 0
+    },
+
+    hasCompletedReferralReward: {
+      type: Boolean,
+      default: false
     }
-  ],
-
-  followedSeries: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Series"
-    }
-  ],
-
-  adsDisabled: {
-    type: Boolean,
-    default: false
   },
-
-  adsExpiry: {
-    type: Date,
-    default: null
-  },
-
-  adFreePurchaseType: {
-    type: String,
-    enum: ["none", "temporary", "lifetime"],
-    default: "none"
-  },
-
-  // =====================
-  // REFERRAL SYSTEM
-  // =====================
-
-  referralCode: {
-    type: String,
-    trim: true,
-    uppercase: true,
-    default: null
-  },
-
-  referredBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    default: null
-  },
-
-  referralCount: {
-    type: Number,
-    default: 0
-  },
-
-  hasCompletedReferralReward: {
-    type: Boolean,
-    default: false
-  }
-
-},
-{ timestamps: true }
+  { timestamps: true }
 );
 
 // =====================

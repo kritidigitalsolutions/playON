@@ -9,7 +9,8 @@ import {
   ExternalLink,
   Image as ImageIcon,
   PlayCircle,
-  MessageSquare
+  MessageSquare,
+  Eye
 } from "lucide-react";
 import api from "../api/axios";
 import CommentModal from "../components/CommentModal";
@@ -55,6 +56,7 @@ function Podcasts() {
   const [commentTarget, setCommentTarget] = useState(null);
 
   const [deleting, setDeleting] = useState(false);
+  const [selectedPodcast, setSelectedPodcast] = useState(null);
 
   const loadPodcasts = async () => {
     try {
@@ -285,6 +287,9 @@ function Podcasts() {
                         <a href={podcast.url} target="_blank" rel="noreferrer" className="admin-action-btn-sm h-8 w-8 rounded-full !p-0 inline-flex items-center justify-center" title="Open Link">
                           <ExternalLink size={14} />
                         </a>
+                        <button onClick={() => setSelectedPodcast(podcast)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View Details">
+                          <Eye size={14} />
+                        </button>
                         <button onClick={() => setCommentTarget(podcast)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Comments">
                           <MessageSquare size={14} />
                         </button>
@@ -471,6 +476,69 @@ function Podcasts() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* View Modal */}
+      <AnimatePresence>
+        {selectedPodcast && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Podcast Details</h2>
+                <button type="button" onClick={() => setSelectedPodcast(null)} className="text-slate-500 hover:text-slate-800"><X size={18} /></button>
+              </div>
+
+              <div className="flex items-center gap-4">
+                {selectedPodcast.thumbnail ? (
+                  <img src={selectedPodcast.thumbnail} alt={selectedPodcast.title} className="h-16 w-16 rounded-2xl border border-slate-200 object-cover" />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
+                    <PlayCircle size={28} />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 truncate" title={selectedPodcast.title}>{selectedPodcast.title}</h3>
+                  <p className="text-sm text-slate-400 truncate">{selectedPodcast.sportId?.name || "Unknown Sport"}</p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                {[
+                  { label: "Type", value: selectedPodcast.type },
+                  { label: "Category", value: selectedPodcast.category || "-" },
+                  { label: "Duration", value: selectedPodcast.duration || "-" },
+                  { label: "Status", value: selectedPodcast.status },
+                  { label: "Featured", value: selectedPodcast.isFeatured ? "Yes" : "No" },
+                  { label: "Premium", value: selectedPodcast.isPremium ? "Yes" : "No" }
+                ].map(({ label, value }) => (
+                  <div key={label} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p>
+                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize">{String(value)}</p>
+                  </div>
+                ))}
+                
+                <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                   <p className="text-[10px] uppercase tracking-wide text-slate-400">Description</p>
+                   <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-3">{selectedPodcast.description || "No description"}</p>
+                </div>
+                
+                <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                   <p className="text-[10px] uppercase tracking-wide text-slate-400">URL</p>
+                   <a href={selectedPodcast.url} target="_blank" rel="noreferrer" className="mt-0.5 truncate text-sm font-semibold text-indigo-500 hover:underline block">{selectedPodcast.url}</a>
+                </div>
+              </div>
+
+              <div className="mt-4 flex gap-2">
+                <button type="button" onClick={() => { setSelectedPodcast(null); openEdit(selectedPodcast); }}
+                  className="admin-secondary-btn flex-1">Edit</button>
+                <button type="button" onClick={() => { setSelectedPodcast(null); setDeleteTarget(selectedPodcast); }}
+                  className="admin-action-btn-danger flex-1">Delete</button>
+              </div>
             </motion.div>
           </motion.div>
         )}

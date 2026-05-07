@@ -30,57 +30,95 @@ const getUniqueReferralCode = async () => {
 // =======================
 // SEND OTP
 // =======================
-exports.sendOtp = async (req, res) => {
+// =======================
+// SEND OTP
+// =======================
+exports.sendOtp = async (
+  req,
+  res
+) => {
   try {
     const { mobile } = req.body;
 
     if (!mobile) {
       return res.status(400).json({
         success: false,
-        message: "Mobile number is required"
+        message:
+          "Mobile number is required"
       });
     }
 
     if (!/^[6-9]\d{9}$/.test(mobile)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid mobile number"
+        message:
+          "Invalid mobile number"
       });
     }
 
-    const recentOtp = await Otp.findOne({
-      mobile,
-      createdAt: { $gt: new Date(Date.now() - 60 * 1000) }
-    });
+    const recentOtp =
+      await Otp.findOne({
+        mobile,
+        createdAt: {
+          $gt: new Date(
+            Date.now() - 60 * 1000
+          )
+        }
+      });
 
     if (recentOtp) {
       return res.status(429).json({
         success: false,
-        message: "Please wait before requesting another OTP"
+        message:
+          "Please wait before requesting another OTP"
       });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = Math.floor(
+      100000 +
+        Math.random() * 900000
+    ).toString();
 
     await Otp.findOneAndUpdate(
       { mobile },
       {
         otp,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000)
+        expiresAt: new Date(
+          Date.now() +
+            5 * 60 * 1000
+        )
       },
-      { upsert: true, new: true }
+      {
+        upsert: true,
+        new: true
+      }
     );
+
+    // CHECK EXISTING USER
+    const existingUser =
+      await User.findOne({
+        mobile,
+        isDeleted: false
+      });
 
     res.json({
       success: true,
-      message: "OTP sent successfully",
-      otp
+      message:
+        "OTP sent successfully",
+
+      otp,
+
+      // NEW USER STATUS
+      isNewUser:
+        !existingUser ||
+        !existingUser.onboardingCompleted
     });
 
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message:
+        error.message
     });
   }
 };
