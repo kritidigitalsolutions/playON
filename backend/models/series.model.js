@@ -11,15 +11,6 @@ const seriesSchema = new mongoose.Schema(
     sport: {
       type: String,
       required: true,
-      enum: [
-        "cricket",
-        "football",
-        "basketball",
-        "kabaddi",
-        "tennis",
-        "volleyball",
-        "other"
-      ],
       lowercase: true,
       trim: true
     },
@@ -46,29 +37,11 @@ const seriesSchema = new mongoose.Schema(
       default: ""
     },
 
-    teamA: {
-      type: String,
-      default: "",
-      trim: true
-    },
-
-    teamB: {
-      type: String,
-      default: "",
-      trim: true
-    },
-
-    teamAPlayers: [
+    // ✅ Replaced teamA/teamB strings + teamAPlayers/teamBPlayers with teams array
+    teams: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Player"
-      }
-    ],
-
-    teamBPlayers: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Player"
+        ref: "Team"
       }
     ],
 

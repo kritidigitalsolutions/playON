@@ -32,7 +32,7 @@ const formatSeries = (req, series) => {
   };
 };
 
-//get all series with matches
+// GET ALL SERIES WITH MATCHES
 exports.getAllSeries = async (req, res) => {
   try {
     const { sport, status, search } = req.query;
@@ -46,9 +46,7 @@ exports.getAllSeries = async (req, res) => {
       filter.$or = [
         { title: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
-        { tourCountry: { $regex: search, $options: "i" } },
-        { teamA: { $regex: search, $options: "i" } },
-        { teamB: { $regex: search, $options: "i" } }
+        { tourCountry: { $regex: search, $options: "i" } }
       ];
     }
 
@@ -61,6 +59,16 @@ exports.getAllSeries = async (req, res) => {
           localField: "_id",
           foreignField: "seriesId",
           as: "matches"
+        }
+      },
+
+      // Populate teams
+      {
+        $lookup: {
+          from: "teams",
+          localField: "teams",
+          foreignField: "_id",
+          as: "teams"
         }
       },
 
@@ -158,8 +166,7 @@ exports.getSingleSeries = async (req, res) => {
     const { id } = req.params;
 
     const series = await Series.findById(id)
-      .populate("teamAPlayers", "name image team country")
-      .populate("teamBPlayers", "name image team country");
+      .populate("teams", "name shortName logo sport country");
 
     if (!series) {
       return res.status(404).json({ success: false, message: "Series not found" });
@@ -196,8 +203,7 @@ exports.getFeaturedSeries = async (req, res) => {
     const series = await Series.find({
       isFeatured: true
     })
-      .populate("teamAPlayers", "name image team")
-      .populate("teamBPlayers", "name image team")
+      .populate("teams", "name shortName logo sport")
       .sort({ createdAt: -1 })
       .limit(10);
 
@@ -215,10 +221,7 @@ exports.getFeaturedSeries = async (req, res) => {
 };
 
 // TOGGLE FOLLOW SERIES
-exports.toggleFollowSeries = async (
-  req,
-  res
-) => {
+exports.toggleFollowSeries = async (req, res) => {
   try {
     const userId = req.user.userId;
     const { id } = req.params;
@@ -236,15 +239,13 @@ exports.toggleFollowSeries = async (
 
     const alreadyFollowing =
       user.followedSeries.some(
-        (item) =>
-          item.toString() === id
+        (item) => item.toString() === id
       );
 
     if (alreadyFollowing) {
       user.followedSeries =
         user.followedSeries.filter(
-          (item) =>
-            item.toString() !== id
+          (item) => item.toString() !== id
         );
 
       await user.save();
@@ -274,17 +275,13 @@ exports.toggleFollowSeries = async (
 };
 
 // GET FOLLOWED SERIES
-exports.getFollowedSeries = async (
-  req,
-  res
-) => {
+exports.getFollowedSeries = async (req, res) => {
   try {
     const user = await User.findById(
       req.user.userId
     ).select("followedSeries");
 
-    const followedIds =
-      user?.followedSeries || [];
+    const followedIds = user?.followedSeries || [];
 
     const series = await Series.aggregate([
       {
@@ -302,11 +299,19 @@ exports.getFollowedSeries = async (
         }
       },
 
+      // Populate teams
+      {
+        $lookup: {
+          from: "teams",
+          localField: "teams",
+          foreignField: "_id",
+          as: "teams"
+        }
+      },
+
       {
         $addFields: {
-          totalMatches: {
-            $size: "$matches"
-          },
+          totalMatches: { $size: "$matches" },
 
           matchScheduledDate: {
             $min: "$matches.matchDate"
@@ -321,12 +326,7 @@ exports.getFollowedSeries = async (
                       $filter: {
                         input: "$matches",
                         as: "m",
-                        cond: {
-                          $eq: [
-                            "$$m.status",
-                            "live"
-                          ]
-                        }
+                        cond: { $eq: ["$$m.status", "live"] }
                       }
                     }
                   },
@@ -343,12 +343,7 @@ exports.getFollowedSeries = async (
                           $filter: {
                             input: "$matches",
                             as: "m",
-                            cond: {
-                              $eq: [
-                                "$$m.status",
-                                "upcoming"
-                              ]
-                            }
+                            cond: { $eq: ["$$m.status", "upcoming"] }
                           }
                         }
                       },
@@ -370,20 +365,9 @@ exports.getFollowedSeries = async (
                 _id: "$$m._id",
                 matchName: {
                   $cond: [
-                    {
-                      $ne: [
-                        "$$m.title",
-                        ""
-                      ]
-                    },
+                    { $ne: ["$$m.title", ""] },
                     "$$m.title",
-                    {
-                      $concat: [
-                        "$$m.teamA",
-                        " vs ",
-                        "$$m.teamB"
-                      ]
-                    }
+                    { $concat: ["$$m.teamA", " vs ", "$$m.teamB"] }
                   ]
                 },
                 date: "$$m.matchDate",
@@ -394,11 +378,7 @@ exports.getFollowedSeries = async (
         }
       },
 
-      {
-        $sort: {
-          createdAt: -1
-        }
-      }
+      { $sort: { createdAt: -1 } }
     ]);
 
     res.json({
@@ -414,4 +394,3 @@ exports.getFollowedSeries = async (
     });
   }
 };
-

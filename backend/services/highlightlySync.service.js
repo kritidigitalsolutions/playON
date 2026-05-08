@@ -1,5 +1,6 @@
 const Match = require("../models/match.model");
 const highlightly = require("./providers/highlightly.provider");
+const { normalizeStatusByMatchDate } = require("./matchStatus.service");
 
 // ─── Config ───────────────────────────────────────────────────
 const SYNC_COOLDOWN_LIVE_MS     = 5  * 60 * 1000; // 5 min  for live matches
@@ -31,7 +32,11 @@ function mapHighlightlyStatus(highlightlyStatus) {
     Completed:     "completed",
     completed:     "completed",
     Finished:      "completed",
+    finished:      "completed",
     Final:         "completed",
+    final:         "completed",
+    FT:            "completed",
+    "Full Time":   "completed",
     ended:         "completed",
     Ended:         "completed",
 
@@ -85,7 +90,14 @@ async function syncOneMatch(dbMatch, { fullSync = true } = {}) {
       return { synced: false, reason: "No data returned from Highlightly" };
     }
 
-    const newStatus = mapHighlightlyStatus(liveData.status);
+    const providerStatus = mapHighlightlyStatus(liveData.status);
+    const newStatus =
+      providerStatus === "completed" || providerStatus === "cancelled"
+        ? providerStatus
+        : normalizeStatusByMatchDate(
+            providerStatus ?? dbMatch.status,
+            liveData.matchDate || liveData.date || dbMatch.matchDate
+          );
     const oldStatus = dbMatch.status;
 
     const updates = {

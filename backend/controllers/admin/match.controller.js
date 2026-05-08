@@ -4,6 +4,9 @@ const Comment = require("../../models/comment.model");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
 const deleteFromFirebase = require("../../utils/deleteFromFirebase");
 const autoNotify = require("../../utils/autoNotify");
+const {
+  normalizeAdminStatus
+} = require("../../services/matchStatus.service");
 
 
 // helpers
@@ -29,19 +32,20 @@ const parseScoreSources = (value) => {
   return [];
 };
 
-const normalizeStatusForMatchDate = (status, matchDate) => {
-  if (status !== "upcoming" || !matchDate) return status || "upcoming";
-  const date = new Date(matchDate);
-  if (Number.isNaN(date.getTime())) return status;
-  return date < new Date() ? "completed" : status;
-};
+const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
-const normalizeMatchBody = (body = {}) => {
+const normalizeMatchBody = (body = {}, { includeDefaults = false } = {}) => {
   const data = matchStreamSync.stripStreamFields(body);
 
   delete data.score;
-  data.scoreSources = parseScoreSources(body.scoreSources);
-  data.status = normalizeStatusForMatchDate(body.status, body.matchDate);
+
+  if (includeDefaults || hasOwn(body, "scoreSources")) {
+    data.scoreSources = parseScoreSources(body.scoreSources);
+  }
+
+  if (includeDefaults || hasOwn(body, "status") || hasOwn(body, "matchDate")) {
+    data.status = normalizeAdminStatus(body.status, body.matchDate);
+  }
 
   if (body.seriesId === "") {
     data.seriesId = null;
@@ -132,15 +136,8 @@ exports.createMatch = async (req, res) => {
       );
     }
 
-    if (req.body.status === "live" && !req.body.streamUrl?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Stream URL is required before going live"
-      });
-    }
-
     const data = {
-      ...normalizeMatchBody(req.body),
+      ...normalizeMatchBody(req.body, { includeDefaults: true }),
       isFeatured: parseBoolean(req.body.isFeatured),
       isTrending: parseBoolean(req.body.isTrending),
       isPremium: parseBoolean(req.body.isPremium),
@@ -150,6 +147,13 @@ exports.createMatch = async (req, res) => {
       teamBLogo,
       createdBy: req.admin._id
     };
+
+    if (data.status === "live" && !req.body.streamUrl?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Stream URL is required before going live"
+      });
+    }
 
     const match = await matchService.createMatch(data);
     const stream = await matchStreamSync.syncForMatch(match, req.body, {
@@ -312,6 +316,16 @@ exports.updateMatch = async (req, res) => {
         success: false,
         message: "Match not found"
       });
+    }
+
+    if (
+      hasOwn(req.body, "status") ||
+      hasOwn(req.body, "matchDate")
+    ) {
+      data.status = normalizeAdminStatus(
+        hasOwn(req.body, "status") ? req.body.status : existingMatch.status,
+        hasOwn(req.body, "matchDate") ? req.body.matchDate : existingMatch.matchDate
+      );
     }
 
     if (data.status === "live") {

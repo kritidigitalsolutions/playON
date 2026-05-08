@@ -1,17 +1,10 @@
 const cron = require("node-cron");
 const Match = require("../models/match.model");
 const { syncAllHighlightlyMatches } = require("../services/highlightlySync.service");
+const matchStreamSync = require("../services/matchStreamSync.service");
 const autoNotify = require("../utils/autoNotify");
 
 const startAutoLiveMatches = () => {
-
-  // ─── EVERY 10 MINUTES: Sync Highlightly data ──────────────────────────────
-  // Budget math (example: 3 live + 2 upcoming matches):
-  //   Live:     3 matches × 5 calls × 144 runs/day = 2,160 calls/day
-  //   Upcoming: 2 matches × 1 call  ×  48 runs/day =    96 calls/day
-  //   Total: ~2,256 calls/day
-  //
-  // If you're on the 100 req/day free tier, set this to "*/30 * * * *" instead.
   cron.schedule("*/10 * * * *", async () => {
     try {
       await syncAllHighlightlyMatches();
@@ -20,60 +13,80 @@ const startAutoLiveMatches = () => {
     }
   });
 
-  // ─── EVERY 1 MINUTE: Auto-start manual matches (no Highlightly ID) ────────
-  // Zero Highlightly API calls — only touches your own MongoDB.
+  // Every minute, fix impossible future statuses and start matches whose time arrived.
   cron.schedule("* * * * *", async () => {
     try {
       const now = new Date();
-      const manualMatches = await Match.find({
-        status:              "upcoming",
-        matchDate:           { $lte: now },
-        highlightlyMatchId:  { $in: [null, ""] },
+
+      const futureMatches = await Match.find({
+        status: { $nin: ["upcoming", "cancelled"] },
+        matchDate: { $gt: now }
       });
 
-      for (const match of manualMatches) {
-        match.status       = "live";
-        match.liveStartedAt = now;
+      for (const match of futureMatches) {
+        match.status = "upcoming";
+        match.liveStartedAt = null;
+        match.liveEndedAt = null;
         await match.save();
+        await matchStreamSync.syncForMatch(match, {}, { force: true });
+        console.log(`[AUTO] Match ${match._id} (${match.teamA} vs ${match.teamB}) reset to upcoming`);
+      }
+
+      const dueMatches = await Match.find({
+        status: "upcoming",
+        matchDate: { $lte: now }
+      });
+
+      for (const match of dueMatches) {
+        match.status = "live";
+        match.liveStartedAt = match.liveStartedAt || now;
+        await match.save();
+        const stream = await matchStreamSync.syncForMatch(match, {}, {
+          force: true,
+          status: "live"
+        });
         console.log(`[AUTO] Match ${match._id} (${match.teamA} vs ${match.teamB}) set to live`);
 
         autoNotify({
-          title:   "Match Live Now",
+          title: "Match Live Now",
           message: `${match.teamA} vs ${match.teamB} is live now.`,
-          type:    "MATCH",
+          type: "MATCH",
           metadata: {
             matchId: match._id,
-            image:   match.banner || match.thumbnail || "",
-          },
+            streamId: stream?._id,
+            image: match.banner || match.thumbnail || ""
+          }
         }).catch(() => {});
       }
 
-      if (manualMatches.length > 0) {
-        console.log(`[AUTO] ${manualMatches.length} manual match(es) started`);
+      if (futureMatches.length > 0 || dueMatches.length > 0) {
+        console.log(
+          `[AUTO] statuses fixed: ${futureMatches.length}, started: ${dueMatches.length}`
+        );
       }
     } catch (error) {
-      console.error("[CRON] Manual match error:", error.message);
+      console.error("[CRON] Match status error:", error.message);
     }
   });
 
-  // ─── EVERY 30 MINUTES: Auto-complete stale live matches ───────────────────
-  // Safety net — Highlightly sync should handle this via status mapping,
-  // but this catches matches that have been live for unreasonably long.
+  // Safety net: Highlightly sync should complete connected matches, this catches stale live ones.
   cron.schedule("*/30 * * * *", async () => {
     try {
       const now = new Date();
-      const MAX_DURATION_MS = 8 * 60 * 60 * 1000; // 8 hours
+      const maxDurationMs = 8 * 60 * 60 * 1000;
 
       const liveMatches = await Match.find({ status: "live" });
 
       for (const match of liveMatches) {
-        if (!match.liveStartedAt) continue;
+        const startedAt = match.liveStartedAt || match.matchDate;
+        if (!startedAt) continue;
 
-        const duration = now - match.liveStartedAt;
-        if (duration > MAX_DURATION_MS) {
-          match.status     = "completed";
+        const duration = now - startedAt;
+        if (duration > maxDurationMs) {
+          match.status = "completed";
           match.liveEndedAt = now;
           await match.save();
+          await matchStreamSync.endStreamForMatch(match._id);
           console.log(`[AUTO] Match ${match._id} (${match.teamA} vs ${match.teamB}) auto-completed after 8h`);
         }
       }
@@ -82,7 +95,7 @@ const startAutoLiveMatches = () => {
     }
   });
 
-  console.log("✅ Auto Live Matches & Highlightly Sync started");
+  console.log("Auto Live Matches & Highlightly Sync started");
 };
 
 module.exports = startAutoLiveMatches;

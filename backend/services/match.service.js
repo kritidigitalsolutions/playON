@@ -1,4 +1,5 @@
 const Match = require("../models/match.model");
+const { reconcileMatchStatuses } = require("./matchStatus.service");
 
 const escapeRegex = (value) => String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -9,6 +10,8 @@ exports.createMatch = async (data) => {
 
 // Admin List (with filters + pagination)
 exports.getAdminMatches = async (query) => {
+  await reconcileMatchStatuses();
+
   const {
     sport,
     status,
@@ -63,6 +66,7 @@ exports.getAdminMatches = async (query) => {
 
 // Single
 exports.getMatchById = async (id) => {
+  await reconcileMatchStatuses();
   return await Match.findById(id);
 };
 
@@ -118,6 +122,8 @@ exports.endLive = async (id) => {
 
 // Public Matches
 exports.getPublicMatches = async (query) => {
+  await reconcileMatchStatuses();
+
   const {
     sport,
     status,
@@ -212,9 +218,11 @@ exports.getPublicMatches = async (query) => {
 
 // Live / Featured / Upcoming
 exports.getByStatus = async (status) => {
+  await reconcileMatchStatuses();
   return await Match.find({ status }).sort({ matchDate: 1 });
 };
 
 exports.getFeatured = async () => {
+  await reconcileMatchStatuses();
   return await Match.find({ isFeatured: true }).sort({ matchDate: 1 });
 };

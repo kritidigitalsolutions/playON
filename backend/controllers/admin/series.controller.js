@@ -48,10 +48,7 @@ exports.createSeries = async (req, res) => {
       title,
       sport,
       description,
-      teamA,
-      teamB,
-      teamAPlayers,
-      teamBPlayers,
+      teams,
       tourCountry,
       startDate,
       endDate,
@@ -107,12 +104,7 @@ exports.createSeries = async (req, res) => {
       tournamentLogo: tournamentLogoUrl,
       description: description || "",
 
-      teamA: teamA || "",
-      teamB: teamB || "",
-
-      teamAPlayers: asArray(teamAPlayers),
-
-      teamBPlayers: asArray(teamBPlayers),
+      teams: asArray(teams),
 
       tourCountry: tourCountry || "",
 
@@ -198,6 +190,7 @@ exports.getAllSeries = async (req, res) => {
 
     const [series, total] = await Promise.all([
       Series.find(filter)
+        .populate("teams", "name shortName logo sport country")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(Number(limit)),
@@ -227,8 +220,7 @@ exports.getSingleSeries = async (req, res) => {
     const { id } = req.params;
 
     const series = await Series.findById(id)
-      .populate("teamAPlayers", "name team country sport")
-      .populate("teamBPlayers", "name team country sport");
+      .populate("teams", "name shortName logo sport country isActive");
 
     if (!series) {
       return res.status(404).json({
@@ -266,10 +258,7 @@ exports.updateSeries = async (req, res) => {
       title,
       sport,
       description,
-      teamA,
-      teamB,
-      teamAPlayers,
-      teamBPlayers,
+      teams,
       tourCountry,
       startDate,
       endDate,
@@ -309,20 +298,8 @@ exports.updateSeries = async (req, res) => {
         ? description
         : series.description;
 
-    if (teamA !== undefined) {
-      series.teamA = teamA || "";
-    }
-
-    if (teamB !== undefined) {
-      series.teamB = teamB || "";
-    }
-
-    if (teamAPlayers !== undefined) {
-      series.teamAPlayers = asArray(teamAPlayers);
-    }
-
-    if (teamBPlayers !== undefined) {
-      series.teamBPlayers = asArray(teamBPlayers);
+    if (teams !== undefined) {
+      series.teams = asArray(teams);
     }
 
     if (tourCountry !== undefined) {
@@ -373,7 +350,6 @@ exports.updateSeries = async (req, res) => {
       series.banner = bannerUrl;
     }
 
-
     if (req.files?.tournamentLogo?.[0]) {
       if (series.tournamentLogo) await deleteFromFirebase(series.tournamentLogo);
       const tournamentLogoUrl = await uploadToFirebase(
@@ -383,11 +359,9 @@ exports.updateSeries = async (req, res) => {
       series.tournamentLogo = tournamentLogoUrl;
     }
 
-
     await series.save();
     await series.populate([
-      { path: "teamAPlayers", select: "name team country sport" },
-      { path: "teamBPlayers", select: "name team country sport" }
+      { path: "teams", select: "name shortName logo sport country isActive" }
     ]);
 
     // 🔔 AUTO NOTIFY IF SERIES GOES LIVE
@@ -469,4 +443,3 @@ exports.deleteSeries = async (req, res) => {
     });
   }
 };
-
