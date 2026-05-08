@@ -26,7 +26,7 @@ function getCachedData(match, field) {
     if (match.highlightlyLastSync) {
       const age = Date.now() - new Date(match.highlightlyLastSync).getTime();
       if (age > STALE_THRESHOLD_MS) {
-        syncMatch(match).catch(() => {});
+        syncMatch(match).catch(() => { });
       }
     }
   }
@@ -43,21 +43,21 @@ exports.getLiveScores = async () => {
     return liveMatches.map((m) => {
       const cached = m.highlightlyData?.match;
       return {
-        matchId:    m._id,
-        title:      `${m.teamA} vs ${m.teamB}`,
-        sport:      m.sport,
-        status:     m.status,
-        homeTeam:   cached?.homeTeam   || m.teamA,
-        awayTeam:   cached?.awayTeam   || m.teamB,
-        homeLogo:   cached?.homeLogo   || m.teamALogo || "",
-        awayLogo:   cached?.awayLogo   || m.teamBLogo || "",
-        homeScore:  cached?.homeScore  || "",
-        awayScore:  cached?.awayScore  || "",
-        report:     cached?.report     || "",
-        league:     cached?.league     || m.tournament || "",
-        format:     cached?.format     || "",
-        thumbnail:  m.thumbnail        || "",
-        syncedAt:   m.highlightlyLastSync || null,
+        matchId: m._id,
+        title: `${m.teamA} vs ${m.teamB}`,
+        sport: m.sport,
+        status: m.status,
+        homeTeam: cached?.homeTeam || m.teamA,
+        awayTeam: cached?.awayTeam || m.teamB,
+        homeLogo: cached?.homeLogo || m.teamALogo || "",
+        awayLogo: cached?.awayLogo || m.teamBLogo || "",
+        homeScore: cached?.homeScore || "",
+        awayScore: cached?.awayScore || "",
+        report: cached?.report || "",
+        league: cached?.league || m.tournament || "",
+        format: cached?.format || "",
+        thumbnail: m.thumbnail || "",
+        syncedAt: m.highlightlyLastSync || null,
       };
     });
   } catch (err) {
@@ -75,9 +75,9 @@ exports.getScoreByMatch = async (matchId) => {
     if (match.highlightlyMatchId) {
       return getCachedData(match, "match") || {
         matchId,
-        homeTeam:  match.teamA,
-        awayTeam:  match.teamB,
-        status:    match.status,
+        homeTeam: match.teamA,
+        awayTeam: match.teamB,
+        status: match.status,
       };
     }
     return mock.getMatchById(matchId);
@@ -215,8 +215,8 @@ exports.getHighlights = async (matchId) => {
       if (data) {
         await Match.findByIdAndUpdate(match._id, {
           $set: {
-            "highlightlyData.highlights":           data,
-            "highlightlyData.highlightsSyncedAt":   new Date(),
+            "highlightlyData.highlights": data,
+            "highlightlyData.highlightsSyncedAt": new Date(),
           },
         });
       }

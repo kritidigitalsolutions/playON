@@ -3,9 +3,9 @@ const highlightly = require("./providers/highlightly.provider");
 const { normalizeStatusByMatchDate } = require("./matchStatus.service");
 
 // ─── Config ───────────────────────────────────────────────────
-const SYNC_COOLDOWN_LIVE_MS     = 5  * 60 * 1000; // 5 min  for live matches
+const SYNC_COOLDOWN_LIVE_MS = 5 * 60 * 1000; // 5 min  for live matches
 const SYNC_COOLDOWN_UPCOMING_MS = 30 * 60 * 1000; // 30 min for upcoming matches
-const REQUEST_DELAY_MS          = 500;             // 0.5s between API calls
+const REQUEST_DELAY_MS = 500;             // 0.5s between API calls
 
 // ─── Helpers ──────────────────────────────────────────────────
 
@@ -18,35 +18,35 @@ function sleep(ms) {
  */
 function mapHighlightlyStatus(highlightlyStatus) {
   const map = {
-    Live:          "live",
+    Live: "live",
     "In Progress": "live",
-    inprogress:    "live",
-    live:          "live",
+    inprogress: "live",
+    live: "live",
 
-    Upcoming:      "upcoming",
-    upcoming:      "upcoming",
+    Upcoming: "upcoming",
+    upcoming: "upcoming",
     "Not Started": "upcoming",
-    scheduled:     "upcoming",
-    Scheduled:     "upcoming",
+    scheduled: "upcoming",
+    Scheduled: "upcoming",
 
-    Completed:     "completed",
-    completed:     "completed",
-    Finished:      "completed",
-    finished:      "completed",
-    Final:         "completed",
-    final:         "completed",
-    FT:            "completed",
-    "Full Time":   "completed",
-    ended:         "completed",
-    Ended:         "completed",
+    Completed: "completed",
+    completed: "completed",
+    Finished: "completed",
+    finished: "completed",
+    Final: "completed",
+    final: "completed",
+    FT: "completed",
+    "Full Time": "completed",
+    ended: "completed",
+    Ended: "completed",
 
-    Postponed:     "cancelled",
-    postponed:     "cancelled",
-    Delayed:       "cancelled",
+    Postponed: "cancelled",
+    postponed: "cancelled",
+    Delayed: "cancelled",
 
-    Cancelled:     "cancelled",
-    cancelled:     "cancelled",
-    Abandoned:     "cancelled",
+    Cancelled: "cancelled",
+    cancelled: "cancelled",
+    Abandoned: "cancelled",
   };
   return map[highlightlyStatus] ?? null;
 }
@@ -95,16 +95,16 @@ async function syncOneMatch(dbMatch, { fullSync = true } = {}) {
       providerStatus === "completed" || providerStatus === "cancelled"
         ? providerStatus
         : normalizeStatusByMatchDate(
-            providerStatus ?? dbMatch.status,
-            liveData.matchDate || liveData.date || dbMatch.matchDate
-          );
+          providerStatus ?? dbMatch.status,
+          liveData.matchDate || liveData.date || dbMatch.matchDate
+        );
     const oldStatus = dbMatch.status;
 
     const updates = {
-      highlightlyStatus:           liveData.status,
-      highlightlyLastSync:         new Date(),
-      "highlightlyData.match":     liveData,
-      "highlightlyData.syncedAt":  new Date(),
+      highlightlyStatus: liveData.status,
+      highlightlyLastSync: new Date(),
+      "highlightlyData.match": liveData,
+      "highlightlyData.syncedAt": new Date(),
     };
 
     // ── Status transitions ─────────────────────────────────────
@@ -144,16 +144,16 @@ async function syncOneMatch(dbMatch, { fullSync = true } = {}) {
 
       const ok = (r) => (r.status === "fulfilled" && r.value ? r.value : null);
 
-      if (ok(scoreboard))    updates["highlightlyData.scoreboard"]    = ok(scoreboard);
-      if (ok(stats))         updates["highlightlyData.stats"]         = ok(stats);
+      if (ok(scoreboard)) updates["highlightlyData.scoreboard"] = ok(scoreboard);
+      if (ok(stats)) updates["highlightlyData.stats"] = ok(stats);
       if (ok(topPerformers)) updates["highlightlyData.topPerformers"] = ok(topPerformers);
-      if (ok(events))        updates["highlightlyData.events"]        = ok(events);
+      if (ok(events)) updates["highlightlyData.events"] = ok(events);
     }
 
     await Match.findByIdAndUpdate(dbMatch._id, { $set: updates });
 
     return {
-      synced:    true,
+      synced: true,
       oldStatus,
       newStatus: newStatus ?? oldStatus,
       fullSync,
@@ -178,7 +178,7 @@ exports.syncMatch = async (dbMatch) => {
       ? dbMatch
       : await Match.findById(dbMatch._id);
 
-  if (!doc)          return { synced: false, reason: "Match not found" };
+  if (!doc) return { synced: false, reason: "Match not found" };
   if (!isStale(doc)) return { synced: false, reason: "Sync cooldown active" };
 
   return syncOneMatch(doc, { fullSync: doc.status === "live" });
@@ -220,11 +220,11 @@ exports.syncAllHighlightlyMatches = async () => {
       }
 
       const fullSync = match.status === "live";
-      const result   = await syncOneMatch(match, { fullSync });
+      const result = await syncOneMatch(match, { fullSync });
 
-      if (result.synced)     synced++;
+      if (result.synced) synced++;
       else if (result.error) failed++;
-      else                   skipped++;
+      else skipped++;
 
       await sleep(REQUEST_DELAY_MS);
     }

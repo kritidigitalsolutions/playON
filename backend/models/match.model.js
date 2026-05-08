@@ -164,7 +164,7 @@ const matchSchema = new mongoose.Schema(
     },
     isTrending: {
       type: Boolean,
-      default: false  
+      default: false
     },
 
     isPremium: {
@@ -177,42 +177,42 @@ const matchSchema = new mongoose.Schema(
       default: null
     },
 
-    
+
 
     liveEndedAt: {
       type: Date,
       default: null
     },
-    
-highlightlyMatchId: {
-  type: String,
-  default: null,
-  index: true
-},
 
-highlightlySport: {
-  type: String,
-  default: null
-},
+    highlightlyMatchId: {
+      type: String,
+      default: null,
+      index: true
+    },
 
-// ← ADD THESE NEW FIELDS:
-highlightlyStatus: {
-  type: String,
-  default: null,
-  description: "Original status from Highlightly API"
-},
+    highlightlySport: {
+      type: String,
+      default: null
+    },
 
-highlightlyLastSync: {
-  type: Date,
-  default: null,
-  description: "Last time we synced with Highlightly"
-},
+    // ← ADD THESE NEW FIELDS:
+    highlightlyStatus: {
+      type: String,
+      default: null,
+      description: "Original status from Highlightly API"
+    },
 
-highlightlyData: {
-  type: Object,
-  default: null,
-  description: "Full response from Highlightly for debugging"
-},
+    highlightlyLastSync: {
+      type: Date,
+      default: null,
+      description: "Last time we synced with Highlightly"
+    },
+
+    highlightlyData: {
+      type: Object,
+      default: null,
+      description: "Full response from Highlightly for debugging"
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
