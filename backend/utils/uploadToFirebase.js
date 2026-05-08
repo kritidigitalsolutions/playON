@@ -45,4 +45,4 @@ const uploadToFirebase = async (file, folder = "general") => {
   return `https://storage.googleapis.com/${bucket.name}/${fileName}`;
 };
 
-module.exports = uploadToFirebase;
+module.exports = uploadToFirebase;

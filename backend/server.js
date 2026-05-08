@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 8000;
 
 const init = async () => {
   await connectDB();
-  
+
 
   try {
     const indexes = await User.collection.indexes();
