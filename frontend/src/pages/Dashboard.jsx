@@ -37,7 +37,7 @@ function Dashboard() {
     registrationStats: { today: 0, yesterday: 0, total: 0 },
     incomeStats: { today: 0, yesterday: 0, weekly: 0, monthly: 0, yearly: 0, total: 0 },
     matchDetails: { total: 0, live: 0, upcoming: 0, completed: 0, cancelled: 0 },
-    streamDetails: { total: 0, live: 0, scheduled: 0, ended: 0, offline: 0 },
+    seriesDetails: { total: 0, live: 0, upcoming: 0, completed: 0, archived: 0 },
     channelDetails: { total: 0, live: 0, offline: 0, maintenance: 0 }
   });
 
@@ -70,7 +70,7 @@ function Dashboard() {
             registrationStats: payload?.registrationStats || { today: 0, yesterday: 0, total: 0 },
             incomeStats: payload?.incomeStats || { today: 0, yesterday: 0, weekly: 0, monthly: 0, yearly: 0, total: 0 },
             matchDetails: payload?.matchDetails || { total: 0, live: 0, upcoming: 0, completed: 0, cancelled: 0 },
-            streamDetails: payload?.streamDetails || { total: 0, live: 0, scheduled: 0, ended: 0, offline: 0 },
+            seriesDetails: payload?.seriesDetails || { total: 0, live: 0, upcoming: 0, completed: 0, archived: 0 },
             channelDetails: payload?.channelDetails || { total: 0, live: 0, offline: 0, maintenance: 0 }
           });
 
@@ -263,13 +263,12 @@ function Dashboard() {
           </div>
 
           <div className="mt-6">
-            <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Stream Overview</h3>
-            <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-5">
-              <StatCard title="Total Streams" value={data.streamDetails.total} growth="All Streams" trend="up" index={0} />
-              <StatCard title="Live Streams" value={data.streamDetails.live} growth="Running Now" trend="up" index={1} />
-              <StatCard title="Scheduled Streams" value={data.streamDetails.scheduled} growth="Ready to Go" trend="up" index={2} />
-              <StatCard title="Ended Streams" value={data.streamDetails.ended} growth="Finished" trend="up" index={3} />
-              <StatCard title="Offline Streams" value={data.streamDetails.offline} growth="Not Connected" trend="down" index={4} />
+            <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Series Overview</h3>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <StatCard title="Total Series" value={data.seriesDetails.total} growth="All Series" trend="up" index={0} />
+              <StatCard title="Live Series" value={data.seriesDetails.live} growth="Ongoing Now" trend="up" index={1} />
+              <StatCard title="Upcoming Series" value={data.seriesDetails.upcoming} growth="Scheduled" trend="up" index={2} />
+              <StatCard title="Completed Series" value={data.seriesDetails.completed} growth="Finished" trend="up" index={3} />
             </div>
           </div>
 

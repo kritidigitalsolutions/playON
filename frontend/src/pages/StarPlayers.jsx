@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, MessageSquare, Pencil, Plus, RefreshCw, Trash2, Video, X } from "lucide-react";
+import { Eye, MessageSquare, Pencil, Play, Plus, RefreshCw, Trash2, Video, X } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import CommentModal from "../components/CommentModal";
@@ -14,13 +14,30 @@ const defaultForm = {
   playerName: "",
   team: "",
   title: "",
-  videoUrl: "",
-  type: "other",
+  videoUrl: "", // Legacy
+  type: "other", // Legacy
+  sources: [],
   duration: "",
   isFeatured: false,
   isPremium: false,
   thumbnailFile: null
 };
+
+const emptySource = {
+  provider: "",
+  category: "youtube",
+  url: "",
+  isActive: true
+};
+
+const SOURCE_CATEGORIES = [
+  "youtube",
+  "mp4",
+  "m3u8",
+  "iframe",
+  "audio",
+  "other"
+];
 
 const defaultPlayerForm = {
   name: "",
@@ -47,6 +64,7 @@ function StarPlayers() {
   const [form, setForm] = useState(defaultForm);
   const [formErrors, setFormErrors] = useState({});
   const [selectedHighlight, setSelectedHighlight] = useState(null);
+  const [playingHighlight, setPlayingHighlight] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [commentTarget, setCommentTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -132,7 +150,8 @@ function StarPlayers() {
       duration: hl?.duration || "",
       isFeatured: Boolean(hl?.isFeatured),
       isPremium: Boolean(hl?.isPremium),
-      thumbnailFile: null
+      thumbnailFile: null,
+      sources: hl?.sources || []
     });
     setModalOpen(true);
   };
@@ -174,6 +193,7 @@ function StarPlayers() {
       payload.append("duration", form.duration || "");
       payload.append("isFeatured", String(Boolean(form.isFeatured)));
       payload.append("isPremium", String(Boolean(form.isPremium)));
+      payload.append("sources", JSON.stringify(form.sources || []));
       if (form.thumbnailFile) payload.append("thumbnail", form.thumbnailFile);
 
       let response;
@@ -209,6 +229,17 @@ function StarPlayers() {
       setError(apiError?.response?.data?.message || "Unable to delete highlight.");
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleWatch = async (hl) => {
+    try {
+      const response = await api.get(`/admin/star-players/watch/${hl._id}`);
+      if (response.data.success) {
+        setPlayingHighlight(response.data.highlight);
+      }
+    } catch (apiError) {
+      setError(apiError?.response?.data?.message || "Unable to load playback data.");
     }
   };
 
@@ -256,6 +287,26 @@ function StarPlayers() {
     } finally {
       setPlayerSubmitting(false);
     }
+  };
+
+  const getYouTubeEmbedUrl = (url) => {
+    try {
+      const parsed = new URL(url);
+      const host = parsed.hostname.replace(/^www\./, "").replace(/^m\./, "");
+      let videoId = "";
+      if (host === "youtu.be") {
+        videoId = parsed.pathname.split("/").filter(Boolean)[0] || "";
+      } else if (host.endsWith("youtube.com")) {
+        if (parsed.pathname.startsWith("/embed/")) {
+          videoId = parsed.pathname.split("/").filter(Boolean)[1] || "";
+        } else if (parsed.pathname.startsWith("/shorts/")) {
+          videoId = parsed.pathname.split("/").filter(Boolean)[1] || "";
+        } else {
+          videoId = parsed.searchParams.get("v") || "";
+        }
+      }
+      return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : url;
+    } catch { return url; }
   };
 
   return (
@@ -342,7 +393,10 @@ function StarPlayers() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => setSelectedHighlight(hl)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View">
+                        <button onClick={() => handleWatch(hl)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0 bg-indigo-500/10 text-indigo-600 border-indigo-200" title="Play">
+                          <Play size={14} />
+                        </button>
+                        <button onClick={() => setSelectedHighlight(hl)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View Details">
                           <Eye size={14} />
                         </button>
                         <button onClick={() => openEdit(hl)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="Edit">
@@ -558,6 +612,70 @@ function StarPlayers() {
                   </label>
                 </div>
 
+                {/* Sources Section */}
+                <div className="space-y-3 rounded-xl border border-slate-100 p-4 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">Video Sources</p>
+                    <button
+                      type="button"
+                      onClick={() => setForm(p => ({ ...p, sources: [...(p.sources || []), { ...emptySource }] }))}
+                      className="flex items-center gap-1 text-xs font-bold text-indigo-500 hover:text-indigo-600"
+                    >
+                      <Plus size={14} /> Add Source
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {(form.sources || []).map((source, idx) => (
+                      <div key={idx} className="relative rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-950">
+                        <button
+                          type="button"
+                          onClick={() => setForm(p => ({ ...p, sources: p.sources.filter((_, i) => i !== idx) }))}
+                          className="absolute -right-2 -top-2 rounded-full bg-rose-500 p-1 text-white shadow-lg hover:bg-rose-600"
+                        >
+                          <X size={12} />
+                        </button>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <select
+                            value={source.category}
+                            onChange={(e) => {
+                              const newSources = [...form.sources];
+                              newSources[idx].category = e.target.value;
+                              setForm(p => ({ ...p, sources: newSources }));
+                            }}
+                            className="h-9 rounded-lg border border-slate-200 px-2 text-xs outline-none focus:border-indigo-400 dark:bg-slate-900 dark:text-slate-100"
+                          >
+                            {SOURCE_CATEGORIES.map(c => <option key={c} value={c}>{c.toUpperCase()}</option>)}
+                          </select>
+                          <input
+                            value={source.provider}
+                            onChange={(e) => {
+                              const newSources = [...form.sources];
+                              newSources[idx].provider = e.target.value;
+                              setForm(p => ({ ...p, sources: newSources }));
+                            }}
+                            placeholder="Provider (e.g. YouTube)"
+                            className="h-9 rounded-lg border border-slate-200 px-2 text-xs outline-none focus:border-indigo-400 dark:bg-slate-900 dark:text-slate-100"
+                          />
+                          <input
+                            value={source.url}
+                            onChange={(e) => {
+                              const newSources = [...form.sources];
+                              newSources[idx].url = e.target.value;
+                              setForm(p => ({ ...p, sources: newSources }));
+                            }}
+                            placeholder="Source URL"
+                            className="h-9 rounded-lg border border-slate-200 px-2 text-xs outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100 sm:col-span-2"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    {!form.sources?.length && (
+                      <p className="py-4 text-center text-xs text-slate-400">No multi-sources added. Using fallback URL above.</p>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex justify-end gap-3 pt-2">
                   <button type="button" onClick={closeModal} className="admin-secondary-btn">
                     Cancel
@@ -573,46 +691,154 @@ function StarPlayers() {
       </AnimatePresence>
 
       <AnimatePresence>
+        {playingHighlight ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{playingHighlight.title}</h2>
+                  <p className="mt-1 text-sm text-indigo-500 dark:text-indigo-400">{playingHighlight.playerName} {playingHighlight.team && `(${playingHighlight.team})`}</p>
+                </div>
+                <button type="button" onClick={() => setPlayingHighlight(null)} className="text-slate-500 transition hover:text-slate-800 dark:hover:text-slate-200">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 relative aspect-video bg-black shadow-2xl">
+                {(() => {
+                  const url = (playingHighlight.videoUrl || playingHighlight.url || "").toLowerCase();
+                  const type = (playingHighlight.type || playingHighlight.category || "").toLowerCase();
+                  
+                  // YouTube
+                  if (type === "youtube" || url.includes("youtube.com") || url.includes("youtu.be")) {
+                    return (
+                      <iframe
+                        src={getYouTubeEmbedUrl(playingHighlight.videoUrl || playingHighlight.url)}
+                        title={playingHighlight.title || "Video player"}
+                        className="w-full h-full"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    );
+                  }
+                  
+                  // Iframe
+                  if (type === "iframe") {
+                    return (
+                      <iframe
+                        src={playingHighlight.videoUrl || playingHighlight.url}
+                        title={playingHighlight.title || "Iframe content"}
+                        className="w-full h-full border-0"
+                        allowFullScreen
+                      />
+                    );
+                  }
+                  
+                  // Video (MP4, M3U8, etc)
+                  if (type === "mp4" || type === "m3u8" || url.endsWith(".m3u8") || url.endsWith(".mp4") || url.includes(".m3u8?") || url.includes(".mp4?")) {
+                    return <video src={playingHighlight.videoUrl || playingHighlight.url} className="w-full h-full object-contain" controls autoPlay />;
+                  }
+
+                  // Fallback
+                  return (
+                    <div className="flex flex-col items-center justify-center h-full text-slate-400 p-6 text-center">
+                      <Video size={40} className="mb-3 opacity-20" />
+                      <p className="font-medium text-sm">Preview not available for this format.</p>
+                      <p className="text-[10px] mt-1 opacity-60 break-all max-w-xs">{playingHighlight.videoUrl || playingHighlight.url}</p>
+                    </div>
+                  );
+                })()}
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {selectedHighlight ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedHighlight.title}</h2>
-                  <p className="mt-1 text-sm text-indigo-500 dark:text-indigo-400">{selectedHighlight.playerName} {selectedHighlight.team && `(${selectedHighlight.team})`}</p>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Highlight Details</h2>
+                  <p className="mt-1 text-sm text-slate-500">Full metadata and management options.</p>
                 </div>
                 <button type="button" onClick={() => setSelectedHighlight(null)} className="text-slate-500 transition hover:text-slate-800 dark:hover:text-slate-200">
                   <X size={18} />
                 </button>
               </div>
 
-              <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 relative aspect-video bg-black">
-                {selectedHighlight.type === "youtube" ? (
-                  <iframe
-                    src={selectedHighlight.videoUrl.replace("watch?v=", "embed/")}
-                    title={selectedHighlight.title || "Video player"}
-                    className="w-full h-full"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : selectedHighlight.type === "mp4" ? (
-                  <video src={selectedHighlight.videoUrl} className="w-full h-full object-contain" controls />
-                ) : selectedHighlight.thumbnail ? (
-                  <img src={selectedHighlight.thumbnail} alt="Thumbnail" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-slate-400">No Preview</div>
-                )}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-20 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700">
+                  {selectedHighlight.thumbnail ? (
+                    <img src={selectedHighlight.thumbnail} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-slate-300"><Video size={24} /></div>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">{selectedHighlight.title}</h3>
+                  <p className="text-sm text-indigo-500 font-medium mt-1">{selectedHighlight.playerName}</p>
+                </div>
               </div>
 
-              <div className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                <p><strong>Sport:</strong> {selectedHighlight.sportId?.name || "-"}</p>
-                <p><strong>Player:</strong> {selectedHighlight.playerId?.name || "-"}</p>
-                <p><strong>Type:</strong> {selectedHighlight.type}</p>
-                <p><strong>Duration:</strong> {selectedHighlight.duration || "-"}</p>
-                <p><strong>Featured:</strong> {selectedHighlight.isFeatured ? "Yes" : "No"}</p>
-                <p><strong>Premium:</strong> {selectedHighlight.isPremium ? "👑 Yes (subscription required)" : "No (free)"}</p>
-                <p><strong>URL:</strong> <a href={selectedHighlight.videoUrl} target="_blank" rel="noreferrer" className="text-indigo-500 hover:underline break-all">{selectedHighlight.videoUrl}</a></p>
+              <div className="grid grid-cols-2 gap-4 text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Sport</p>
+                  <p className="font-medium">{selectedHighlight.sportId?.name || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Type</p>
+                  <p className="font-medium capitalize">{selectedHighlight.type}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Duration</p>
+                  <p className="font-medium">{selectedHighlight.duration || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Premium</p>
+                  <p className="font-medium">{selectedHighlight.isPremium ? "👑 Yes" : "Free"}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">Sources ({selectedHighlight.sources?.length || 0})</p>
+                <div className="space-y-2">
+                  {selectedHighlight.sources?.map((s, idx) => (
+                    <div key={idx} className="flex items-center justify-between rounded-lg border border-slate-100 p-2 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-bold text-indigo-500 uppercase">{s.category} - {s.provider || "Other"}</p>
+                        <p className="truncate text-[10px] text-slate-500">{s.url}</p>
+                      </div>
+                      <button 
+                        onClick={() => { setPlayingHighlight({ ...selectedHighlight, url: s.url, category: s.category }); setSelectedHighlight(null); }}
+                        className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors"
+                      >
+                        <Play size={12} />
+                      </button>
+                    </div>
+                  ))}
+                  {!selectedHighlight.sources?.length && selectedHighlight.videoUrl && (
+                    <div className="flex items-center justify-between rounded-lg border border-slate-100 p-2 dark:border-slate-800">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fallback URL</p>
+                        <p className="truncate text-[10px] text-slate-500">{selectedHighlight.videoUrl}</p>
+                      </div>
+                      <button 
+                        onClick={() => { setPlayingHighlight(selectedHighlight); setSelectedHighlight(null); }}
+                        className="p-1.5 text-indigo-500"
+                      >
+                        <Play size={12} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <button type="button" onClick={() => { setSelectedHighlight(null); handleWatch(selectedHighlight); }} className="admin-toolbar-btn flex-1 py-2.5 justify-center"><Play size={14} /> Watch Preview</button>
+                <button type="button" onClick={() => { setSelectedHighlight(null); openEdit(selectedHighlight); }} className="admin-secondary-btn flex-1 py-2.5 justify-center"><Pencil size={14} /> Edit</button>
               </div>
             </motion.div>
           </motion.div>

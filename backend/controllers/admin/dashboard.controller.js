@@ -3,6 +3,7 @@ const Match = require("../../models/match.model");
 const Stream = require("../../models/stream.model");
 const Channel = require("../../models/channel.model");
 const Subscription = require("../../models/subscription.model");
+const Series = require("../../models/series.model");
 
 const toTitleCase = (value = "") =>
   value
@@ -147,7 +148,12 @@ exports.getDashboard = async (req, res) => {
       endedStreams,
       offlineStreams,
       offlineChannels,
-      maintenanceChannels
+      maintenanceChannels,
+      totalSeries,
+      liveSeries,
+      upcomingSeries,
+      completedSeries,
+      archivedSeries
     ] = await Promise.all([
       User.countDocuments(userFilter),
       Match.countDocuments(),
@@ -243,7 +249,12 @@ exports.getDashboard = async (req, res) => {
       Stream.countDocuments({ status: "ended" }),
       Stream.countDocuments({ status: "offline" }),
       Channel.countDocuments({ status: "offline" }),
-      Channel.countDocuments({ status: "maintenance" })
+      Channel.countDocuments({ status: "maintenance" }),
+      Series.countDocuments(),
+      Series.countDocuments({ status: "live" }),
+      Series.countDocuments({ status: "upcoming" }),
+      Series.countDocuments({ status: "completed" }),
+      Series.countDocuments({ status: "archived" })
     ]);
 
     const viewerByMatch = Object.fromEntries(
@@ -272,10 +283,10 @@ exports.getDashboard = async (req, res) => {
         trend: liveMatches > 0 ? "up" : "down"
       },
       {
-        title: "Streams Running",
-        value: liveStreams,
-        growth: `${scheduledStreams} scheduled`,
-        trend: liveStreams > 0 ? "up" : "down"
+        title: "Live Series",
+        value: liveSeries,
+        growth: `${upcomingSeries} upcoming`,
+        trend: liveSeries > 0 ? "up" : "down"
       },
       {
         title: "Live Channels",
@@ -364,12 +375,12 @@ exports.getDashboard = async (req, res) => {
       cancelled: cancelledMatches
     };
 
-    const streamDetails = {
-      total: totalStreams,
-      live: liveStreams,
-      scheduled: scheduledStreams,
-      ended: endedStreams,
-      offline: offlineStreams
+    const seriesDetails = {
+      total: totalSeries,
+      live: liveSeries,
+      upcoming: upcomingSeries,
+      completed: completedSeries,
+      archived: archivedSeries
     };
 
     const channelDetails = {
@@ -389,7 +400,7 @@ exports.getDashboard = async (req, res) => {
       registrationStats,
       incomeStats,
       matchDetails,
-      streamDetails,
+      seriesDetails,
       channelDetails
     });
   } catch (error) {

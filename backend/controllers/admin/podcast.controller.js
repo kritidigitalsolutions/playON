@@ -15,13 +15,24 @@ exports.createPodcast = async (req, res) => {
       type,
       duration,
       category,
-      isFeatured
+      isFeatured,
+      isPremium,
+      status
     } = req.body;
 
-    if (!sportId || !title || !url) {
+    let sources = [];
+    if (req.body.sources) {
+      try {
+        sources = JSON.parse(req.body.sources);
+      } catch (e) {
+        sources = [];
+      }
+    }
+
+    if (!sportId || !title || (!url && sources.length === 0)) {
       return res.status(400).json({
         success: false,
-        message: "Sport, Title, and URL are required"
+        message: "Sport, Title, and at least one Source or URL are required"
       });
     }
 
@@ -43,9 +54,12 @@ exports.createPodcast = async (req, res) => {
       description,
       url,
       type,
+      sources,
       duration,
       category,
-      isFeatured,
+      isFeatured: isFeatured === "true" || isFeatured === true,
+      isPremium: isPremium === "true" || isPremium === true,
+      status: status || "active",
       thumbnail,
       createdBy: req.admin?._id || null
     });
@@ -112,6 +126,17 @@ exports.getSinglePodcast = async (req, res) => {
 exports.updatePodcast = async (req, res) => {
   try {
     const updateData = { ...req.body };
+
+    if (updateData.sources) {
+      try {
+        updateData.sources = JSON.parse(updateData.sources);
+      } catch (e) {
+        delete updateData.sources;
+      }
+    }
+
+    if (updateData.isFeatured !== undefined) updateData.isFeatured = updateData.isFeatured === "true" || updateData.isFeatured === true;
+    if (updateData.isPremium !== undefined) updateData.isPremium = updateData.isPremium === "true" || updateData.isPremium === true;
 
     if (updateData.sportId) {
       const sportExists = await Sport.findById(updateData.sportId);

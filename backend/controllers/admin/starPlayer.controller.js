@@ -26,11 +26,20 @@ exports.createHighlight = async (req, res) => {
       isPremium
     } = req.body;
 
+    let sources = [];
+    if (req.body.sources) {
+      try {
+        sources = JSON.parse(req.body.sources);
+      } catch (e) {
+        sources = [];
+      }
+    }
+
     // BASIC VALIDATION
-    if (!sportId || !title || !videoUrl) {
+    if (!sportId || !title || (!videoUrl && sources.length === 0)) {
       return res.status(400).json({
         success: false,
-        message: "Required fields missing"
+        message: "Required fields missing (Sport, Title, and at least one Source or URL)"
       });
     }
 
@@ -98,11 +107,12 @@ exports.createHighlight = async (req, res) => {
       title,
       videoUrl,
       type: type || "other",
+      sources,
       duration,
       isFeatured: isFeatured === "true" || isFeatured === true,
       isPremium: isPremium === "true" || isPremium === true,
       thumbnail: thumbnailUrl,
-      createdBy: req.admin.adminId
+      createdBy: req.admin?._id || req.admin?.adminId
     });
 
     await autoNotify({
@@ -205,11 +215,51 @@ exports.getSingleHighlight = async (req, res) => {
 };
 
 // ----------------------------------------
+// WATCH HIGHLIGHT (ADMIN)
+// ----------------------------------------
+exports.watchHighlight = async (req, res) => {
+  try {
+    const highlight = await Highlight.findById(req.params.id)
+      .populate("sportId", "name slug")
+      .populate("playerId", "name");
+
+    if (!highlight) {
+      return res.status(404).json({
+        success: false,
+        message: "Highlight not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      highlight
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// ----------------------------------------
 // UPDATE HIGHLIGHT
 // ----------------------------------------
 exports.updateHighlight = async (req, res) => {
   try {
     const data = { ...req.body };
+
+    if (data.sources) {
+      try {
+        data.sources = JSON.parse(data.sources);
+      } catch (e) {
+        delete data.sources;
+      }
+    }
+
+    if (data.isFeatured !== undefined) data.isFeatured = data.isFeatured === "true" || data.isFeatured === true;
+    if (data.isPremium !== undefined) data.isPremium = data.isPremium === "true" || data.isPremium === true;
 
     // Thumbnail update
     if (req.file) {

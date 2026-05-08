@@ -1,24 +1,35 @@
 const mongoose = require("mongoose");
 
+const highlightSourceSchema = new mongoose.Schema({
+  provider: { type: String, default: "" },
+  category: { 
+    type: String, 
+    enum: ["youtube", "mp4", "m3u8", "iframe", "audio", "other"], 
+    default: "other" 
+  },
+  url: { type: String, required: true },
+  isActive: { type: Boolean, default: true }
+});
+
 const starPlayerHighlightSchema = new mongoose.Schema(
   {
-   sportId: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "Sport",
-  required: true
-},
+    sportId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Sport",
+      required: true
+    },
 
-playerId: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "Player",
-  required: false
-},
+    playerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Player",
+      required: false
+    },
 
-playerName: {
-  type: String,
-  required: true,
-  trim: true
-},
+    playerName: {
+      type: String,
+      required: true,
+      trim: true
+    },
 
     team: {
       type: String,
@@ -38,14 +49,15 @@ playerName: {
 
     videoUrl: {
       type: String,
-      required: true
+      default: ""
     },
 
     type: {
       type: String,
-      enum: ["youtube", "mp4", "iframe", "other"],
       default: "other"
     },
+
+    sources: [highlightSourceSchema],
 
     duration: {
       type: String,

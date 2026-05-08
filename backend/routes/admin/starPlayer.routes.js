@@ -9,6 +9,7 @@ const {
   createHighlight,
   getHighlights,
   getSingleHighlight,
+  watchHighlight,
   updateHighlight,
   deleteHighlight
 } = require("../../controllers/admin/starPlayer.controller");
@@ -44,6 +45,16 @@ router.get(
   isAdmin,
   hasPermission("starplayer", "view"),
   getSingleHighlight
+);
+
+// ----------------------------------------
+// WATCH
+// ----------------------------------------
+router.get(
+  "/watch/:id",
+  isAdmin,
+  hasPermission("starplayer", "view"),
+  watchHighlight
 );
 
 // ----------------------------------------

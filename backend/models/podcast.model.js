@@ -1,5 +1,53 @@
 const mongoose = require("mongoose");
 
+const podcastSourceSchema = new mongoose.Schema(
+  {
+    provider: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+
+    category: {
+      type: String,
+      enum: [
+        "youtube",
+        "spotify",
+        "audio",
+        "video",
+        "soundcloud",
+        "google_podcast",
+        "apple_podcast",
+        "iframe",
+        "webview",
+        "other"
+      ],
+      default: "other"
+    },
+
+    url: {
+      type: String,
+      default: ""
+    },
+
+    priority: {
+      type: Number,
+      default: 1
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+
+    notes: {
+      type: String,
+      default: ""
+    }
+  },
+  { _id: false }
+);
+
 const podcastSchema = new mongoose.Schema(
   {
     sportId: {
@@ -30,6 +78,11 @@ const podcastSchema = new mongoose.Schema(
       type: String,
       enum: ["youtube", "spotify", "audio", "video", "other"],
       default: "other"
+    },
+
+    sources: {
+      type: [podcastSourceSchema],
+      default: []
     },
 
     thumbnail: {
