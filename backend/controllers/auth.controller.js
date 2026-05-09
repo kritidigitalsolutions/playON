@@ -1,6 +1,8 @@
 const Otp = require("../models/otp.model");
 const User = require("../models/user.model");
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
+// const sendOtpSms = require("../utils/sendOtpSms");
 const { OAuth2Client } = require("google-auth-library");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -27,9 +29,6 @@ const getUniqueReferralCode = async () => {
   return code;
 };
 
-// =======================
-// SEND OTP
-// =======================
 // =======================
 // SEND OTP
 // =======================
@@ -79,6 +78,8 @@ exports.sendOtp = async (
         Math.random() * 900000
     ).toString();
 
+    console.log("OTP:", otp);
+
     await Otp.findOneAndUpdate(
       { mobile },
       {
@@ -94,6 +95,64 @@ exports.sendOtp = async (
       }
     );
 
+    // =======================
+    // SMS SEND LOGIC
+    // =======================
+
+    const message =
+      process.env.SMS_GH_OTP_TEXT.replace(
+        "{{otp}}",
+        otp
+      );
+
+    console.log(
+      "MESSAGE:",
+      message
+    );
+
+    const formattedMobile = mobile.length === 10 ? `91${mobile}` : mobile;
+
+    try {
+      const response = await axios.get(
+        "https://www.smsgatewayhub.com/api/mt/SendSMS",
+        {
+          params: {
+            APIKey: process.env.SMS_GH_API_KEY,
+            senderid: process.env.SMS_GH_SENDER_ID,
+            channel: 2, // 2 = Transactional/OTP channel
+            DCS: 0,
+            flashsms: 0,
+            number: formattedMobile,
+            text: message,
+            route: process.env.SMS_GH_ROUTE || 1,
+            EntityId: process.env.SMS_GH_ENTITY_ID,
+            dlttemplateid: process.env.SMS_GH_DLT_TEMPLATE_ID
+          }
+        }
+      );
+
+      console.log(
+        "SMS RESPONSE:",
+        response.data
+      );
+
+    } catch (smsError) {
+      console.error(
+        "SMS ERROR:",
+        smsError.response?.data ||
+          smsError.message
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to send OTP SMS",
+        error:
+          smsError.response?.data ||
+          smsError.message
+      });
+    }
+
     // CHECK EXISTING USER
     const existingUser =
       await User.findOne({
@@ -106,7 +165,8 @@ exports.sendOtp = async (
       message:
         "OTP sent successfully",
 
-      otp,
+      // ⚠️ COMMENTED FOR SECURITY
+      // otp,
 
       // NEW USER STATUS
       isNewUser:
@@ -115,6 +175,11 @@ exports.sendOtp = async (
     });
 
   } catch (error) {
+    console.error(
+      "SEND OTP ERROR:",
+      error
+    );
+
     res.status(500).json({
       success: false,
       message:
