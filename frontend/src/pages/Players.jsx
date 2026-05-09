@@ -36,16 +36,22 @@ function Players() {
   const [actionPlayerId, setActionPlayerId] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [allSports, setAllSports] = useState([]);
 
   const loadPlayers = async () => {
     try {
       setLoading(true);
       setError("");
-      const response = await api.get("/admin/players", { params: { page: 1, limit: 200 } });
-      const items = Array.isArray(response?.data?.players) ? response.data.players : [];
+      const [playersRes, sportsRes] = await Promise.all([
+        api.get("/admin/players", { params: { page: 1, limit: 200 } }),
+        api.get("/admin/sports").catch(() => ({ data: { sports: [] } }))
+      ]);
+      const items = Array.isArray(playersRes?.data?.players) ? playersRes.data.players : [];
       setPlayers(items);
+      setAllSports(Array.isArray(sportsRes?.data?.sports) ? sportsRes.data.sports : []);
     } catch (apiError) {
       setPlayers([]);
+      setAllSports([]);
       setError(apiError?.response?.data?.message || "Unable to load players.");
     } finally {
       setLoading(false);
@@ -84,10 +90,8 @@ function Players() {
   }, [players, search, statusFilter, sportFilter]);
 
   const sports = useMemo(() => {
-    const fixed = ["cricket", "football", "basketball", "tennis", "kabaddi", "other"];
-    const dynamic = players.map((item) => (item.sport || "").toLowerCase()).filter(Boolean);
-    return Array.from(new Set([...fixed, ...dynamic]));
-  }, [players]);
+    return allSports;
+  }, [allSports]);
 
   const onFormChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -98,7 +102,10 @@ function Players() {
 
   const openCreate = () => {
     setEditMode(false);
-    setForm(defaultForm);
+    setForm({
+      ...defaultForm,
+      sport: allSports.length > 0 ? allSports[0].slug : "cricket"
+    });
     setFormErrors({});
     setModalOpen(true);
   };
@@ -284,8 +291,8 @@ function Players() {
         >
           <option value="all">Sport: All</option>
           {sports.map((item) => (
-            <option key={item} value={item}>
-              Sport: {item.charAt(0).toUpperCase() + item.slice(1)}
+            <option key={item.slug} value={item.slug}>
+              Sport: {item.name}
             </option>
           ))}
         </select>
@@ -414,8 +421,8 @@ function Players() {
                       className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     >
                       {sports.map((item) => (
-                        <option key={item} value={item}>
-                          {item}
+                        <option key={item.slug} value={item.slug}>
+                          {item.name}
                         </option>
                       ))}
                     </select>
