@@ -117,7 +117,7 @@ const message =
     const formattedMobile = mobile.length === 10 ? `91${mobile}` : mobile;
 
     try {
-      const response = await axios.get(
+      const response = await axios.post(
         "https://www.smsgatewayhub.com/api/mt/SendSMS",
         {
           params: {
