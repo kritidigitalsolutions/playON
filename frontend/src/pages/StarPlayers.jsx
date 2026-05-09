@@ -708,7 +708,7 @@ function StarPlayers() {
                 {(() => {
                   const url = (playingHighlight.videoUrl || playingHighlight.url || "").toLowerCase();
                   const type = (playingHighlight.type || playingHighlight.category || "").toLowerCase();
-                  
+
                   // YouTube
                   if (type === "youtube" || url.includes("youtube.com") || url.includes("youtu.be")) {
                     return (
@@ -722,7 +722,7 @@ function StarPlayers() {
                       />
                     );
                   }
-                  
+
                   // Iframe
                   if (type === "iframe") {
                     return (
@@ -734,7 +734,7 @@ function StarPlayers() {
                       />
                     );
                   }
-                  
+
                   // Video (MP4, M3U8, etc)
                   if (type === "mp4" || type === "m3u8" || url.endsWith(".m3u8") || url.endsWith(".mp4") || url.includes(".m3u8?") || url.includes(".mp4?")) {
                     return <video src={playingHighlight.videoUrl || playingHighlight.url} className="w-full h-full object-contain" controls autoPlay />;
@@ -811,7 +811,7 @@ function StarPlayers() {
                         <p className="text-[10px] font-bold text-indigo-500 uppercase">{s.category} - {s.provider || "Other"}</p>
                         <p className="truncate text-[10px] text-slate-500">{s.url}</p>
                       </div>
-                      <button 
+                      <button
                         onClick={() => { setPlayingHighlight({ ...selectedHighlight, url: s.url, category: s.category }); setSelectedHighlight(null); }}
                         className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors"
                       >
@@ -825,7 +825,7 @@ function StarPlayers() {
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fallback URL</p>
                         <p className="truncate text-[10px] text-slate-500">{selectedHighlight.videoUrl}</p>
                       </div>
-                      <button 
+                      <button
                         onClick={() => { setPlayingHighlight(selectedHighlight); setSelectedHighlight(null); }}
                         className="p-1.5 text-indigo-500"
                       >

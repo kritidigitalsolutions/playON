@@ -1090,7 +1090,7 @@ function Series() {
                   <span className="mb-1 block text-slate-500 dark:text-slate-400">Sport</span>
                   <select value={newMatchForm.sport} onChange={e => onNewMatchChange("sport", e.target.value)}
                     className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100">
-                    {sports.map(s => <option key={s} value={s}>{s}</option>)}
+                    {sports.map(s => <option key={s.slug} value={s.slug}>{s.name}</option>)}
                   </select>
                 </label>
                 <label className="block text-sm">

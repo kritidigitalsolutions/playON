@@ -635,7 +635,7 @@ function Podcasts() {
                     <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">Podcast Sources</span>
                     <button type="button" onClick={addSource} className="admin-action-btn-sm"><Plus size={14} /> Add Source</button>
                   </div>
-                  
+
                   {form.sources.length ? (
                     <div className="space-y-4">
                       {form.sources.map((source, index) => (
@@ -751,9 +751,9 @@ function Podcasts() {
                   <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">{selectedPodcast.title}</h3>
                   <p className="text-sm text-slate-500 mt-1">{selectedPodcast.sportId?.name || "Unknown Sport"}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${selectedPodcast.status === 'active' ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{selectedPodcast.status}</span>
-                     {selectedPodcast.isFeatured && <span className="bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">Featured</span>}
-                     {selectedPodcast.isPremium && <span className="bg-violet-100 text-violet-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">👑 Premium</span>}
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${selectedPodcast.status === 'active' ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{selectedPodcast.status}</span>
+                    {selectedPodcast.isFeatured && <span className="bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">Featured</span>}
+                    {selectedPodcast.isPremium && <span className="bg-violet-100 text-violet-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">👑 Premium</span>}
                   </div>
                 </div>
               </div>
@@ -859,14 +859,14 @@ function Podcasts() {
         onConfirm={handleDelete}
         confirmLabel={deleting ? "Deleting..." : "Delete Podcast"}
       />
-      
+
       <CommentModal
         open={Boolean(commentTarget)}
         onClose={() => setCommentTarget(null)}
         itemId={commentTarget?._id}
         itemName={commentTarget?.title}
       />
-      
+
       <Toasts toasts={toasts} onRemove={(id) => setToasts(prev => prev.filter(t => t.id !== id))} />
     </div>
   );
