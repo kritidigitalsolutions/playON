@@ -99,11 +99,15 @@ exports.sendOtp = async (
     // SMS SEND LOGIC
     // =======================
 
-    const message =
-      process.env.SMS_GH_OTP_TEXT.replace(
-        "{{otp}}",
-        otp
-      );
+   const otpTemplate =
+  process.env.SMS_GH_OTP_TEXT ||
+  "Your OTP is {{otp}}";
+
+const message =
+  otpTemplate.replace(
+    "{{otp}}",
+    otp
+  );
 
     console.log(
       "MESSAGE:",
