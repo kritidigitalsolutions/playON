@@ -136,9 +136,13 @@ const message =
       );
 
       console.log(
-        "SMS RESPONSE:",
-        response.data
-      );
+  "FULL SMS ERROR:",
+  JSON.stringify(
+    smsError.response?.data,
+    null,
+    2
+  )
+);
 
     } catch (smsError) {
       console.error(
