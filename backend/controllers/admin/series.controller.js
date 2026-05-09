@@ -185,24 +185,30 @@ exports.getAllSeries = async (req, res) => {
       ];
     }
 
-    const skip =
-      (Number(page) - 1) * Number(limit);
+    const fetchAll = String(limit).toLowerCase() === "all";
+    const pageNum = Math.max(Number(page) || 1, 1);
+    const limitNum = Math.max(Number(limit) || 10, 1);
+    const skip = (pageNum - 1) * limitNum;
+
+    const seriesQuery = Series.find(filter)
+      .populate("teams", "name shortName logo sport country")
+      .sort({ createdAt: -1 });
+
+    if (!fetchAll) {
+      seriesQuery.skip(skip).limit(limitNum);
+    }
 
     const [series, total] = await Promise.all([
-      Series.find(filter)
-        .populate("teams", "name shortName logo sport country")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(Number(limit)),
+      seriesQuery,
       Series.countDocuments(filter)
     ]);
 
     res.json({
       success: true,
       total,
-      page: Number(page),
-      limit: Number(limit),
-      pages: Math.ceil(total / Number(limit)),
+      page: pageNum,
+      limit: fetchAll ? total : limitNum,
+      pages: fetchAll ? 1 : Math.ceil(total / limitNum),
       series: series.map((item) => formatSeries(req, item))
     });
 

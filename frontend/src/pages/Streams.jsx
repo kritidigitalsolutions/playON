@@ -285,30 +285,30 @@ function Streams() {
   //     setError(apiError?.response?.data?.message || "Stream not available");
   //   }
   // };
-const handleWatch = async (stream) => {
-  if (stream.status !== "live") {
-    setError("Stream is not live yet");
-    return;
-  }
-
-  try {
-    const response = await api.get(`/admin/streams/${stream._id}/watch`);
-
-    if (response?.data?.success) {
-      setWatchData({
-        title:
-          response.data.stream?.title ||
-          `Stream: ${response.data.stream?.provider}`,
-        streamUrl: response.data.stream?.streamUrl,
-        streamType: response.data.stream?.streamType
-      });
+  const handleWatch = async (stream) => {
+    if (stream.status !== "live") {
+      setError("Stream is not live yet");
+      return;
     }
-  } catch (apiError) {
-    setError(
-      apiError?.response?.data?.message || "Stream not available"
-    );
-  }
-};
+
+    try {
+      const response = await api.get(`/admin/streams/${stream._id}/watch`);
+
+      if (response?.data?.success) {
+        setWatchData({
+          title:
+            response.data.stream?.title ||
+            `Stream: ${response.data.stream?.provider}`,
+          streamUrl: response.data.stream?.streamUrl,
+          streamType: response.data.stream?.streamType
+        });
+      }
+    } catch (apiError) {
+      setError(
+        apiError?.response?.data?.message || "Stream not available"
+      );
+    }
+  };
   const handleDelete = async () => {
     if (!deleteTarget?._id) {
       return;
@@ -364,85 +364,84 @@ const handleWatch = async (stream) => {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-          {loading ? (
-            <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
-              Loading streams...
+        {loading ? (
+          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
+            Loading streams...
+          </div>
+        ) : null}
+
+        {!loading && !filteredStreams.length ? (
+          <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
+            No streams found for your search.
+          </div>
+        ) : null}
+
+        {filteredStreams.map((stream, index) => (
+          <motion.div
+            key={stream._id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.06 }}
+            className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{getStreamTitle(stream)}</h3>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Quality: {stream.quality}</p>
+              </div>
+              <span className={`rounded-full px-2.5 py-1 text-xs ${getBadgeClass(stream.status, STATUS_STYLES)}`}>
+                {stream.status}
+              </span>
             </div>
-          ) : null}
 
-          {!loading && !filteredStreams.length ? (
-            <div className="rounded-2xl bg-white p-5 text-sm text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
-              No streams found for your search.
+            <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">{formatNumber(stream.viewerCount || 0)} viewers currently connected</p>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => toggleStream(stream)}
+                disabled={actionStreamId === stream._id}
+                className="flex items-center gap-1 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-3 py-2 text-sm text-white"
+              >
+                {stream.status === "live" ? <Square size={14} /> : <Play size={14} />}
+                {actionStreamId === stream._id ? "Updating..." : stream.status === "live" ? "Stop" : "Start"}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleWatch(stream)}
+                disabled={stream.status !== "live"}
+                className={`admin-action-btn
+    ${stream.status === "live"
+                    ? ""
+                    : "cursor-not-allowed opacity-50"
+                  }`}
+              >
+                Watch
+              </button>
+              <button
+                type="button"
+                onClick={() => openView(stream)}
+                className="admin-action-btn"
+              >
+                <Eye size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => openEdit(stream)}
+                className="admin-action-btn"
+              >
+                <Pencil size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(stream)}
+                className="admin-action-btn-danger"
+              >
+                <Trash2 size={14} />
+              </button>
             </div>
-          ) : null}
-
-          {filteredStreams.map((stream, index) => (
-            <motion.div
-              key={stream._id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.06 }}
-              className="rounded-2xl bg-white p-5 shadow-sm dark:bg-slate-900"
-            >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{getStreamTitle(stream)}</h3>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Quality: {stream.quality}</p>
-                  </div>
-                  <span className={`rounded-full px-2.5 py-1 text-xs ${getBadgeClass(stream.status, STATUS_STYLES)}`}>
-                    {stream.status}
-                  </span>
-                </div>
-
-                <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">{formatNumber(stream.viewerCount || 0)} viewers currently connected</p>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => toggleStream(stream)}
-                    disabled={actionStreamId === stream._id}
-                    className="flex items-center gap-1 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-3 py-2 text-sm text-white"
-                  >
-                    {stream.status === "live" ? <Square size={14} /> : <Play size={14} />}
-                    {actionStreamId === stream._id ? "Updating..." : stream.status === "live" ? "Stop" : "Start"}
-                  </button>
-                 <button
-  type="button"
-  onClick={() => handleWatch(stream)}
-  disabled={stream.status !== "live"}
-  className={`admin-action-btn
-    ${
-      stream.status === "live"
-        ? ""
-        : "cursor-not-allowed opacity-50"
-    }`}
->
-  Watch
-</button>
-                  <button
-                    type="button"
-                    onClick={() => openView(stream)}
-                    className="admin-action-btn"
-                  >
-                    <Eye size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openEdit(stream)}
-                    className="admin-action-btn"
-                  >
-                    <Pencil size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteTarget(stream)}
-                    className="admin-action-btn-danger"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-            </motion.div>
-          ))}
+          </motion.div>
+        ))}
       </div>
 
       <AnimatePresence>

@@ -1,6 +1,7 @@
 const Highlight = require("../../models/highlight.model");
 const Match = require("../../models/match.model");
 const Series = require("../../models/series.model");
+const Team = require("../../models/team.model");
 
 const uploadToFirebase = require("../../utils/uploadToFirebase");
 const deleteFromFirebase = require("../../utils/deleteFromFirebase");
@@ -91,6 +92,8 @@ exports.createHighlight =
       const {
         matchId,
         seriesId,
+        teamA,
+        teamB,
         title,
         description,
         category,
@@ -147,6 +150,28 @@ exports.createHighlight =
 
             message:
               "Series not found"
+          });
+        }
+      }
+
+      // Team A validation
+      if (teamA) {
+        const teamADoc = await Team.findById(teamA);
+        if (!teamADoc) {
+          return res.status(404).json({
+            success: false,
+            message: "Team A not found"
+          });
+        }
+      }
+
+      // Team B validation
+      if (teamB) {
+        const teamBDoc = await Team.findById(teamB);
+        if (!teamBDoc) {
+          return res.status(404).json({
+            success: false,
+            message: "Team B not found"
           });
         }
       }
@@ -225,6 +250,12 @@ exports.createHighlight =
           seriesId:
             seriesId || null,
 
+          teamA:
+            teamA || null,
+
+          teamB:
+            teamB || null,
+
           title: title.trim(),
 
           description:
@@ -266,17 +297,17 @@ exports.createHighlight =
             req.admin._id
         });
 
+      const populatedHl = await Highlight.findById(highlight._id)
+        .populate("matchId", "title teamA teamB sport status")
+        .populate("seriesId", "title sport banner tournamentLogo status")
+        .populate("teamA", "name shortName logo sport")
+        .populate("teamB", "name shortName logo sport")
+        .lean();
+
       res.status(201).json({
         success: true,
-
-        message:
-          "Highlight created",
-
-        highlight:
-          formatHighlight(
-            req,
-            highlight
-          )
+        message: "Highlight created",
+        highlight: formatHighlight(req, populatedHl)
       });
 
     } catch (error) {
@@ -341,6 +372,16 @@ exports.getHighlights =
             .populate(
               "seriesId",
               "title sport banner tournamentLogo status"
+            )
+
+            .populate(
+              "teamA",
+              "name shortName logo sport"
+            )
+
+            .populate(
+              "teamB",
+              "name shortName logo sport"
             )
 
 
@@ -415,6 +456,16 @@ exports.getSingleHighlight =
           .populate(
             "seriesId",
             "name title tournamentName sport category"
+          )
+
+          .populate(
+            "teamA",
+            "name shortName logo sport"
+          )
+
+          .populate(
+            "teamB",
+            "name shortName logo sport"
           );
 
       if (!highlight) {
@@ -470,6 +521,8 @@ exports.updateHighlight =
       const {
         matchId,
         seriesId,
+        teamA,
+        teamB,
         title,
         description,
         category,
@@ -522,6 +575,34 @@ exports.updateHighlight =
 
         updateData.seriesId =
           seriesId;
+      }
+
+      // Team A validation
+      if (teamA !== undefined) {
+        if (teamA) {
+          const teamADoc = await Team.findById(teamA);
+          if (!teamADoc) {
+            return res.status(404).json({
+              success: false,
+              message: "Team A not found"
+            });
+          }
+        }
+        updateData.teamA = teamA || null;
+      }
+
+      // Team B validation
+      if (teamB !== undefined) {
+        if (teamB) {
+          const teamBDoc = await Team.findById(teamB);
+          if (!teamBDoc) {
+            return res.status(404).json({
+              success: false,
+              message: "Team B not found"
+            });
+          }
+        }
+        updateData.teamB = teamB || null;
       }
 
       if (title !== undefined) {
@@ -666,17 +747,17 @@ exports.updateHighlight =
           }
         );
 
+      const populatedHl = await Highlight.findById(highlight._id)
+        .populate("matchId", "title teamA teamB sport status")
+        .populate("seriesId", "title sport banner tournamentLogo status")
+        .populate("teamA", "name shortName logo sport")
+        .populate("teamB", "name shortName logo sport")
+        .lean();
+
       res.json({
         success: true,
-
-        message:
-          "Highlight updated",
-
-        highlight:
-          formatHighlight(
-            req,
-            highlight
-          )
+        message: "Highlight updated",
+        highlight: formatHighlight(req, populatedHl)
       });
 
     } catch (error) {

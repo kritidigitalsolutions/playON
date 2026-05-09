@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronDown, Clock, Edit2, Film, Link, Play,
-  Plus, RefreshCw, Tag, Trash2, Upload, Video, X, MessageSquare, Eye
+  Plus, RefreshCw, Search, Tag, Trash2, Upload, Video, X, MessageSquare, Eye
 } from "lucide-react";
 import api from "../api/axios";
 import PageHeader from "../components/PageHeader";
@@ -23,7 +23,9 @@ const CAT_COLORS = {
   other: "bg-slate-500/15 text-slate-400 border-slate-500/30"
 };
 
-const EMPTY_FORM = { title: "", description: "", category: "other", sourceType: "url", videoUrl: "", duration: 0, tags: "", isPremium: false, isFeatured: false, order: 0, matchId: "", seriesId: "" };
+const TEAM_SPORTS = ["cricket", "football", "basketball", "kabaddi", "tennis", "volleyball", "other"];
+
+const EMPTY_FORM = { title: "", description: "", category: "other", sourceType: "url", videoUrl: "", duration: 0, tags: "", isPremium: false, isFeatured: false, order: 0, matchId: "", seriesId: "", teamA: "", teamB: "" };
 
 
 function Badge({ category }) {
@@ -119,7 +121,252 @@ function PlayModal({ hl, onClose }) {
   );
 }
 
-function HlModal({ open, onClose, matchId, seriesId, highlight, onSaved }) {
+const normalizeTeamSport = (sport) => TEAM_SPORTS.includes(String(sport || "").toLowerCase())
+  ? String(sport).toLowerCase()
+  : "other";
+
+function CreateTeamModal({ open, onClose, onCreateTeam, defaultSport = "cricket" }) {
+  const initialSport = normalizeTeamSport(defaultSport);
+  const [form, setForm] = useState({
+    name: "", shortName: "", sport: initialSport, country: "",
+    logo: "", logoFile: null, logoPreview: "",
+    slug: "", sortOrder: "0", isActive: true
+  });
+  const [creating, setCreating] = useState(false);
+  const [createErr, setCreateErr] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setForm({
+        name: "", shortName: "", sport: normalizeTeamSport(defaultSport), country: "",
+        logo: "", logoFile: null, logoPreview: "",
+        slug: "", sortOrder: "0", isActive: true
+      });
+      setCreateErr("");
+    }
+  }, [open, defaultSport]);
+
+  if (!open) return null;
+
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const fieldCls = "h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100";
+  const lbl = "mb-1 block text-sm text-slate-500 dark:text-slate-400";
+
+  const handleSubmit = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (!form.name.trim()) return setCreateErr("Team name is required");
+    if (!form.sport) return setCreateErr("Sport is required");
+    setCreating(true); setCreateErr("");
+    try {
+      await onCreateTeam(form);
+      onClose();
+    } catch (err) {
+      setCreateErr(err?.response?.data?.message || "Failed to create team");
+    } finally { setCreating(false); }
+  };
+
+  return (
+    <AnimatePresence>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 p-4"
+        onClick={onClose}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+          className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900 pretty-scroll"
+          onClick={e => e.stopPropagation()}>
+
+          <div className="mb-5 flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Create Team</h2>
+              <p className="mt-1 text-sm text-slate-500">Fill in team details — name, sport, country and logo URL.</p>
+            </div>
+            <button type="button" onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">
+              <X size={18} />
+            </button>
+          </div>
+
+          {createErr && <div className="mb-4 rounded-xl bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400">{createErr}</div>}
+
+          <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="block text-sm">
+                <span className={lbl}>Team Name *</span>
+                <input value={form.name} onChange={e => set("name", e.target.value)} className={fieldCls} placeholder="e.g. Mumbai Indians" />
+              </label>
+
+              <label className="block text-sm">
+                <span className={lbl}>Short Name</span>
+                <input value={form.shortName} onChange={e => set("shortName", e.target.value)} className={fieldCls} placeholder="e.g. MI" maxLength={10} />
+              </label>
+
+              <label className="block text-sm">
+                <span className={lbl}>Sport *</span>
+                <select value={form.sport} onChange={e => set("sport", e.target.value)} className={fieldCls}>
+                  {TEAM_SPORTS.map(sport => (
+                    <option key={sport} value={sport}>{sport.charAt(0).toUpperCase() + sport.slice(1)}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block text-sm">
+                <span className={lbl}>Country</span>
+                <input value={form.country} onChange={e => set("country", e.target.value)} className={fieldCls} placeholder="e.g. India" />
+              </label>
+
+              <label className="block text-sm md:col-span-2">
+                <span className={lbl}>Logo</span>
+                <div className="flex gap-3 items-center">
+                  <div className="flex-1">
+                    <input value={form.logo} onChange={e => {
+                      set("logo", e.target.value);
+                      if (e.target.value) set("logoPreview", e.target.value);
+                      if (!e.target.value && !form.logoFile) set("logoPreview", "");
+                    }} className={fieldCls} placeholder="Logo URL (e.g. https://...)" disabled={!!form.logoFile} />
+                  </div>
+                  <span className="text-sm font-medium text-slate-400">OR</span>
+                  <div className="relative">
+                    <input type="file" accept="image/*" onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        if (file.size > 2 * 1024 * 1024) {
+                          setCreateErr("Logo image is too large. Max 2MB allowed.");
+                          e.target.value = "";
+                          return;
+                        }
+                        setForm(p => ({ ...p, logoFile: file, logo: "", logoPreview: URL.createObjectURL(file) }));
+                      }
+                    }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                    <div className="h-11 px-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800 dark:border-slate-700 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                      <Upload size={16} /> Upload from local device
+                    </div>
+                  </div>
+                </div>
+                {form.logoPreview && (
+                  <div className="mt-3 relative inline-block">
+                    <img src={form.logoPreview} alt="Preview" className="h-16 w-16 rounded-xl object-cover border border-slate-200 dark:border-slate-700" />
+                    <button type="button" onClick={() => setForm(p => ({...p, logoFile: null, logo: "", logoPreview: ""}))}
+                      className="absolute -top-2 -right-2 h-6 w-6 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 shadow-sm">
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
+              </label>
+
+              <label className="block text-sm">
+                <span className={lbl}>Slug</span>
+                <input value={form.slug} onChange={e => set("slug", e.target.value)} className={fieldCls} placeholder="auto-generated if empty" />
+              </label>
+
+              <label className="block text-sm">
+                <span className={lbl}>Sort Order</span>
+                <input type="number" value={form.sortOrder} onChange={e => set("sortOrder", e.target.value)} className={fieldCls} />
+              </label>
+
+              <label className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-3 text-sm">
+                <input type="checkbox" checked={form.isActive} onChange={e => set("isActive", e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
+                <span className="text-slate-700 dark:text-slate-200">Team is active</span>
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" onClick={onClose} className="admin-secondary-btn">Cancel</button>
+              <button type="button" onClick={handleSubmit} disabled={creating || !form.name.trim()}
+                className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50">
+                <Plus size={14} />{creating ? "Creating..." : "Create Team"}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+function TeamPicker({ label, value, onChange, allTeams, inputCls, labelCls, onCreateTeam, defaultSport, initialTeam, loading }) {
+  const [searchQ, setSearchQ] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const sport = normalizeTeamSport(defaultSport);
+
+  const filtered = allTeams.filter(t =>
+    (!defaultSport || sport === "other" || t.sport === sport) &&
+    (!searchQ.trim() || t.name.toLowerCase().includes(searchQ.toLowerCase()))
+  );
+
+  // Fallback: if filtered is empty but allTeams has data (and no search), show all
+  const displayTeams = (filtered.length === 0 && !searchQ.trim() && allTeams.length > 0) ? allTeams : filtered;
+
+  const selectedTeam = value 
+    ? (allTeams.find(t => t._id === value) || (initialTeam?._id === value ? initialTeam : null))
+    : null;
+  const handleCreateTeam = async (teamData) => {
+    const createdTeam = await onCreateTeam(teamData);
+    if (createdTeam?._id) {
+      onChange(createdTeam._id);
+    }
+    return createdTeam;
+  };
+
+  return (
+    <div>
+      <label className={labelCls}>{label}</label>
+
+      {/* Selected team chip */}
+      {selectedTeam && (
+        <div className="mb-2 flex items-center gap-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 px-3 py-2 border border-indigo-200 dark:border-indigo-500/20">
+          {selectedTeam.logo && <img src={selectedTeam.logo} alt="" className="h-6 w-6 rounded-lg object-cover" />}
+          <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 flex-1 truncate">{selectedTeam.name}</span>
+          <button type="button" onClick={() => onChange("")} className="text-indigo-400 hover:text-rose-500 transition">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* Search input */}
+      <div className="relative mb-2">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+        <input className={cx(inputCls, "!pl-9 !h-9 !text-xs")} placeholder="Search teams..." value={searchQ}
+          onChange={e => setSearchQ(e.target.value)} />
+      </div>
+
+      {/* Team list */}
+      <div className="max-h-28 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 pretty-scroll">
+        {loading ? (
+          <p className="py-4 text-center text-xs text-slate-400 animate-pulse">Loading teams...</p>
+        ) : displayTeams.length === 0 ? (
+          <p className="py-4 text-center text-xs text-slate-400">No teams found</p>
+        ) : displayTeams.slice(0, 50).map(t => (
+          <button type="button" key={t._id} onClick={() => { onChange(t._id); setSearchQ(""); }}
+            className={cx("w-full flex items-center gap-2.5 px-3 py-2 text-left text-xs border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition",
+              value === t._id && "bg-indigo-50 dark:bg-indigo-500/10")}>
+            {t.logo ? <img src={t.logo} alt="" className="h-6 w-6 rounded-lg object-cover flex-shrink-0" /> : <div className="h-6 w-6 rounded-lg bg-slate-200 dark:bg-slate-700 flex-shrink-0" />}
+            <span className="font-medium text-slate-700 dark:text-slate-200 truncate flex-1">{t.name}</span>
+            <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">{t.sport}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Create new button */}
+      <button type="button" onClick={() => setShowCreateModal(true)}
+        className="mt-2 w-full flex items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 py-2 text-[11px] font-medium text-slate-500 hover:border-indigo-400 hover:text-indigo-500 dark:hover:border-indigo-500 transition">
+        <Plus size={12} /> Create New Team
+      </button>
+
+      {/* Create Team Modal */}
+      <CreateTeamModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreateTeam={handleCreateTeam}
+        defaultSport={sport}
+        inputCls={inputCls}
+      />
+    </div>
+  );
+}
+
+
+function HlModal({ open, onClose, matchId, seriesId, selectedSeries, highlight, onSaved }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [thumbFile, setThumbFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
@@ -127,6 +374,18 @@ function HlModal({ open, onClose, matchId, seriesId, highlight, onSaved }) {
   const [err, setErr] = useState("");
   const videoRef = useRef();
   const thumbRef = useRef();
+  const [allTeams, setAllTeams] = useState([]);
+  const [loadingTeams, setLoadingTeams] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setLoadingTeams(true);
+      api.get("/admin/teams", { params: { limit: 1000 } })
+        .then(r => setAllTeams(Array.isArray(r?.data?.teams) ? r.data.teams : []))
+        .catch(() => {})
+        .finally(() => setLoadingTeams(false));
+    }
+  }, [open]);
 
   useEffect(() => {
     if (highlight) {
@@ -142,7 +401,9 @@ function HlModal({ open, onClose, matchId, seriesId, highlight, onSaved }) {
         isFeatured: !!highlight.isFeatured,
         order: highlight.order ?? 0,
         matchId: highlight.matchId?._id || highlight.matchId || "",
-        seriesId: highlight.seriesId?._id || highlight.seriesId || ""
+        seriesId: highlight.seriesId?._id || highlight.seriesId || "",
+        teamA: highlight.teamA?._id || highlight.teamA || "",
+        teamB: highlight.teamB?._id || highlight.teamB || ""
       });
     } else {
       setForm({ ...EMPTY_FORM, matchId: matchId || "", seriesId: seriesId || "" });
@@ -151,7 +412,27 @@ function HlModal({ open, onClose, matchId, seriesId, highlight, onSaved }) {
     setThumbFile(null); setVideoFile(null); setErr("");
   }, [highlight, open, matchId, seriesId]);
 
-
+  const handleCreateTeam = async (teamData) => {
+    const fd = new FormData();
+    fd.append("name", teamData.name.trim());
+    fd.append("sport", teamData.sport);
+    if (teamData.shortName) fd.append("shortName", teamData.shortName.trim());
+    if (teamData.country) fd.append("country", teamData.country.trim());
+    if (teamData.slug) fd.append("slug", teamData.slug.trim());
+    fd.append("sortOrder", String(Number(teamData.sortOrder || 0)));
+    fd.append("isActive", String(Boolean(teamData.isActive)));
+    if (teamData.logoFile) {
+      fd.append("logoFile", teamData.logoFile);
+    } else if (teamData.logo) {
+      fd.append("logo", teamData.logo.trim());
+    }
+    const res = await api.post("/admin/teams", fd, { headers: { "Content-Type": "multipart/form-data" } });
+    const newTeam = res?.data?.team;
+    if (newTeam?._id) {
+      setAllTeams(prev => [newTeam, ...prev]);
+    }
+    return newTeam;
+  };
 
   if (!open) return null;
 
@@ -202,13 +483,25 @@ function HlModal({ open, onClose, matchId, seriesId, highlight, onSaved }) {
             <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"><X size={16} /></button>
           </div>
 
-          <form onSubmit={handleSubmit} className="overflow-y-auto p-5 space-y-4 flex-1">
+          <form onSubmit={handleSubmit} className="overflow-y-auto p-5 space-y-5 flex-1 pretty-scroll">
             {err && <div className="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400">{err}</div>}
 
             <div>
               <label className={labelCls}>Title *</label>
               <input className={inputCls} value={form.title} onChange={e => set("title", e.target.value)} placeholder="e.g. Rohit's Century" />
             </div>
+
+            {/* Team A & Team B pickers (shown for series highlights) */}
+            {(seriesId || form.seriesId) && (
+              <div className="grid grid-cols-2 gap-4">
+                <TeamPicker label="Team A" value={form.teamA} onChange={v => set("teamA", v)}
+                  allTeams={allTeams} inputCls={inputCls} labelCls={labelCls} onCreateTeam={handleCreateTeam}
+                  defaultSport={selectedSeries?.sport} initialTeam={highlight?.teamA} loading={loadingTeams} />
+                <TeamPicker label="Team B" value={form.teamB} onChange={v => set("teamB", v)}
+                  allTeams={allTeams} inputCls={inputCls} labelCls={labelCls} onCreateTeam={handleCreateTeam}
+                  defaultSport={selectedSeries?.sport} initialTeam={highlight?.teamB} loading={loadingTeams} />
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -655,11 +948,11 @@ const [, setPagination] =
       />
 
       <HlModal
-
         open={modalOpen}
         onClose={() => { setModalOpen(false); setEditHl(null); }}
         matchId={viewType === "match" ? selectedId : ""}
         seriesId={viewType === "series" ? selectedId : ""}
+        selectedSeries={selectedItem}
         highlight={editHl}
         onSaved={() => loadHighlights(selectedId)}
       />
@@ -736,4 +1029,3 @@ const [, setPagination] =
     </div>
   );
 }
-

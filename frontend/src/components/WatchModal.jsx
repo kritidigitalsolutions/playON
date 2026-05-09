@@ -41,52 +41,52 @@ function UniversalPlayer({ streamUrl, streamType }) {
   const youtubeUrl = useMemo(() => getYouTubeEmbedUrl(streamUrl), [streamUrl]);
 
   useEffect(() => {
-  const video = videoRef.current;
-  if (!video || !isHls || isYouTube || isIframe) return;
+    const video = videoRef.current;
+    if (!video || !isHls || isYouTube || isIframe) return;
 
-  let hls;
+    let hls;
 
-  if (Hls.isSupported()) {
-    hls = new Hls({
-      enableWorker: true,
-      lowLatencyMode: true
-    });
+    if (Hls.isSupported()) {
+      hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true
+      });
 
-    hls.loadSource(streamUrl);
-    hls.attachMedia(video);
+      hls.loadSource(streamUrl);
+      hls.attachMedia(video);
 
-    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      video.play().catch(() => {});
-    });
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => { });
+      });
 
-    hls.on(Hls.Events.ERROR, (_, data) => {
-      console.error("HLS Error:", data);
+      hls.on(Hls.Events.ERROR, (_, data) => {
+        console.error("HLS Error:", data);
 
-      if (data.fatal) {
-        switch (data.type) {
-          case Hls.ErrorTypes.NETWORK_ERROR:
-            hls.startLoad();
-            break;
-          case Hls.ErrorTypes.MEDIA_ERROR:
-            hls.recoverMediaError();
-            break;
-          default:
-            hls.destroy();
-            break;
+        if (data.fatal) {
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              hls.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              hls.recoverMediaError();
+              break;
+            default:
+              hls.destroy();
+              break;
+          }
         }
-      }
-    });
+      });
 
-    return () => {
-      hls.destroy();
-    };
-  }
+      return () => {
+        hls.destroy();
+      };
+    }
 
-  if (video.canPlayType("application/vnd.apple.mpegurl")) {
-    video.src = streamUrl;
-    video.play().catch(() => {});
-  }
-}, [streamUrl, isHls, isYouTube, isIframe]);
+    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = streamUrl;
+      video.play().catch(() => { });
+    }
+  }, [streamUrl, isHls, isYouTube, isIframe]);
 
   if (isYouTube) {
     return (
@@ -114,15 +114,15 @@ function UniversalPlayer({ streamUrl, streamType }) {
   }
 
   return (
-   <video
-  ref={videoRef}
-  controls
-  autoPlay
-  playsInline
-  muted
-  className="h-[40vh] w-full bg-black md:h-[60vh]"
-  src={isHls ? undefined : streamUrl}
-/>
+    <video
+      ref={videoRef}
+      controls
+      autoPlay
+      playsInline
+      muted
+      className="h-[40vh] w-full bg-black md:h-[60vh]"
+      src={isHls ? undefined : streamUrl}
+    />
   );
 }
 

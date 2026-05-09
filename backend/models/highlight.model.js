@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Team = require("./team.model");
 
 const highlightSchema =
   new mongoose.Schema(
@@ -25,6 +26,25 @@ const highlightSchema =
         default: null,
 
         index: true
+      },
+
+      // Team references (optional, used for series highlights)
+      teamA: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+
+        ref: "Team",
+
+        default: null
+      },
+
+      teamB: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+
+        ref: "Team",
+
+        default: null
       },
 
       title: {

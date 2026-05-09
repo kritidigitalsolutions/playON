@@ -101,6 +101,16 @@ exports.getHighlightsByMatch =
               "title sport banner tournamentLogo status"
             )
 
+            .populate(
+              "teamA",
+              "name shortName logo sport"
+            )
+
+            .populate(
+              "teamB",
+              "name shortName logo sport"
+            )
+
 
             .sort({
               order: 1,
@@ -177,6 +187,16 @@ exports.getSingleHighlight =
           .populate(
             "seriesId",
             "title sport banner tournamentLogo status"
+          )
+
+          .populate(
+            "teamA",
+            "name shortName logo sport"
+          )
+
+          .populate(
+            "teamB",
+            "name shortName logo sport"
           )
 
 

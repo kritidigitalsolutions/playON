@@ -220,9 +220,9 @@ const normalizeScoreSource = (source = {}) => ({
 const hasScoreSourceValue = (source) =>
   Boolean(
     source?.provider?.trim() ||
-      source?.url?.trim() ||
-      source?.apiKey?.trim() ||
-      source?.notes?.trim()
+    source?.url?.trim() ||
+    source?.apiKey?.trim() ||
+    source?.notes?.trim()
   );
 
 const getStreamFormValues = (match = {}) => {
@@ -274,10 +274,10 @@ function ImageUploadField({ label, preview, onChange, previewAlt, previewClassNa
       <span className="mb-1 block text-slate-500 dark:text-slate-400">{label}</span>
       <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm transition hover:border-slate-300 dark:hover:border-slate-600">
         <Upload size={15} /> Upload
-        <input 
-          type="file" 
-          accept="image/*" 
-          className="hidden" 
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file && file.size > 2 * 1024 * 1024) {
@@ -286,7 +286,7 @@ function ImageUploadField({ label, preview, onChange, previewAlt, previewClassNa
               return;
             }
             onChange(file);
-          }} 
+          }}
         />
 
       </label>
@@ -588,31 +588,31 @@ function Matches() {
   //     pushToast(error?.response?.data?.message || "Stream not available", "error");
   //   }
   // };
-const handleWatch = async (match) => {
-  if (match.status !== "live") {
-    pushToast("Match is not live yet", "error");
-    return;
-  }
-
-  try {
-    const response = await api.get(`/admin/matches/${match._id}/watch`);
-
-    if (response?.data?.success) {
-      setWatchData({
-        title:
-          response.data.match?.title ||
-          `${response.data.match?.teamA} vs ${response.data.match?.teamB}`,
-        streamUrl: response.data.stream?.streamUrl,
-        streamType: response.data.stream?.streamType
-      });
+  const handleWatch = async (match) => {
+    if (match.status !== "live") {
+      pushToast("Match is not live yet", "error");
+      return;
     }
-  } catch (error) {
-    pushToast(
-      error?.response?.data?.message || "Stream not available",
-      "error"
-    );
-  }
-};
+
+    try {
+      const response = await api.get(`/admin/matches/${match._id}/watch`);
+
+      if (response?.data?.success) {
+        setWatchData({
+          title:
+            response.data.match?.title ||
+            `${response.data.match?.teamA} vs ${response.data.match?.teamB}`,
+          streamUrl: response.data.stream?.streamUrl,
+          streamType: response.data.stream?.streamType
+        });
+      }
+    } catch (error) {
+      pushToast(
+        error?.response?.data?.message || "Stream not available",
+        "error"
+      );
+    }
+  };
   const validate = () => {
     const nextErrors = {};
     if (!form.title?.trim()) nextErrors.title = "Title is required";
@@ -962,22 +962,22 @@ const handleWatch = async (match) => {
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <p className="font-semibold text-slate-900 dark:text-slate-100">{match.title || `${match.teamA} vs ${match.teamB}`}</p>
-                           {match.isFeatured && (
-  <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-600">
-    <Star size={11} className="fill-current" /> Featured
-  </span>
-)}
+                            {match.isFeatured && (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-600">
+                                <Star size={11} className="fill-current" /> Featured
+                              </span>
+                            )}
 
-{match.isTrending && (
-  <span className="inline-flex items-center gap-1 rounded-full border border-orange-400/40 bg-orange-500/10 px-2 py-0.5 text-[11px] text-orange-600 dark:text-orange-300">
-    <Flame size={11} className="fill-current" /> Trending
-  </span>
-)}
-{match.isPremium && (
-  <span className="inline-flex items-center gap-1 rounded-full border border-violet-400/40 bg-violet-500/10 px-2 py-0.5 text-[11px] text-violet-600 dark:text-violet-300">
-    👑 Premium
-  </span>
-)}
+                            {match.isTrending && (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-orange-400/40 bg-orange-500/10 px-2 py-0.5 text-[11px] text-orange-600 dark:text-orange-300">
+                                <Flame size={11} className="fill-current" /> Trending
+                              </span>
+                            )}
+                            {match.isPremium && (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-violet-400/40 bg-violet-500/10 px-2 py-0.5 text-[11px] text-violet-600 dark:text-violet-300">
+                                👑 Premium
+                              </span>
+                            )}
                           </div>
                           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                             {match.teamA} vs {match.teamB} • {(match.sport || "other").toUpperCase()}
@@ -997,18 +997,17 @@ const handleWatch = async (match) => {
                     <td className="px-4 py-4">
                       <div className="flex flex-wrap justify-end gap-2">
                         <button
-  type="button"
-  onClick={() => handleWatch(match)}
-  disabled={match.status !== "live"}
-  className={`admin-action-btn-sm h-8 w-8 rounded-full !p-0
-    ${
-      match.status === "live"
-        ? ""
-        : "cursor-not-allowed opacity-50"
-    }`}
->
-  <Play size={15} />
-</button>
+                          type="button"
+                          onClick={() => handleWatch(match)}
+                          disabled={match.status !== "live"}
+                          className={`admin-action-btn-sm h-8 w-8 rounded-full !p-0
+    ${match.status === "live"
+                              ? ""
+                              : "cursor-not-allowed opacity-50"
+                            }`}
+                        >
+                          <Play size={15} />
+                        </button>
                         <button type="button" onClick={() => openView(match)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0">
                           <Eye size={15} />
                         </button>
@@ -1187,13 +1186,13 @@ const handleWatch = async (match) => {
                     {form.highlightlyMatchId && (
                       <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-100 px-3 py-2 text-xs font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
                         <CheckCircle2 size={14} /> Linked to Highlightly ID: {form.highlightlyMatchId}
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           onClick={() => {
                             onFormChange("highlightlyMatchId", "");
                             onFormChange("highlightlySport", "");
                             setHighlightlyResults([]);
-                          }} 
+                          }}
                           className="ml-auto text-emerald-600 hover:text-emerald-800"
                         >
                           Unlink
@@ -1332,47 +1331,47 @@ const handleWatch = async (match) => {
                     )}
                   </div>
 
-                 <div className="flex gap-6 md:col-span-2">
-  <label className="flex items-center gap-2 text-sm text-slate-600">
-    <input
-      type="checkbox"
-      checked={form.isFeatured}
-      onChange={(e) => onFormChange("isFeatured", e.target.checked)}
-      className="h-4 w-4"
-    />
-    Featured
-  </label>
+                  <div className="flex gap-6 md:col-span-2">
+                    <label className="flex items-center gap-2 text-sm text-slate-600">
+                      <input
+                        type="checkbox"
+                        checked={form.isFeatured}
+                        onChange={(e) => onFormChange("isFeatured", e.target.checked)}
+                        className="h-4 w-4"
+                      />
+                      Featured
+                    </label>
 
-  <label className="flex items-center gap-2 text-sm text-slate-600">
-    <input
-      type="checkbox"
-      checked={form.isTrending}
-      onChange={(e) => onFormChange("isTrending", e.target.checked)}
-      className="h-4 w-4"
-    />
-    Trending
-  </label>
+                    <label className="flex items-center gap-2 text-sm text-slate-600">
+                      <input
+                        type="checkbox"
+                        checked={form.isTrending}
+                        onChange={(e) => onFormChange("isTrending", e.target.checked)}
+                        className="h-4 w-4"
+                      />
+                      Trending
+                    </label>
 
-  <label className="flex items-center gap-2 text-sm text-violet-600">
-    <input
-      type="checkbox"
-      checked={form.isPremium}
-      onChange={(e) => onFormChange("isPremium", e.target.checked)}
-      className="h-4 w-4"
-    />
-    👑 Premium (subscription required)
-  </label>
-</div>
+                    <label className="flex items-center gap-2 text-sm text-violet-600">
+                      <input
+                        type="checkbox"
+                        checked={form.isPremium}
+                        onChange={(e) => onFormChange("isPremium", e.target.checked)}
+                        className="h-4 w-4"
+                      />
+                      👑 Premium (subscription required)
+                    </label>
+                  </div>
 
-<label className="block text-sm md:col-span-2">
-  <span className="mb-1 block text-slate-500 dark:text-slate-400">Description</span>
-  <textarea
-    rows="3"
-    value={form.description}
-    onChange={(e) => onFormChange("description", e.target.value)}
-    className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
-  />
-</label>
+                  <label className="block text-sm md:col-span-2">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Description</span>
+                    <textarea
+                      rows="3"
+                      value={form.description}
+                      onChange={(e) => onFormChange("description", e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
+                    />
+                  </label>
 
 
                   <ImageUploadField

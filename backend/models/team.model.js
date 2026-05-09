@@ -58,14 +58,13 @@ const teamSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-teamSchema.pre("save", function (next) {
+teamSchema.pre("save", function () {
   if (!this.slug && this.name) {
     this.slug = this.name
       .toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^\w-]/g, "");
   }
- 
 });
 
 module.exports = mongoose.model("Team", teamSchema);
