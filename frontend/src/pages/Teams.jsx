@@ -5,7 +5,7 @@ import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
 
-const SPORTS = ["cricket", "football", "basketball", "kabaddi", "tennis", "volleyball", "other"];
+
 
 const SPORT_COLORS = {
   cricket: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400",
@@ -39,15 +39,21 @@ function Teams() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [actionId, setActionId] = useState("");
+  const [allSports, setAllSports] = useState([]);
 
   const loadTeams = async () => {
     try {
       setLoading(true);
       setError("");
-      const res = await api.get("/admin/teams", { params: { page: 1, limit: 500 } });
-      setTeams(Array.isArray(res?.data?.teams) ? res.data.teams : []);
+      const [teamsRes, sportsRes] = await Promise.all([
+        api.get("/admin/teams", { params: { page: 1, limit: 500 } }),
+        api.get("/admin/sports").catch(() => ({ data: { sports: [] } }))
+      ]);
+      setTeams(Array.isArray(teamsRes?.data?.teams) ? teamsRes.data.teams : []);
+      setAllSports(Array.isArray(sportsRes?.data?.sports) ? sportsRes.data.sports : []);
     } catch (e) {
       setTeams([]);
+      setAllSports([]);
       setError(e?.response?.data?.message || "Unable to load teams.");
     } finally {
       setLoading(false);
@@ -60,9 +66,9 @@ function Teams() {
   const stats = useMemo(() => {
     const active = teams.filter(t => t.isActive).length;
     const bySport = {};
-    SPORTS.forEach(s => { bySport[s] = teams.filter(t => t.sport === s).length; });
+    allSports.forEach(s => { bySport[s.slug] = teams.filter(t => t.sport === s.slug).length; });
     return { total: teams.length, active, inactive: teams.length - active, ...bySport };
-  }, [teams]);
+  }, [teams, allSports]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -79,7 +85,15 @@ function Teams() {
     if (formErrors[key]) setFormErrors(p => ({ ...p, [key]: "" }));
   };
 
-  const openCreate = () => { setEditMode(false); setForm(defaultForm); setFormErrors({}); setModalOpen(true); };
+  const openCreate = () => {
+    setEditMode(false);
+    setForm({
+      ...defaultForm,
+      sport: allSports.length > 0 ? allSports[0].slug : "cricket"
+    });
+    setFormErrors({});
+    setModalOpen(true);
+  };
 
   const openEdit = (t) => {
     setEditMode(true);
@@ -202,7 +216,7 @@ function Teams() {
         <select value={sportFilter} onChange={e => setSportFilter(e.target.value)}
           className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none dark:bg-slate-900 dark:text-slate-100">
           <option value="all">Sport: All</option>
-          {SPORTS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+          {allSports.map(s => <option key={s.slug} value={s.slug}>{s.name}</option>)}
         </select>
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
           className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none dark:bg-slate-900 dark:text-slate-100">
@@ -229,9 +243,9 @@ function Teams() {
         <div className="rounded-2xl bg-indigo-50 p-4 shadow-sm dark:bg-indigo-950/30">
           <p className="text-xs uppercase tracking-wide text-indigo-500">By Sport</p>
           <div className="mt-2 flex flex-wrap gap-1">
-            {SPORTS.filter(s => stats[s] > 0).map(s => (
-              <span key={s} className={`rounded-lg border px-2 py-0.5 text-[11px] font-semibold ${SPORT_COLORS[s]}`}>
-                {s.charAt(0).toUpperCase() + s.slice(1)} {stats[s]}
+            {allSports.filter(s => stats[s.slug] > 0).map(s => (
+              <span key={s.slug} className={`rounded-lg border px-2 py-0.5 text-[11px] font-semibold ${SPORT_COLORS[s.slug] || SPORT_COLORS.other}`}>
+                {s.name} {stats[s.slug]}
               </span>
             ))}
           </div>
@@ -342,7 +356,7 @@ function Teams() {
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Sport *</span>
                     <select value={form.sport} onChange={e => onFormChange("sport", e.target.value)} className={fieldCls}>
-                      {SPORTS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                      {allSports.map(s => <option key={s.slug} value={s.slug}>{s.name}</option>)}
                     </select>
                     {formErrors.sport && <span className="mt-1 block text-xs text-rose-500">{formErrors.sport}</span>}
                   </label>
