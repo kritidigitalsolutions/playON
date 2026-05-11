@@ -157,7 +157,7 @@ userSchema.index(
     unique: true,
     partialFilterExpression: {
       isDeleted: false,
-      mobile: { $exists: true, $ne: null }
+      mobile: { $gt: "" }
     }
   }
 );
@@ -168,7 +168,7 @@ userSchema.index(
   {
     unique: true,
     partialFilterExpression: {
-      email: { $exists: true, $ne: null }
+      email: { $gt: "" }
     }
   }
 );
@@ -179,7 +179,7 @@ userSchema.index(
   {
     unique: true,
     partialFilterExpression: {
-      googleId: { $exists: true, $ne: null }
+      googleId: { $gt: "" }
     }
   }
 );
@@ -190,7 +190,7 @@ userSchema.index(
   {
     unique: true,
     partialFilterExpression: {
-      facebookId: { $exists: true, $ne: null }
+      facebookId: { $gt: "" }
     }
   }
 );
@@ -201,7 +201,7 @@ userSchema.index(
   {
     unique: true,
     partialFilterExpression: {
-      referralCode: { $exists: true, $ne: null }
+      referralCode: { $gt: "" }
     }
   }
 );

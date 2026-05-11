@@ -75,7 +75,7 @@ exports.sendOtp = async (
 
     const otp = Math.floor(
       100000 +
-        Math.random() * 900000
+      Math.random() * 900000
     ).toString();
 
     console.log("OTP:", otp);
@@ -86,12 +86,12 @@ exports.sendOtp = async (
         otp,
         expiresAt: new Date(
           Date.now() +
-            5 * 60 * 1000
+          5 * 60 * 1000
         )
       },
       {
         upsert: true,
-        new: true
+        returnDocument: "after"
       }
     );
 
@@ -99,15 +99,15 @@ exports.sendOtp = async (
     // SMS SEND LOGIC
     // =======================
 
-   const otpTemplate =
-  process.env.SMS_GH_OTP_TEXT ||
-  "Your OTP is {{otp}}";
+    const otpTemplate =
+      process.env.SMS_GH_OTP_TEXT ||
+      "Your OTP is {{otp}}";
 
-const message =
-  otpTemplate.replace(
-    "{{otp}}",
-    otp
-  );
+    const message =
+      otpTemplate.replace(
+        "{{otp}}",
+        otp
+      );
 
     console.log(
       "MESSAGE:",
@@ -117,7 +117,7 @@ const message =
     const formattedMobile = mobile.length === 10 ? `91${mobile}` : mobile;
 
     try {
-      const response = await axios.post(
+      const response = await axios.get(
         "https://www.smsgatewayhub.com/api/mt/SendSMS",
         {
           params: {
@@ -135,29 +135,21 @@ const message =
         }
       );
 
-      console.log(
-  "FULL SMS ERROR:",
-  JSON.stringify(
-    smsError.response?.data,
-    null,
-    2
-  )
-);
+      console.log("SMS API RESPONSE:", response.data);
 
+      if (response.data?.ErrorCode !== "000" && response.data?.ErrorMessage !== "Success") {
+        console.error("SMS GATEWAY ERROR:", response.data);
+      }
     } catch (smsError) {
       console.error(
         "SMS ERROR:",
-        smsError.response?.data ||
-          smsError.message
+        smsError.response?.data || smsError.message
       );
 
       return res.status(500).json({
         success: false,
-        message:
-          "Failed to send OTP SMS",
-        error:
-          smsError.response?.data ||
-          smsError.message
+        message: "Failed to send OTP SMS",
+        error: smsError.response?.data || smsError.message
       });
     }
 

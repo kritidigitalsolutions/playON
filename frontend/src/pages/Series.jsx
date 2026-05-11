@@ -741,7 +741,7 @@ function Series() {
       {error ? <p className="mb-4 text-sm text-rose-500">{error}</p> : null}
 
       {/* Filters */}
-      <div className="mb-4 grid gap-3 lg:grid-cols-[minmax(0,2fr),minmax(0,1fr),minmax(0,1fr)]">
+      <div className="mb-4 grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by title, sport..."
           className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100" />
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
@@ -760,7 +760,7 @@ function Series() {
       </div>
 
       {/* Stats */}
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="mb-4 grid gap-3 grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
         {[
           { label: "Total", value: stats.total, color: "text-slate-900 dark:text-slate-100" },
           { label: "Live", value: stats.live, color: "text-rose-500" },
@@ -789,8 +789,8 @@ function Series() {
               <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
                 <tr>
                   <th className="px-4 py-3 font-medium">Series / Tournament</th>
-                  <th className="px-4 py-3 font-medium">Teams / Sport</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium hidden md:table-cell">Teams / Sport</th>
+                  <th className="px-4 py-3 font-medium hidden sm:table-cell">Status</th>
                   <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
@@ -816,7 +816,7 @@ function Series() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden md:table-cell">
                       <div className="flex flex-col gap-1">
                         <p className="text-sm font-medium text-slate-900 dark:text-slate-100 uppercase">{series.sport}</p>
                         {/* Show team logos/names if populated */}
@@ -846,7 +846,7 @@ function Series() {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden sm:table-cell">
                       <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase ${getBadgeClass(series.status, STATUS_STYLES)}`}>
                         {series.status || "upcoming"}
                       </span>

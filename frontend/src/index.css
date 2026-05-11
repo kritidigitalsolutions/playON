@@ -18,6 +18,11 @@
   * {
     @apply border-slate-200 dark:border-slate-700;
   }
+
+  @media (max-width: 640px) {
+    .hide-on-mobile { display: none !important; }
+    .mobile-stack { flex-direction: column !important; }
+  }
 }
 
 @layer utilities {

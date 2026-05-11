@@ -7,6 +7,18 @@ import CommentModal from "../components/CommentModal";
 import PageHeader from "../components/PageHeader";
 
 
+const formatSecondsToTime = (totalSeconds) => {
+  if (!totalSeconds) return "00:00";
+  if (typeof totalSeconds === "string" && totalSeconds.includes(":")) return totalSeconds;
+  const s = Number(totalSeconds);
+  if (isNaN(s)) return "00:00";
+  const hrs = Math.floor(s / 3600);
+  const mins = Math.floor((s % 3600) / 60);
+  const secs = Math.floor(s % 60);
+  if (hrs > 0) return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+};
+
 const defaultForm = {
   _id: "",
   sportId: "",
@@ -16,28 +28,11 @@ const defaultForm = {
   title: "",
   videoUrl: "", // Legacy
   type: "other", // Legacy
-  sources: [],
   duration: "",
   isFeatured: false,
   isPremium: false,
   thumbnailFile: null
 };
-
-const emptySource = {
-  provider: "",
-  category: "youtube",
-  url: "",
-  isActive: true
-};
-
-const SOURCE_CATEGORIES = [
-  "youtube",
-  "mp4",
-  "m3u8",
-  "iframe",
-  "audio",
-  "other"
-];
 
 const defaultPlayerForm = {
   name: "",
@@ -147,7 +142,7 @@ function StarPlayers() {
       title: hl?.title || "",
       videoUrl: hl?.videoUrl || "",
       type: hl?.type || "other",
-      duration: hl?.duration || "",
+      duration: formatSecondsToTime(hl?.duration),
       isFeatured: Boolean(hl?.isFeatured),
       isPremium: Boolean(hl?.isPremium),
       thumbnailFile: null,
@@ -193,7 +188,6 @@ function StarPlayers() {
       payload.append("duration", form.duration || "");
       payload.append("isFeatured", String(Boolean(form.isFeatured)));
       payload.append("isPremium", String(Boolean(form.isPremium)));
-      payload.append("sources", JSON.stringify(form.sources || []));
       if (form.thumbnailFile) payload.append("thumbnail", form.thumbnailFile);
 
       let response;
@@ -563,12 +557,19 @@ function StarPlayers() {
                   </label>
 
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Duration (Optional)</span>
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Duration (HH:MM:SS)</span>
                     <input
                       value={form.duration}
-                      onChange={(e) => onFormChange("duration", e.target.value)}
+                      onChange={(e) => {
+                        let val = e.target.value.replace(/[^0-9:]/g, "");
+                        if ((val.length === 2 || val.length === 5) && !val.endsWith(":")) {
+                          if (e.nativeEvent.inputType !== "deleteContentBackward") val += ":";
+                        }
+                        if (val.length > 8) val = val.slice(0, 8);
+                        onFormChange("duration", val);
+                      }}
                       className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800"
-                      placeholder="e.g. 05:20"
+                      placeholder="e.g. 01:20:00"
                     />
                   </label>
 
@@ -610,70 +611,6 @@ function StarPlayers() {
                     />
                     <span className="text-slate-700 dark:text-slate-300">Premium Content <span className="text-xs text-slate-400">(requires active subscription to watch)</span></span>
                   </label>
-                </div>
-
-                {/* Sources Section */}
-                <div className="space-y-3 rounded-xl border border-slate-100 p-4 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">Video Sources</p>
-                    <button
-                      type="button"
-                      onClick={() => setForm(p => ({ ...p, sources: [...(p.sources || []), { ...emptySource }] }))}
-                      className="flex items-center gap-1 text-xs font-bold text-indigo-500 hover:text-indigo-600"
-                    >
-                      <Plus size={14} /> Add Source
-                    </button>
-                  </div>
-
-                  <div className="space-y-3">
-                    {(form.sources || []).map((source, idx) => (
-                      <div key={idx} className="relative rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-950">
-                        <button
-                          type="button"
-                          onClick={() => setForm(p => ({ ...p, sources: p.sources.filter((_, i) => i !== idx) }))}
-                          className="absolute -right-2 -top-2 rounded-full bg-rose-500 p-1 text-white shadow-lg hover:bg-rose-600"
-                        >
-                          <X size={12} />
-                        </button>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <select
-                            value={source.category}
-                            onChange={(e) => {
-                              const newSources = [...form.sources];
-                              newSources[idx].category = e.target.value;
-                              setForm(p => ({ ...p, sources: newSources }));
-                            }}
-                            className="h-9 rounded-lg border border-slate-200 px-2 text-xs outline-none focus:border-indigo-400 dark:bg-slate-900 dark:text-slate-100"
-                          >
-                            {SOURCE_CATEGORIES.map(c => <option key={c} value={c}>{c.toUpperCase()}</option>)}
-                          </select>
-                          <input
-                            value={source.provider}
-                            onChange={(e) => {
-                              const newSources = [...form.sources];
-                              newSources[idx].provider = e.target.value;
-                              setForm(p => ({ ...p, sources: newSources }));
-                            }}
-                            placeholder="Provider (e.g. YouTube)"
-                            className="h-9 rounded-lg border border-slate-200 px-2 text-xs outline-none focus:border-indigo-400 dark:bg-slate-900 dark:text-slate-100"
-                          />
-                          <input
-                            value={source.url}
-                            onChange={(e) => {
-                              const newSources = [...form.sources];
-                              newSources[idx].url = e.target.value;
-                              setForm(p => ({ ...p, sources: newSources }));
-                            }}
-                            placeholder="Source URL"
-                            className="h-9 rounded-lg border border-slate-200 px-2 text-xs outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100 sm:col-span-2"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                    {!form.sources?.length && (
-                      <p className="py-4 text-center text-xs text-slate-400">No multi-sources added. Using fallback URL above.</p>
-                    )}
-                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-2">
@@ -794,7 +731,7 @@ function StarPlayers() {
                 </div>
                 <div>
                   <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Duration</p>
-                  <p className="font-medium">{selectedHighlight.duration || "-"}</p>
+                  <p className="font-medium">{formatSecondsToTime(selectedHighlight.duration)}</p>
                 </div>
                 <div>
                   <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Premium</p>

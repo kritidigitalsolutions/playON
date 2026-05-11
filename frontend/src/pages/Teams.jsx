@@ -209,7 +209,7 @@ function Teams() {
       {error ? <p className="mb-4 text-sm text-rose-500">{error}</p> : null}
 
       {/* Filters */}
-      <div className="mb-4 grid gap-3 lg:grid-cols-[minmax(0,2fr),180px,180px]">
+      <div className="mb-4 grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         <input value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Search by name, short name, country..."
           className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 dark:bg-slate-900 dark:text-slate-100" />
@@ -227,7 +227,7 @@ function Teams() {
       </div>
 
       {/* Stats */}
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid gap-3 grid-cols-2 md:grid-cols-4">
         <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500">Total Teams</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.total}</p>
@@ -264,8 +264,8 @@ function Teams() {
               <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
                 <tr>
                   <th className="px-4 py-3 font-medium">Team</th>
-                  <th className="px-4 py-3 font-medium">Sport / Country</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium hidden md:table-cell">Sport / Country</th>
+                  <th className="px-4 py-3 font-medium hidden sm:table-cell">Status</th>
                   <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
@@ -287,7 +287,7 @@ function Teams() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden md:table-cell">
                       <div className="flex flex-col">
                         <p className={`text-[10px] font-bold uppercase tracking-tight px-1.5 py-0.5 rounded-md inline-block w-fit ${SPORT_COLORS[team.sport] || SPORT_COLORS.other}`}>
                           {team.sport}
@@ -295,7 +295,7 @@ function Teams() {
                         <p className="mt-1 text-[10px] text-slate-500">{team.country || "-"}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden sm:table-cell">
                       <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase ${team.isActive ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10" : "bg-slate-100 text-slate-500 dark:bg-slate-800"}`}>
                         {team.isActive ? "Active" : "Inactive"}
                       </span>

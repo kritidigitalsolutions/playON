@@ -4,7 +4,7 @@ const Comment = require("../../models/comment.model");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
 const deleteFromFirebase = require("../../utils/deleteFromFirebase");
 const autoNotify = require("../../utils/autoNotify");
-const {
+const { 
   normalizeAdminStatus
 } = require("../../services/matchStatus.service");
 

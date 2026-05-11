@@ -108,6 +108,7 @@ function LiveTV() {
       const text = [
         item.name,
         item.slug,
+        item.channelNumber,
         item.category,
         item.status,
         item.streamType,
@@ -473,7 +474,7 @@ function LiveTV() {
 
       {error ? <p className="mb-4 text-sm text-rose-500">{error}</p> : null}
 
-      <div className="mb-4 grid gap-3 lg:grid-cols-[minmax(0,2fr),minmax(0,1fr),minmax(0,1fr)]">
+      <div className="mb-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
@@ -618,7 +619,7 @@ function LiveTV() {
           ))}
         </div>
 
-        <div className="mt-4 flex gap-2.5 border-t border-slate-100 pt-4 dark:border-slate-800">
+        <div className="mt-4 grid grid-cols-2 gap-2.5 border-t border-slate-100 pt-4 dark:border-slate-800 md:grid-cols-4">
           {[
             { label: "Total", value: stats.total, color: "text-slate-900 dark:text-slate-100" },
             { label: "Live now", value: stats.live, color: "text-rose-500" },
@@ -643,15 +644,19 @@ function LiveTV() {
             <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
               <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
                 <tr>
+                  <th className="px-4 py-3 font-medium w-16">#</th>
                   <th className="px-4 py-3 font-medium">Channel</th>
-                  <th className="px-4 py-3 font-medium">Source / Category</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium hidden md:table-cell">Source / Category</th>
+                  <th className="px-4 py-3 font-medium hidden sm:table-cell text-center">Status</th>
                   <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {filteredChannels.map((channel) => (
                   <tr key={channel._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3">
+                       <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{channel.channelNumber || "-"}</span>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
@@ -670,13 +675,13 @@ function LiveTV() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden md:table-cell">
                       <div className="flex flex-col">
                         <p className="text-sm font-medium text-slate-900 dark:text-slate-100 uppercase">{channel.streamType}</p>
                         <p className="text-[10px] text-slate-500">{toTitleCase(channel.category)}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden sm:table-cell text-center">
                       <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase ${getBadgeClass(channel.status, STATUS_STYLES)}`}>
                         {channel.status || "offline"}
                       </span>
@@ -982,6 +987,7 @@ function LiveTV() {
               <div className="mt-5 grid grid-cols-2 gap-3">
                 {[
                   { label: "Status", value: selectedDetails.status },
+                  { label: "Channel #", value: selectedDetails.channelNumber || "-" },
                   { label: "Stream Type", value: selectedDetails.streamType },
                   { label: "Quality", value: selectedDetails.quality },
                   { label: "Viewers", value: formatNumber(selectedDetails.viewerCount || 0) },

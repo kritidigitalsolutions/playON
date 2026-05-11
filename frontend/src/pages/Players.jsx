@@ -268,7 +268,7 @@ function Players() {
 
       {error ? <p className="mb-4 text-sm text-rose-500">{error}</p> : null}
 
-      <div className="mb-4 grid gap-3 lg:grid-cols-[minmax(0,2fr),minmax(0,1fr),minmax(0,1fr)]">
+      <div className="mb-4 grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
@@ -298,7 +298,7 @@ function Players() {
         </select>
       </div>
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-4 grid gap-3 grid-cols-2 md:grid-cols-4">
         <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Players</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.total}</p>
@@ -328,8 +328,8 @@ function Players() {
               <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
                 <tr>
                   <th className="px-4 py-3 font-medium">Player</th>
-                  <th className="px-4 py-3 font-medium">Details</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium hidden md:table-cell">Details</th>
+                  <th className="px-4 py-3 font-medium hidden sm:table-cell">Status</th>
                   <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
@@ -351,13 +351,13 @@ function Players() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden md:table-cell">
                       <div className="flex flex-col">
                         <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{player.team || "No Team"}</p>
                         <p className="text-[10px] text-slate-500">{player.position || "-"}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden sm:table-cell">
                       <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase ${getBadgeClass(player.status, STATUS_STYLES)}`}>
                         {player.status || "inactive"}
                       </span>

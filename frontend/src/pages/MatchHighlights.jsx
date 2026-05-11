@@ -12,6 +12,24 @@ import CommentModal from "../components/CommentModal";
 
 const cx = (...p) => p.filter(Boolean).join(" ");
 
+const formatSecondsToTime = (totalSeconds) => {
+  if (!totalSeconds) return "00:00";
+  const s = Number(totalSeconds);
+  if (isNaN(s)) return "00:00";
+  const hrs = Math.floor(s / 3600);
+  const mins = Math.floor((s % 3600) / 60);
+  const secs = Math.floor(s % 60);
+  if (hrs > 0) return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+};
+
+const formatTimeToSeconds = (timeStr) => {
+  if (!timeStr || !String(timeStr).includes(":")) return 0;
+  const parts = String(timeStr).split(":").map(Number);
+  if (parts.length === 3) return (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
+  return (parts[0] || 0) * 60 + (parts[1] || 0);
+};
+
 const CAT_LABELS = { full_match: "Full Match", batting: "Batting", bowling: "Bowling", fielding: "Fielding", goal: "Goal", save: "Save", other: "Other" };
 const CAT_COLORS = {
   full_match: "bg-indigo-500/15 text-indigo-400 border-indigo-500/30",
@@ -25,7 +43,7 @@ const CAT_COLORS = {
 
 const TEAM_SPORTS = ["cricket", "football", "basketball", "kabaddi", "tennis", "volleyball", "other"];
 
-const EMPTY_FORM = { title: "", description: "", category: "other", sourceType: "url", videoUrl: "", duration: 0, tags: "", isPremium: false, isFeatured: false, order: 0, matchId: "", seriesId: "", teamA: "", teamB: "" };
+const EMPTY_FORM = { title: "", description: "", category: "other", sourceType: "url", videoUrl: "", duration: "00:00", tags: "", isPremium: false, isFeatured: false, order: 0, matchId: "", seriesId: "", teamA: "", teamB: "" };
 
 
 function Badge({ category }) {
@@ -245,7 +263,7 @@ function CreateTeamModal({ open, onClose, onCreateTeam, defaultSport = "cricket"
                 {form.logoPreview && (
                   <div className="mt-3 relative inline-block">
                     <img src={form.logoPreview} alt="Preview" className="h-16 w-16 rounded-xl object-cover border border-slate-200 dark:border-slate-700" />
-                    <button type="button" onClick={() => setForm(p => ({...p, logoFile: null, logo: "", logoPreview: ""}))}
+                    <button type="button" onClick={() => setForm(p => ({ ...p, logoFile: null, logo: "", logoPreview: "" }))}
                       className="absolute -top-2 -right-2 h-6 w-6 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 shadow-sm">
                       <X size={12} />
                     </button>
@@ -297,7 +315,7 @@ function TeamPicker({ label, value, onChange, allTeams, inputCls, labelCls, onCr
   // Fallback: if filtered is empty but allTeams has data (and no search), show all
   const displayTeams = (filtered.length === 0 && !searchQ.trim() && allTeams.length > 0) ? allTeams : filtered;
 
-  const selectedTeam = value 
+  const selectedTeam = value
     ? (allTeams.find(t => t._id === value) || (initialTeam?._id === value ? initialTeam : null))
     : null;
   const handleCreateTeam = async (teamData) => {
@@ -382,7 +400,7 @@ function HlModal({ open, onClose, matchId, seriesId, selectedSeries, highlight, 
       setLoadingTeams(true);
       api.get("/admin/teams", { params: { limit: 1000 } })
         .then(r => setAllTeams(Array.isArray(r?.data?.teams) ? r.data.teams : []))
-        .catch(() => {})
+        .catch(() => { })
         .finally(() => setLoadingTeams(false));
     }
   }, [open]);
@@ -395,7 +413,7 @@ function HlModal({ open, onClose, matchId, seriesId, selectedSeries, highlight, 
         category: highlight.category || "other",
         sourceType: highlight.sourceType || "url",
         videoUrl: highlight.videoUrl || "",
-        duration: highlight.duration || 0,
+        duration: formatSecondsToTime(highlight.duration),
         tags: Array.isArray(highlight.tags) ? highlight.tags.join(", ") : "",
         isPremium: !!highlight.isPremium,
         isFeatured: !!highlight.isFeatured,
@@ -448,7 +466,9 @@ function HlModal({ open, onClose, matchId, seriesId, selectedSeries, highlight, 
     try {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => {
-        if (v !== null && v !== undefined) fd.append(k, v);
+        let val = v;
+        if (k === "duration") val = formatTimeToSeconds(v);
+        if (val !== null && v !== undefined) fd.append(k, val);
       });
       if (thumbFile) fd.append("thumbnail", thumbFile);
       if (videoFile) fd.append("videoFile", videoFile);
@@ -511,8 +531,21 @@ function HlModal({ open, onClose, matchId, seriesId, selectedSeries, highlight, 
                 </select>
               </div>
               <div>
-                <label className={labelCls}>Duration (seconds)</label>
-                <input type="number" className={inputCls} value={form.duration} onChange={e => set("duration", e.target.value)} placeholder="e.g. 150" />
+                <label className={labelCls}>Duration (HH:MM:SS)</label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={form.duration}
+                  onChange={e => {
+                    let val = e.target.value.replace(/[^0-9:]/g, "");
+                    if ((val.length === 2 || val.length === 5) && !val.endsWith(":")) {
+                      if (e.nativeEvent.inputType !== "deleteContentBackward") val += ":";
+                    }
+                    if (val.length > 8) val = val.slice(0, 8);
+                    set("duration", val);
+                  }}
+                  placeholder="01:30:00"
+                />
               </div>
             </div>
 
@@ -643,13 +676,13 @@ export default function MatchHighlights() {
   const [selectedHighlight, setSelectedHighlight] = useState(null);
   const [commentTarget, setCommentTarget] = useState(null);
   const [error, setError] = useState("");
-const [, setPagination] =
-  useState({
-    total: 0,
-    page: 1,
-    limit: 20,
-    totalPages: 1
-  });
+  const [, setPagination] =
+    useState({
+      total: 0,
+      page: 1,
+      limit: 20,
+      totalPages: 1
+    });
 
 
 
@@ -898,7 +931,7 @@ const [, setPagination] =
                         <Badge category={hl.category} />
                         {hl.duration > 0 && (
                           <span className="text-[10px] text-slate-500 flex items-center gap-1">
-                            <Clock size={10} />{Math.floor(hl.duration / 60)}:{String(hl.duration % 60).padStart(2, "0")}
+                          <Clock size={10} />{formatSecondsToTime(hl.duration)}
                           </span>
                         )}
                       </div>
@@ -985,7 +1018,7 @@ const [, setPagination] =
 
               <div className="mt-5 grid grid-cols-2 gap-3">
                 {[
-                  { label: "Duration", value: selectedHighlight.duration ? `${Math.floor(selectedHighlight.duration / 60)}:${String(selectedHighlight.duration % 60).padStart(2, "0")}` : "-" },
+                  { label: "Duration", value: formatSecondsToTime(selectedHighlight.duration) },
                   { label: "Views", value: selectedHighlight.views || 0 },
                   { label: "Featured", value: selectedHighlight.isFeatured ? "Yes" : "No" },
                   { label: "Premium", value: selectedHighlight.isPremium ? "Yes" : "No" }
@@ -995,16 +1028,16 @@ const [, setPagination] =
                     <p className="mt-0.5 truncate text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize">{String(value)}</p>
                   </div>
                 ))}
-                
+
                 <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
-                   <p className="text-[10px] uppercase tracking-wide text-slate-400">Description</p>
-                   <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-3">{selectedHighlight.description || "No description"}</p>
+                  <p className="text-[10px] uppercase tracking-wide text-slate-400">Description</p>
+                  <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-3">{selectedHighlight.description || "No description"}</p>
                 </div>
-                
+
                 {selectedHighlight.tags && selectedHighlight.tags.length > 0 && (
                   <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
-                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Tags</p>
-                     <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-2">{selectedHighlight.tags.join(", ")}</p>
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">Tags</p>
+                    <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-2">{selectedHighlight.tags.join(", ")}</p>
                   </div>
                 )}
               </div>

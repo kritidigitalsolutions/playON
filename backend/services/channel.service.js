@@ -17,23 +17,47 @@ exports.getChannels = async (query) => {
 
   const filter = {};
 
-  if (status) filter.status = status.toLowerCase();
-  if (category) filter.category = category.toLowerCase();
+  if (status) {
+    filter.status = status.toLowerCase();
+  }
 
+  if (category) {
+    filter.category = category.toLowerCase();
+  }
+
+  // Search by name, slug, or channel number
   if (search) {
     filter.$or = [
-      { name: { $regex: search, $options: "i" } },
-      { slug: { $regex: search, $options: "i" } }
+      {
+        name: {
+          $regex: search,
+          $options: "i"
+        }
+      },
+      {
+        slug: {
+          $regex: search,
+          $options: "i"
+        }
+      }
     ];
+
+    // numeric search
+    if (!isNaN(search)) {
+      filter.$or.push({
+        channelNumber: Number(search)
+      });
+    }
   }
 
   const skip = (Number(page) - 1) * Number(limit);
 
   const [channels, total] = await Promise.all([
     Channel.find(filter)
-      .sort({ createdAt: -1 })
+      .sort({ channelNumber: 1 })
       .skip(skip)
       .limit(Number(limit)),
+
     Channel.countDocuments(filter)
   ]);
 
@@ -92,9 +116,13 @@ exports.goOffline = async (id) => {
 // Toggle Featured
 exports.toggleFeatured = async (id) => {
   const channel = await Channel.findById(id);
-  if (!channel) return null;
+
+  if (!channel) {
+    return null;
+  }
 
   channel.featured = !channel.featured;
+
   await channel.save();
 
   return channel;
@@ -112,18 +140,38 @@ exports.getLiveChannels = async (query = {}) => {
     filter.category = category.toLowerCase();
   }
 
+  // Search by name, slug, or channel number
   if (search) {
-    filter.name = {
-      $regex: search,
-      $options: "i"
-    };
+    filter.$or = [
+      {
+        name: {
+          $regex: search,
+          $options: "i"
+        }
+      },
+      {
+        slug: {
+          $regex: search,
+          $options: "i"
+        }
+      }
+    ];
+
+    // numeric search
+    if (!isNaN(search)) {
+      filter.$or.push({
+        channelNumber: Number(search)
+      });
+    }
   }
 
   return await Channel.find(filter).sort({
-  featured: -1,
-  createdAt: -1
-});
+    featured: -1,
+    channelNumber: 1
+  });
 };
+
+// Watchable Channel
 exports.getWatchableChannel = async (id) => {
   return await Channel.findOne({
     _id: id,

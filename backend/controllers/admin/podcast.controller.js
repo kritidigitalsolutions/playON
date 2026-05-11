@@ -155,7 +155,7 @@ exports.updatePodcast = async (req, res) => {
     const podcast = await Podcast.findByIdAndUpdate(
       req.params.id,
       updateData,
-      { new: true }
+      { returnDocument: "after" }
     );
 
     if (!podcast) {

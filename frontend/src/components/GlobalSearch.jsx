@@ -175,7 +175,7 @@ function GlobalSearch({ className = "", placeholder = "Search everything... (Ctr
           }}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white/90 pl-9 pr-20 text-sm text-slate-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-900"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white/90 pl-9 pr-10 sm:pr-20 text-sm text-slate-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-900"
         />
         <div className="absolute right-3 flex items-center gap-1.5">
           {loading && <Loader2 size={14} className="animate-spin text-slate-400" />}

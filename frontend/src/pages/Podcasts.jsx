@@ -25,7 +25,19 @@ import CommentModal from "../components/CommentModal";
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 12;
+
+const formatSecondsToTime = (totalSeconds) => {
+  if (!totalSeconds) return "00:00";
+  if (typeof totalSeconds === "string" && totalSeconds.includes(":")) return totalSeconds;
+  const s = Number(totalSeconds);
+  if (isNaN(s)) return "00:00";
+  const hrs = Math.floor(s / 3600);
+  const mins = Math.floor((s % 3600) / 60);
+  const secs = Math.floor(s % 60);
+  if (hrs > 0) return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+};
 
 const PODCAST_SOURCE_CATEGORIES = [
   "youtube",
@@ -39,15 +51,6 @@ const PODCAST_SOURCE_CATEGORIES = [
   "webview",
   "other"
 ];
-
-const emptySource = {
-  provider: "",
-  category: "other",
-  url: "",
-  priority: 1,
-  isActive: true,
-  notes: ""
-};
 
 const defaultForm = {
   _id: "",
@@ -158,16 +161,6 @@ function Podcasts() {
     if (formErrors[key]) setFormErrors(p => ({ ...p, [key]: "" }));
   };
 
-  const onSourceChange = (index, key, val) => {
-    setForm(p => ({
-      ...p,
-      sources: p.sources.map((s, i) => i === index ? { ...s, [key]: val } : s)
-    }));
-  };
-
-  const addSource = () => setForm(p => ({ ...p, sources: [...p.sources, { ...emptySource }] }));
-  const removeSource = (index) => setForm(p => ({ ...p, sources: p.sources.filter((_, i) => i !== index) }));
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -202,7 +195,7 @@ function Podcasts() {
       url: p.url || "",
       type: p.type || "other",
       sources: Array.isArray(p.sources) ? p.sources : [],
-      duration: p.duration || "",
+      duration: formatSecondsToTime(p.duration),
       category: p.category || "",
       isFeatured: Boolean(p.isFeatured),
       isPremium: Boolean(p.isPremium),
@@ -224,7 +217,7 @@ function Podcasts() {
     const e = {};
     if (!form.sportId) e.sportId = "Sport is required";
     if (!form.title.trim()) e.title = "Title is required";
-    if (!form.url.trim() && form.sources.length === 0) e.url = "URL or at least one source is required";
+    if (!form.url.trim()) e.url = "Podcast URL is required";
     setFormErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -241,7 +234,7 @@ function Podcasts() {
       formData.append("url", form.url.trim());
       formData.append("type", form.type);
       formData.append("sources", JSON.stringify(form.sources));
-      formData.append("duration", form.duration.trim());
+      formData.append("duration", form.duration);
       formData.append("category", form.category.trim());
       formData.append("isFeatured", String(Boolean(form.isFeatured)));
       formData.append("isPremium", String(Boolean(form.isPremium)));
@@ -522,7 +515,7 @@ function Podcasts() {
                             )}
                           </div>
                           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 uppercase tracking-tight">
-                            {podcast.sportId?.name || "Unknown Sport"} • {podcast.duration || "N/A"}
+                            {podcast.sportId?.name || "Unknown Sport"} • {formatSecondsToTime(podcast.duration)}
                           </p>
                         </div>
                       </div>
@@ -630,51 +623,39 @@ function Podcasts() {
                   <textarea value={form.description} onChange={e => onFormChange("description", e.target.value)} className={`${fieldCls} h-20 py-2 resize-none`} placeholder="Brief description..." />
                 </label>
 
-                <div className="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">Podcast Sources</span>
-                    <button type="button" onClick={addSource} className="admin-action-btn-sm"><Plus size={14} /> Add Source</button>
-                  </div>
-
-                  {form.sources.length ? (
-                    <div className="space-y-4">
-                      {form.sources.map((source, index) => (
-                        <div key={index} className="relative rounded-xl bg-slate-50 p-4 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800">
-                          <button type="button" onClick={() => removeSource(index)} className="absolute top-2 right-2 text-slate-400 hover:text-rose-500"><Trash2 size={14} /></button>
-                          <div className="grid gap-3 md:grid-cols-2">
-                            <label className="block text-sm">
-                              <span className="mb-1 block text-xs text-slate-500">Provider</span>
-                              <input value={source.provider} onChange={e => onSourceChange(index, "provider", e.target.value)} className="h-9 w-full rounded-lg border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-900" placeholder="e.g. YouTube" />
-                            </label>
-                            <label className="block text-sm">
-                              <span className="mb-1 block text-xs text-slate-500">Category</span>
-                              <select value={source.category} onChange={e => onSourceChange(index, "category", e.target.value)} className="h-9 w-full rounded-lg border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-900">
-                                {PODCAST_SOURCE_CATEGORIES.map(c => <option key={c} value={c}>{c.toUpperCase()}</option>)}
-                              </select>
-                            </label>
-                            <label className="block text-sm md:col-span-2">
-                              <span className="mb-1 block text-xs text-slate-500">URL</span>
-                              <input value={source.url} onChange={e => onSourceChange(index, "url", e.target.value)} className="h-9 w-full rounded-lg border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-900" placeholder="https://..." />
-                            </label>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center">
-                      <p className="text-xs text-slate-500">No sources added yet. Use the button above to add a YouTube, Spotify or direct link.</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Legacy URL (Old)</span>
-                    <input value={form.url} onChange={e => onFormChange("url", e.target.value)} className={fieldCls} placeholder="Fallback URL" />
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Podcast URL</span>
+                    <input value={form.url} onChange={e => onFormChange("url", e.target.value)} className={fieldCls} placeholder="https://..." />
+                    {formErrors.url && <span className="mt-1 block text-xs text-rose-500">{formErrors.url}</span>}
                   </label>
+
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Duration</span>
-                    <input value={form.duration} onChange={e => onFormChange("duration", e.target.value)} className={fieldCls} placeholder="e.g. 45:00" />
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Podcast Type</span>
+                    <select value={form.type} onChange={e => onFormChange("type", e.target.value)} className={fieldCls}>
+                      <option value="youtube">YouTube</option>
+                      <option value="spotify">Spotify</option>
+                      <option value="audio">Audio</option>
+                      <option value="video">Video</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </label>
+
+                  <label className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Duration (HH:MM:SS)</span>
+                    <input
+                      value={form.duration}
+                      onChange={(e) => {
+                        let val = e.target.value.replace(/[^0-9:]/g, "");
+                        if ((val.length === 2 || val.length === 5) && !val.endsWith(":")) {
+                          if (e.nativeEvent.inputType !== "deleteContentBackward") val += ":";
+                        }
+                        if (val.length > 8) val = val.slice(0, 8);
+                        onFormChange("duration", val);
+                      }}
+                      className={fieldCls}
+                      placeholder="e.g. 01:45:00"
+                    />
                   </label>
                   <label className="block text-sm">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Category</span>
@@ -761,7 +742,7 @@ function Podcasts() {
               <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
                 <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
                   <p className="text-[10px] uppercase tracking-wide text-slate-400">Duration</p>
-                  <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100">{selectedPodcast.duration || "-"}</p>
+                  <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100">{formatSecondsToTime(selectedPodcast.duration)}</p>
                 </div>
                 <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
                   <p className="text-[10px] uppercase tracking-wide text-slate-400">Category</p>
@@ -780,7 +761,7 @@ function Podcasts() {
                     <div key={i} className="flex items-center justify-between rounded-xl border border-slate-100 p-3 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="p-1.5 rounded-lg bg-white shadow-sm dark:bg-slate-800">
-                          {s.category === 'youtube' ? <Play size={14} className="text-rose-500" /> : <Activity size={14} className="text-indigo-500" />}
+                          {s.category === 'youtube' ? <Play size={14} className="text-rose-500" /> : <Play size={14} className="text-indigo-500" />}
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">{s.provider || s.category.toUpperCase()}</p>

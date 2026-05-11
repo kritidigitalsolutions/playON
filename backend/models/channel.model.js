@@ -7,6 +7,11 @@ const channelSchema = new mongoose.Schema(
       required: true,
       trim: true
     },
+    channelNumber: {
+      type: Number,
+      unique: true,
+      required: true
+    },
 
     slug: {
       type: String,
@@ -16,11 +21,11 @@ const channelSchema = new mongoose.Schema(
     },
 
     category: {
-  type: String,
-  default: "other",
-  lowercase: true,
-  trim: true
-},
+      type: String,
+      default: "other",
+      lowercase: true,
+      trim: true
+    },
 
     description: {
       type: String,
@@ -39,27 +44,27 @@ const channelSchema = new mongoose.Schema(
       trim: true
     },
     rtmpUrl: {
-  type: String,
-  default: "",
-  trim: true
-},
+      type: String,
+      default: "",
+      trim: true
+    },
 
-srtUrl: {
-  type: String,
-  default: "",
-  trim: true
-},
+    srtUrl: {
+      type: String,
+      default: "",
+      trim: true
+    },
 
     // streamType: {
     //   type: String,
     //   enum: ["hls", "youtube", "iframe", "other"],
     //   default: "other"
     // },
-streamType: {
-  type: String,
-  enum: ["hls", "youtube", "iframe", "rtmp", "srt", "other"],
-  default: "other"
-},
+    streamType: {
+      type: String,
+      enum: ["hls", "youtube", "iframe", "rtmp", "srt", "other"],
+      default: "other"
+    },
     quality: {
       type: String,
       enum: ["240p", "360p", "480p", "720p", "1080p", "auto"],
@@ -106,7 +111,7 @@ streamType: {
   { timestamps: true }
 );
 
-channelSchema.index({ slug: 1 });
+// channelSchema.index({ slug: 1 }); // Removed as it's already indexed via unique: true
 channelSchema.index({ status: 1 });
 channelSchema.index({ category: 1 });
 channelSchema.index({ isPremium: 1 });

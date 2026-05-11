@@ -138,7 +138,7 @@ exports.checkMatchAccess = async (
     if (
       sub.accessType === "match_pass" &&
       sub.matchId?.toString() ===
-        match._id.toString()
+      match._id.toString()
     ) {
       return true;
     }
@@ -149,7 +149,7 @@ exports.checkMatchAccess = async (
       sub.seriesId &&
       match.seriesId &&
       sub.seriesId.toString() ===
-        match.seriesId.toString()
+      match.seriesId.toString()
     ) {
       return true;
     }
@@ -160,9 +160,9 @@ exports.checkMatchAccess = async (
       sub.teamId &&
       (
         sub.teamId.toString() ===
-          match.teamAId?.toString() ||
+        match.teamAId?.toString() ||
         sub.teamId.toString() ===
-          match.teamBId?.toString()
+        match.teamBId?.toString()
       )
     ) {
       return true;
@@ -253,23 +253,23 @@ exports.getSubscriptions = async (
 
 // Single
 exports.getSubscriptionById =
-async (id) => {
-  return await Subscription.findById(id)
-    .populate(
-      "userId",
-      "fullName mobile email"
-    )
-    .populate(
-      "planId",
-      "title price planType"
-    )
-    .populate(
-      "teamId",
-      "name shortName"
-    )
-    .populate("matchId", "title")
-    .populate("seriesId", "title");
-};
+  async (id) => {
+    return await Subscription.findById(id)
+      .populate(
+        "userId",
+        "fullName mobile email"
+      )
+      .populate(
+        "planId",
+        "title price planType"
+      )
+      .populate(
+        "teamId",
+        "name shortName"
+      )
+      .populate("matchId", "title")
+      .populate("seriesId", "title");
+  };
 
 // Update Status
 exports.updateStatus = async (
@@ -285,40 +285,40 @@ exports.updateStatus = async (
 
 // Hard Delete
 exports.adminDeleteSubscription =
-async (id) => {
-  return await Subscription.findByIdAndDelete(
-    id
-  );
-};
+  async (id) => {
+    return await Subscription.findByIdAndDelete(
+      id
+    );
+  };
 
 // Stats
 exports.getSubscriptionStats =
-async () => {
-  const [
-    total,
-    active,
-    cancelled,
-    expired
-  ] = await Promise.all([
-    Subscription.countDocuments(),
+  async () => {
+    const [
+      total,
+      active,
+      cancelled,
+      expired
+    ] = await Promise.all([
+      Subscription.countDocuments(),
 
-    Subscription.countDocuments({
-      status: "active"
-    }),
+      Subscription.countDocuments({
+        status: "active"
+      }),
 
-    Subscription.countDocuments({
-      status: "cancelled"
-    }),
+      Subscription.countDocuments({
+        status: "cancelled"
+      }),
 
-    Subscription.countDocuments({
-      status: "expired"
-    })
-  ]);
+      Subscription.countDocuments({
+        status: "expired"
+      })
+    ]);
 
-  return {
-    total,
-    active,
-    cancelled,
-    expired
+    return {
+      total,
+      active,
+      cancelled,
+      expired
+    };
   };
-};

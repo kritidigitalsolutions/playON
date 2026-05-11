@@ -833,7 +833,7 @@ function Matches() {
         }
       />
 
-      <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         {[
           { label: "Total Matches", value: stats.total, icon: Trophy, tone: "text-slate-700 dark:text-slate-200" },
           { label: "Live Now", value: stats.live, icon: Activity, tone: "text-rose-600 dark:text-rose-300" },
@@ -855,7 +855,7 @@ function Matches() {
       </motion.section>
 
       <section className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-900">
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,2fr),repeat(4,minmax(0,1fr)),auto]">
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
           <label className="relative block">
             <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -940,10 +940,10 @@ function Matches() {
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-700">
               <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
-                <tr className="text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                <tr className="text-left text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   <th className="px-4 py-3">Match</th>
-                  <th className="px-4 py-3">Date & Venue</th>
-                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 hidden md:table-cell">Date & Venue</th>
+                  <th className="px-4 py-3 hidden sm:table-cell">Status</th>
                   <th className="px-4 py-3 text-right">Controls</th>
                 </tr>
               </thead>
@@ -985,11 +985,11 @@ function Matches() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-slate-700 dark:text-slate-200">
+                    <td className="px-4 py-4 text-slate-700 dark:text-slate-200 hidden md:table-cell">
                       <p>{formatDate(match.matchDate)}</p>
                       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{match.venue || "Venue TBD"}</p>
                     </td>
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-4 hidden sm:table-cell">
                       <span className={classNames("inline-flex rounded-full border px-2.5 py-1 text-xs font-medium capitalize", statusTheme[match.status] || statusTheme.upcoming)}>
                         {match.status || "upcoming"}
                       </span>

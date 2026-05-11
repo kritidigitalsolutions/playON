@@ -70,10 +70,10 @@ function Topbar({
 
   return (
     <>
-      <header className="sticky top-0 z-30 mb-6 rounded-2xl bg-white/80 p-4 shadow-sm backdrop-blur dark:bg-slate-900/70">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <header className="sticky top-0 z-30 mb-6 rounded-2xl bg-white/80 p-2.5 sm:p-4 shadow-sm backdrop-blur dark:bg-slate-900/70">
+        <div className="flex items-center justify-between gap-2 lg:gap-4">
         <div>
-          <div className="mb-1 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+          <div className="mb-1 hidden items-center gap-1 text-xs text-slate-500 sm:flex dark:text-slate-400">
             {breadcrumbs.map((crumb, index) => (
               <span key={crumb.path} className="flex items-center gap-1">
                 <Link to={crumb.path} className="hover:text-indigo-500">
@@ -87,18 +87,20 @@ function Topbar({
             <button
               type="button"
               onClick={onMenuClick}
-              className="rounded-lg border border-slate-200 p-2 text-slate-600 lg:hidden dark:text-slate-300"
+              className="rounded-lg border border-slate-200 p-2 text-slate-600 lg:hidden dark:border-slate-700 dark:text-slate-300"
             >
               <Menu size={16} />
             </button>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
+            <h2 className="hidden text-lg font-bold text-slate-900 sm:block dark:text-slate-100">{title}</h2>
           </div>
         </div>
 
-        <div className="flex w-full items-center gap-3 sm:w-auto">
-          <GlobalSearch className="w-full sm:w-80" placeholder={SEARCH_PLACEHOLDERS[location.pathname] || "Search..."} />
-          <ThemeToggle isDark={isDark} onToggle={onThemeToggle} />
-          <NotificationBell />
+        <div className="flex flex-1 items-center justify-end gap-2 sm:gap-4">
+          <GlobalSearch className="flex-1 max-w-[180px] sm:max-w-xs md:max-w-sm" placeholder={SEARCH_PLACEHOLDERS[location.pathname] || "Search..."} />
+          <div className="flex items-center gap-1.5 sm:gap-3">
+            <ThemeToggle isDark={isDark} onToggle={onThemeToggle} />
+            <NotificationBell />
+          </div>
           <div ref={profileMenuRef} className="relative">
             <button
               type="button"

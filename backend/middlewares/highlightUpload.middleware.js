@@ -56,7 +56,7 @@ const highlightUpload = multer({
   fileFilter,
 
   limits: {
-    fileSize: 25 * 1024 * 1024 // 25MB
+    fileSize: 500 * 1024 * 1024 // 500MB
   }
 });
 

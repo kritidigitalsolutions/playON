@@ -129,7 +129,7 @@ function Dashboard() {
         <Loader lines={6} />
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {data.stats.map((stat, index) => (
               <StatCard
                 key={stat.title}
@@ -145,7 +145,7 @@ function Dashboard() {
 
           <div className="mt-6">
             <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Subscription Overview</h3>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               <StatCard
                 title="Total Subscribe Users"
                 value={subStats.subscribed}
@@ -172,7 +172,7 @@ function Dashboard() {
 
           <div className="mt-6">
             <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Registration Overview</h3>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               <StatCard
                 title="Today Registration"
                 value={data.registrationStats.today}
@@ -199,7 +199,7 @@ function Dashboard() {
 
           <div className="mt-6">
             <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Income Overview</h3>
-            <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-6">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
               <StatCard
                 title="Today Income"
                 value={data.incomeStats.today}
@@ -253,7 +253,7 @@ function Dashboard() {
 
           <div className="mt-6">
             <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Match Overview</h3>
-            <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-5">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
               <StatCard title="Total Matches" value={data.matchDetails.total} growth="All Matches" trend="up" index={0} />
               <StatCard title="Live Matches" value={data.matchDetails.live} growth="Playing Now" trend="up" index={1} />
               <StatCard title="Upcoming Matches" value={data.matchDetails.upcoming} growth="Scheduled" trend="up" index={2} />
@@ -264,7 +264,7 @@ function Dashboard() {
 
           <div className="mt-6">
             <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Series Overview</h3>
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               <StatCard title="Total Series" value={data.seriesDetails.total} growth="All Series" trend="up" index={0} />
               <StatCard title="Live Series" value={data.seriesDetails.live} growth="Ongoing Now" trend="up" index={1} />
               <StatCard title="Upcoming Series" value={data.seriesDetails.upcoming} growth="Scheduled" trend="up" index={2} />
@@ -274,7 +274,7 @@ function Dashboard() {
 
           <div className="mt-6">
             <h3 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Channel Overview</h3>
-            <div className="grid gap-4 sm:grid-cols-4 xl:grid-cols-4">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               <StatCard title="Total Channels" value={data.channelDetails.total} growth="All Channels" trend="up" index={0} />
               <StatCard title="Live Channels" value={data.channelDetails.live} growth="Running Now" trend="up" index={1} />
               <StatCard title="Offline Channels" value={data.channelDetails.offline} growth="Not Running" trend="down" index={2} />
@@ -282,7 +282,7 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 xl:grid-cols-2">
+          <div className="mt-6 grid gap-4 grid-cols-1 xl:grid-cols-2">
             <ChartCard title="Matches & Users" subtitle="Last 6 months registrations and match volume">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data.line}>
@@ -309,7 +309,7 @@ function Dashboard() {
             </ChartCard>
           </div>
 
-          <div className="mt-6 grid gap-4 xl:grid-cols-[2fr,1fr]">
+          <div className="mt-6 grid gap-4 grid-cols-1 xl:grid-cols-[2fr,1fr]">
             <DataTable
               columns={matchColumns}
               rows={data.matches}

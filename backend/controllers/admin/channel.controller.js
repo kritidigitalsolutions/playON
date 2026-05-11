@@ -2,6 +2,7 @@ const channelService = require("../../services/channel.service");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
 const deleteFromFirebase = require("../../utils/deleteFromFirebase");
 const autoNotify = require("../../utils/autoNotify");
+const Channel=require("../../models/channel.model");
 
 
 const makeSlug = (text = "") =>
@@ -60,9 +61,17 @@ exports.createChannel = async (req, res) => {
         "channels"
       );
     }
+    const lastChannel = await Channel.findOne()
+  .sort({ channelNumber: -1 });
+
+const nextChannelNumber =
+  lastChannel?.channelNumber
+    ? lastChannel.channelNumber + 1
+    : 1;
 
     const data = {
       ...req.body,
+      channelNumber: nextChannelNumber,
       slug: makeSlug(req.body.name),
       streamType,
       thumbnail,
@@ -243,7 +252,21 @@ exports.deleteChannel = async (req, res) => {
     if (channel.thumbnail) await deleteFromFirebase(channel.thumbnail);
     if (channel.logo) await deleteFromFirebase(channel.logo);
 
-    await channelService.deleteChannel(req.params.id);
+    // await channelService.deleteChannel(req.params.id);
+
+    const deletedChannelNumber = channel.channelNumber;
+
+await channelService.deleteChannel(req.params.id);
+
+// reorder remaining channels
+await Channel.updateMany(
+  {
+    channelNumber: { $gt: deletedChannelNumber }
+  },
+  {
+    $inc: { channelNumber: -1 }
+  }
+);
 
 
     res.json({
