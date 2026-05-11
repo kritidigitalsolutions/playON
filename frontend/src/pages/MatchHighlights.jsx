@@ -994,59 +994,154 @@ export default function MatchHighlights() {
       <AnimatePresence>
         {selectedHighlight && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4"
+            onClick={() => setSelectedHighlight(null)}>
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
-              <div className="mb-4 flex items-start justify-between gap-4">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Highlight Details</h2>
-                <button type="button" onClick={() => setSelectedHighlight(null)} className="text-slate-500 hover:text-slate-800"><X size={18} /></button>
-              </div>
-
-              <div className="flex items-center gap-4">
+              className="w-full max-w-2xl rounded-3xl bg-white p-0 shadow-2xl dark:bg-slate-900 overflow-hidden"
+              onClick={e => e.stopPropagation()}>
+              
+              {/* Header with Background/Thumbnail */}
+              <div className="relative h-48 bg-slate-100 dark:bg-slate-800">
                 {selectedHighlight.thumbnail ? (
-                  <img src={selectedHighlight.thumbnail} alt={selectedHighlight.title} className="h-16 w-16 rounded-2xl border border-slate-200 object-cover" />
+                  <img src={selectedHighlight.thumbnail} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
-                    <Video size={28} />
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/20 to-violet-500/20">
+                    <Video size={48} className="text-indigo-400 opacity-30" />
                   </div>
                 )}
-                <div className="min-w-0">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 truncate" title={selectedHighlight.title}>{selectedHighlight.title}</h3>
-                  <p className="text-sm text-slate-400 truncate">{selectedHighlight.category ? CAT_LABELS[selectedHighlight.category] : "General"}</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                
+                <button type="button" onClick={() => setSelectedHighlight(null)}
+                  className="absolute top-4 right-4 h-8 w-8 rounded-full bg-black/20 text-white hover:bg-black/40 flex items-center justify-center backdrop-blur-md transition">
+                  <X size={18} />
+                </button>
+
+                <div className="absolute bottom-4 left-6 right-6">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge category={selectedHighlight.category} />
+                    {selectedHighlight.isPremium && <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Premium</span>}
+                    {selectedHighlight.isFeatured && <span className="bg-indigo-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Featured</span>}
+                  </div>
+                  <h2 className="text-xl font-bold text-white truncate">{selectedHighlight.title}</h2>
                 </div>
+
+                <button onClick={() => { setActiveHl(selectedHighlight); setSelectedHighlight(null); }}
+                  className="absolute bottom-4 right-6 h-12 w-12 rounded-full bg-indigo-500 text-white shadow-lg shadow-indigo-500/40 flex items-center justify-center hover:scale-110 transition-transform">
+                  <Play size={20} className="fill-white ml-0.5" />
+                </button>
               </div>
 
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                {[
-                  { label: "Duration", value: formatSecondsToTime(selectedHighlight.duration) },
-                  { label: "Views", value: selectedHighlight.views || 0 },
-                  { label: "Featured", value: selectedHighlight.isFeatured ? "Yes" : "No" },
-                  { label: "Premium", value: selectedHighlight.isPremium ? "Yes" : "No" }
-                ].map(({ label, value }) => (
-                  <div key={label} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
-                    <p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p>
-                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize">{String(value)}</p>
-                  </div>
-                ))}
+              <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto pretty-scroll">
+                {/* Context & Teams */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Content Context</p>
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                        {selectedHighlight.matchId ? (
+                          <>
+                            <div className="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-500"><Film size={16} /></div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Match Link</p>
+                              <p className="text-[10px] text-slate-500 truncate">{selectedHighlight.matchId.title || "Match Details"}</p>
+                            </div>
+                          </>
+                        ) : selectedHighlight.seriesId ? (
+                          <>
+                            <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center text-violet-500"><Film size={16} /></div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Series Link</p>
+                              <p className="text-[10px] text-slate-500 truncate">{selectedHighlight.seriesId.title || "Series Details"}</p>
+                            </div>
+                          </>
+                        ) : (
+                          <p className="text-xs text-slate-400 italic">No direct link</p>
+                        )}
+                      </div>
+                    </div>
 
-                <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
-                  <p className="text-[10px] uppercase tracking-wide text-slate-400">Description</p>
-                  <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-3">{selectedHighlight.description || "No description"}</p>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Competing Teams</p>
+                      <div className="flex items-center justify-center gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                          {selectedHighlight.teamA?.logo ? <img src={selectedHighlight.teamA.logo} alt="" className="h-8 w-8 object-contain" /> : <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700" />}
+                          <p className="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate w-full text-center">{selectedHighlight.teamA?.name || "Team A"}</p>
+                        </div>
+                        <span className="text-xs font-black text-slate-300 dark:text-slate-600 italic">VS</span>
+                        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                          {selectedHighlight.teamB?.logo ? <img src={selectedHighlight.teamB.logo} alt="" className="h-8 w-8 object-contain" /> : <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700" />}
+                          <p className="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate w-full text-center">{selectedHighlight.teamB?.name || "Team B"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Media Stats</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase">Duration</p>
+                          <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">{formatSecondsToTime(selectedHighlight.duration)}</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase">Views</p>
+                          <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">{selectedHighlight.views || 0}</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase">Order</p>
+                          <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">{selectedHighlight.order || 0}</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase">Source</p>
+                          <p className="text-[10px] font-semibold text-slate-900 dark:text-slate-100 uppercase">{selectedHighlight.sourceType || "URL"}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Video Link</p>
+                      <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                        <Link size={14} className="text-indigo-400 flex-shrink-0" />
+                        <p className="text-[10px] text-slate-500 truncate flex-1 font-mono">{selectedHighlight.videoUrl || "No URL provided"}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
+                {selectedHighlight.description && (
+                  <div>
+                    <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Description</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                      {selectedHighlight.description}
+                    </p>
+                  </div>
+                )}
 
                 {selectedHighlight.tags && selectedHighlight.tags.length > 0 && (
-                  <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
-                    <p className="text-[10px] uppercase tracking-wide text-slate-400">Tags</p>
-                    <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-2">{selectedHighlight.tags.join(", ")}</p>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Tags / Keywords</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedHighlight.tags.map((tag, i) => (
+                        <span key={i} className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-medium text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
-              <div className="mt-4 flex gap-2">
+              {/* Bottom Actions */}
+              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex gap-3">
                 <button type="button" onClick={() => { setSelectedHighlight(null); openEdit(selectedHighlight); }}
-                  className="admin-secondary-btn flex-1">Edit</button>
+                  className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm">
+                  <Edit2 size={16} /> Edit Metadata
+                </button>
                 <button type="button" onClick={() => { setSelectedHighlight(null); setDeleting(selectedHighlight._id); handleDelete(selectedHighlight._id); }}
-                  className="admin-action-btn-danger flex-1">Delete</button>
+                  className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-rose-50 dark:bg-rose-500/10 py-3 text-sm font-semibold text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition">
+                  <Trash2 size={16} /> Remove
+                </button>
               </div>
             </motion.div>
           </motion.div>
