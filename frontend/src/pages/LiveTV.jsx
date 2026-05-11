@@ -644,7 +644,7 @@ function LiveTV() {
             <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
               <thead className="bg-slate-100/70 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/70 dark:text-slate-400 text-left">
                 <tr>
-                  <th className="px-4 py-3 font-medium w-16">#</th>
+                  <th className="px-4 py-3 font-medium w-16">Channel Number</th>
                   <th className="px-4 py-3 font-medium">Channel</th>
                   <th className="px-4 py-3 font-medium hidden md:table-cell">Source / Category</th>
                   <th className="px-4 py-3 font-medium hidden sm:table-cell text-center">Status</th>
