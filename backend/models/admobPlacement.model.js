@@ -4,7 +4,13 @@ const PLACEMENT_POSITIONS = [
   "home_top",
   "home_bottom",
   "match_details",
-  "livetv_top"
+  "livetv_top",
+  "event_top",
+  "series_top",
+  "highlights_top",
+  "profile_top",
+  "podcast",
+  "star_players"
 ];
 
 const AD_FORMATS = [

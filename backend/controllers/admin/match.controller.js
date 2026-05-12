@@ -1,6 +1,7 @@
 const matchService = require("../../services/match.service");
 const matchStreamSync = require("../../services/matchStreamSync.service");
 const Comment = require("../../models/comment.model");
+const Highlight = require("../../models/highlight.model");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
 const deleteFromFirebase = require("../../utils/deleteFromFirebase");
 const autoNotify = require("../../utils/autoNotify");
@@ -436,6 +437,18 @@ exports.deleteMatch = async (req, res) => {
     if (match.banner) await deleteFromFirebase(match.banner);
     if (match.teamALogo) await deleteFromFirebase(match.teamALogo);
     if (match.teamBLogo) await deleteFromFirebase(match.teamBLogo);
+
+    // Delete connected highlights
+    const highlights = await Highlight.find({ matchId: req.params.id });
+    for (const highlight of highlights) {
+      if (highlight.sourceType === "upload" && highlight.videoUrl) {
+        await deleteFromFirebase(highlight.videoUrl);
+      }
+      if (highlight.thumbnail) {
+        await deleteFromFirebase(highlight.thumbnail);
+      }
+    }
+    await Highlight.deleteMany({ matchId: req.params.id });
 
     await matchStreamSync.deleteStreamsForMatch(match._id);
 

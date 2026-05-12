@@ -59,5 +59,5 @@ exports.incrementClick = async (id) => {
 };
 // Update Banner
 exports.updateBanner = async (id, data) => {
-  return await BannerAd.findByIdAndUpdate(id, data, { new: true });
+  return await BannerAd.findByIdAndUpdate(id, data, { new: true, runValidators: true });
 };

@@ -21,7 +21,13 @@ const POSITIONS = [
   { label: "Home Top", value: "home_top" },
   { label: "Home Bottom", value: "home_bottom" },
   { label: "Match Details", value: "match_details" },
-  { label: "Live TV Top", value: "livetv_top" }
+  { label: "Live TV Top", value: "livetv_top" },
+  { label: "Event Top", value: "event_top" },
+  { label: "Series Top", value: "series_top" },
+  { label: "Highlights Top", value: "highlights_top" },
+  { label: "Profile Top", value: "profile_top" },
+  { label: "Podcast", value: "podcast" },
+  { label: "Star Players", value: "star_players" }
 ];
 
 const defaultForm = {

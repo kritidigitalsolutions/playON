@@ -17,7 +17,19 @@ const bannerAdSchema = new mongoose.Schema(
     },
     position: {
       type: String,
-      default: "home_top"
+      default: "home_top",
+      enum: [
+        "home_top",
+        "home_bottom",
+        "match_details",
+        "livetv_top",
+        "event_top",
+        "series_top",
+        "highlights_top",
+        "profile_top",
+        "podcast",
+        "star_players"
+      ]
     },
     isActive: {
       type: Boolean,

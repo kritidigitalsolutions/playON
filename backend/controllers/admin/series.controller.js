@@ -1,5 +1,6 @@
 const Series = require("../../models/series.model");
 const Match = require("../../models/match.model");
+const Highlight = require("../../models/highlight.model");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
 const deleteFromFirebase = require("../../utils/deleteFromFirebase");
 const autoNotify = require("../../utils/autoNotify");
@@ -431,6 +432,18 @@ exports.deleteSeries = async (req, res) => {
       { seriesId: id },
       { seriesId: null }
     );
+
+    // Delete connected highlights
+    const highlights = await Highlight.find({ seriesId: id });
+    for (const highlight of highlights) {
+      if (highlight.sourceType === "upload" && highlight.videoUrl) {
+        await deleteFromFirebase(highlight.videoUrl);
+      }
+      if (highlight.thumbnail) {
+        await deleteFromFirebase(highlight.thumbnail);
+      }
+    }
+    await Highlight.deleteMany({ seriesId: id });
 
     if (series.banner) await deleteFromFirebase(series.banner);
     if (series.tournamentLogo) await deleteFromFirebase(series.tournamentLogo);
