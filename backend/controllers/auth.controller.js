@@ -9,6 +9,11 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const { rewardReferrer } = require("../utils/referralReward");
 
+const DUMMY_USER_MOBILE = process.env.DUMMY_USER_MOBILE || "9999999999";
+const DUMMY_USER_OTP = process.env.DUMMY_USER_OTP || "123456";
+
+const isDummyUserMobile = (mobile) => mobile === DUMMY_USER_MOBILE;
+
 // =======================
 // 🔑 REFERRAL HELPERS (GLOBAL)
 // =======================
@@ -52,6 +57,39 @@ exports.sendOtp = async (
         success: false,
         message:
           "Invalid mobile number"
+      });
+    }
+
+    if (isDummyUserMobile(mobile)) {
+      await Otp.findOneAndUpdate(
+        { mobile },
+        {
+          otp: DUMMY_USER_OTP,
+          expiresAt: new Date(
+            Date.now() +
+            5 * 60 * 1000
+          )
+        },
+        {
+          upsert: true,
+          returnDocument: "after"
+        }
+      );
+
+      const existingUser =
+        await User.findOne({
+          mobile,
+          isDeleted: false
+        });
+
+      return res.json({
+        success: true,
+        message:
+          "OTP sent successfully",
+        otp: DUMMY_USER_OTP,
+        isNewUser:
+          !existingUser ||
+          !existingUser.onboardingCompleted
       });
     }
 
@@ -202,11 +240,17 @@ exports.verifyOtp = async (req, res) => {
       });
     }
 
-    const record = await Otp.findOne({
-      mobile,
-      otp,
-      expiresAt: { $gt: new Date() }
-    });
+    const isDummyOtp =
+      isDummyUserMobile(mobile) &&
+      otp === DUMMY_USER_OTP;
+
+    const record = isDummyOtp
+      ? true
+      : await Otp.findOne({
+        mobile,
+        otp,
+        expiresAt: { $gt: new Date() }
+      });
 
     if (!record) {
       return res.status(400).json({
@@ -247,7 +291,14 @@ exports.verifyOtp = async (req, res) => {
       user = await User.create({
         mobile,
         referralCode: newReferralCode,
-        referredBy: referredByUser?._id || null
+        referredBy: referredByUser?._id || null,
+        ...(isDummyUserMobile(mobile)
+          ? {
+            fullName: "Dummy User",
+            isProfileComplete: true,
+            onboardingCompleted: true
+          }
+          : {})
       });
 
       // increment referral count
@@ -267,6 +318,12 @@ exports.verifyOtp = async (req, res) => {
     else {
       if (!user.referralCode) {
         user.referralCode = await getUniqueReferralCode();
+      }
+
+      if (isDummyUserMobile(mobile)) {
+        user.fullName = user.fullName || "Dummy User";
+        user.isProfileComplete = true;
+        user.onboardingCompleted = true;
       }
 
       // prevent multiple referral usage
