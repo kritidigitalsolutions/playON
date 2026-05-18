@@ -3,6 +3,7 @@ const Counter = require("../models/counter.model");
 
 const COUNTER_ID = "channelNumber";
 
+// Used only by ensureChannelNumbers at startup
 const getMaxChannelNumber = async () => {
   const lastChannel = await Channel.findOne({
     channelNumber: { $type: "number", $gt: 0 }
@@ -14,6 +15,7 @@ const getMaxChannelNumber = async () => {
   return lastChannel?.channelNumber || 0;
 };
 
+// Used only by ensureChannelNumbers at startup
 const syncChannelNumberCounter = async () => {
   const maxChannelNumber = await getMaxChannelNumber();
 
@@ -24,20 +26,26 @@ const syncChannelNumberCounter = async () => {
   );
 };
 
+// Finds the lowest unused channel number (fills gaps automatically)
 const getNextChannelNumber = async () => {
-  const counter = await Counter.findOneAndUpdate(
-    { _id: COUNTER_ID },
-    { $inc: { seq: 1 } },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
-  );
+  const channels = await Channel.find({
+    channelNumber: { $type: "number", $gt: 0 }
+  })
+    .select("channelNumber")
+    .lean();
 
-  if (!counter || typeof counter.seq !== "number" || counter.seq <= 0) {
-    throw new Error(
-      `Counter returned invalid channel number: ${counter?.seq}`
-    );
+  const used = new Set(channels.map((c) => c.channelNumber));
+
+  let next = 1;
+  while (used.has(next)) {
+    next += 1;
   }
 
-  return counter.seq;
+  if (!next || next <= 0) {
+    throw new Error(`Invalid channel number generated: ${next}`);
+  }
+
+  return next;
 };
 
 module.exports = {
