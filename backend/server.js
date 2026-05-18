@@ -4,6 +4,8 @@ require("./config/firebase");
 const app = require("./app");
 const connectDB = require("./config/db");
 const User = require("./models/user.model");
+const Channel = require("./models/channel.model");
+const ensureChannelNumbers = require("./utils/ensureChannelNumbers");
 
 const PORT = process.env.PORT || 8000;
 
@@ -12,6 +14,9 @@ const init = async () => {
 
 
   try {
+    await ensureChannelNumbers();
+    await Channel.syncIndexes();
+
     const indexes = await User.collection.indexes();
 
     const oldMobile = indexes.find(

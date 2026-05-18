@@ -2,7 +2,7 @@ const channelService = require("../../services/channel.service");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
 const deleteFromFirebase = require("../../utils/deleteFromFirebase");
 const autoNotify = require("../../utils/autoNotify");
-const Channel=require("../../models/channel.model");
+const Channel = require("../../models/channel.model");
 
 
 const makeSlug = (text = "") =>
@@ -36,14 +36,51 @@ const formatChannel = (req, doc) => {
   };
 };
 
+const getNextChannelNumber = async () => {
+  const lastChannel = await Channel.findOne()
+    .sort({ channelNumber: -1 });
+
+  return lastChannel?.channelNumber
+    ? lastChannel.channelNumber + 1
+    : 1;
+};
+
+const isDuplicateChannelNumberError = (error) =>
+  error?.code === 11000 &&
+  (error?.keyPattern?.channelNumber ||
+    error?.keyValue?.channelNumber);
+
+const createChannelWithNumber = async (data) => {
+  let lastError;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await channelService.createChannel({
+        ...data,
+        channelNumber: await getNextChannelNumber()
+      });
+    } catch (error) {
+      if (!isDuplicateChannelNumberError(error)) {
+        throw error;
+      }
+
+      lastError = error;
+    }
+  }
+
+  throw lastError;
+};
+
 // Create
 exports.createChannel = async (req, res) => {
   try {
+    const body = { ...req.body };
+    delete body.channelNumber;
 
 
     const streamType =
-      req.body.streamType ||
-      (req.body.streamUrl?.includes(".m3u8") ? "hls" : "other");
+      body.streamType ||
+      (body.streamUrl?.includes(".m3u8") ? "hls" : "other");
 
     let thumbnail = "";
     let logo = "";
@@ -61,25 +98,16 @@ exports.createChannel = async (req, res) => {
         "channels"
       );
     }
-    const lastChannel = await Channel.findOne()
-  .sort({ channelNumber: -1 });
-
-const nextChannelNumber =
-  lastChannel?.channelNumber
-    ? lastChannel.channelNumber + 1
-    : 1;
-
     const data = {
-      ...req.body,
-      channelNumber: nextChannelNumber,
-      slug: makeSlug(req.body.name),
+      ...body,
+      slug: makeSlug(body.name),
       streamType,
       thumbnail,
       logo,
       createdBy: req.admin?._id || null
     };
 
-    const channel = await channelService.createChannel(data);
+    const channel = await createChannelWithNumber(data);
     await autoNotify({
       title: "New Channel Added",
       message: `${channel.name} is now available.`,
@@ -177,6 +205,7 @@ exports.getChannelBySlug = async (req, res) => {
 exports.updateChannel = async (req, res) => {
   try {
     const data = { ...req.body };
+    delete data.channelNumber;
 
     if (req.body.name) {
       data.slug = makeSlug(req.body.name);
@@ -254,19 +283,7 @@ exports.deleteChannel = async (req, res) => {
 
     // await channelService.deleteChannel(req.params.id);
 
-    const deletedChannelNumber = channel.channelNumber;
-
-await channelService.deleteChannel(req.params.id);
-
-// reorder remaining channels
-await Channel.updateMany(
-  {
-    channelNumber: { $gt: deletedChannelNumber }
-  },
-  {
-    $inc: { channelNumber: -1 }
-  }
-);
+    await channelService.deleteChannel(req.params.id);
 
 
     res.json({
