@@ -1,4 +1,5 @@
 const Channel = require("../models/channel.model");
+const { syncChannelNumberCounter } = require("./channelNumber");
 
 const isValidChannelNumber = (value) =>
   Number.isInteger(value) && value > 0;
@@ -11,55 +12,52 @@ const ensureChannelNumbers = async () => {
 
   const reserved = new Set();
   const firstOwnerByNumber = new Map();
-  let nextNumber = 1;
 
-  const takeNextNumber = () => {
-    while (reserved.has(nextNumber)) {
-      nextNumber += 1;
-    }
-
-    reserved.add(nextNumber);
-    return nextNumber;
-  };
-
+  // First pass: collect all valid, non-duplicate numbers
   channels.forEach((channel) => {
-    const currentNumber = Number(channel.channelNumber);
-
-    if (isValidChannelNumber(currentNumber)) {
-      reserved.add(currentNumber);
-
-      if (!firstOwnerByNumber.has(currentNumber)) {
-        firstOwnerByNumber.set(currentNumber, String(channel._id));
-      }
+    const num = Number(channel.channelNumber);
+    if (isValidChannelNumber(num) && !firstOwnerByNumber.has(num)) {
+      reserved.add(num);
+      firstOwnerByNumber.set(num, String(channel._id));
     }
   });
+
+  let nextFree = 1;
+
+  const takeNextNumber = () => {
+    while (reserved.has(nextFree)) {
+      nextFree += 1;
+    }
+    const assigned = nextFree;
+    reserved.add(assigned);
+    nextFree += 1; // advance so next call doesn't return the same number
+    return assigned;
+  };
 
   const writes = [];
 
   channels.forEach((channel) => {
-    const currentNumber = Number(channel.channelNumber);
-    const shouldKeep =
-      isValidChannelNumber(currentNumber) &&
-      firstOwnerByNumber.get(currentNumber) === String(channel._id);
+    const num = Number(channel.channelNumber);
+    const isOwner =
+      isValidChannelNumber(num) &&
+      firstOwnerByNumber.get(num) === String(channel._id);
 
-    if (shouldKeep) return;
+    if (isOwner) return; // already has a valid, unique number
 
     writes.push({
       updateOne: {
         filter: { _id: channel._id },
-        update: {
-          $set: {
-            channelNumber: takeNextNumber()
-          }
-        }
+        update: { $set: { channelNumber: takeNextNumber() } }
       }
     });
   });
 
   if (writes.length) {
     await Channel.bulkWrite(writes, { ordered: true });
-    console.log(`Repaired ${writes.length} channel numbers`);
+    console.log(`[ensureChannelNumbers] Repaired ${writes.length} channel(s)`);
   }
+
+  await syncChannelNumberCounter();
 };
 
 module.exports = ensureChannelNumbers;
