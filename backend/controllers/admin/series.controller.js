@@ -120,7 +120,7 @@ exports.createSeries = async (req, res) => {
         isPremium === true || isPremium === "true",
       isHomeScreen:
         isHomeScreen === true || isHomeScreen === "true",
-      createdBy: req.admin.adminId
+      createdBy: req.admin._id
     });
 
     // 🔔 AUTO NOTIFY FOR NEW SERIES

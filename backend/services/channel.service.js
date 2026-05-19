@@ -1,6 +1,9 @@
 const Channel = require("../models/channel.model");
 const ensureChannelNumbers = require("../utils/ensureChannelNumbers");
-const { getNextChannelNumber, syncChannelNumberCounter } = require("../utils/channelNumber");
+const {
+  getNextChannelNumber,
+  syncChannelNumberCounter
+} = require("../utils/channelNumber");
 
 // Run once at startup; resets on failure so it can be retried
 let ensurePromise = null;
@@ -8,27 +11,58 @@ let ensurePromise = null;
 const ensureChannelNumbersOnce = async () => {
   if (!ensurePromise) {
     ensurePromise = ensureChannelNumbers().catch((error) => {
-      ensurePromise = null; // allow retry on next request
+      ensurePromise = null;
       throw error;
     });
   }
+
   return ensurePromise;
 };
 
 const isDuplicateChannelNumberError = (error) =>
   error?.code === 11000 &&
-  (error?.keyPattern?.channelNumber || error?.keyValue?.channelNumber);
+  (error?.keyPattern?.channelNumber ||
+    error?.keyValue?.channelNumber);
 
-// Create
+// =====================================================
+// CREATE CHANNEL
+// =====================================================
 exports.createChannel = async (data) => {
   await ensureChannelNumbersOnce();
 
+  // =========================================
+  // MANUAL CHANNEL NUMBER
+  // =========================================
+  if (data.channelNumber !== undefined) {
+    const manualNumber = Number(data.channelNumber);
+
+    if (isNaN(manualNumber) || manualNumber <= 0) {
+      throw new Error("Invalid channel number");
+    }
+
+    const exists = await Channel.findOne({
+      channelNumber: manualNumber
+    });
+
+    if (exists) {
+      throw new Error("Channel number already exists");
+    }
+
+    return await Channel.create({
+      ...data,
+      channelNumber: manualNumber
+    });
+  }
+
+  // =========================================
+  // AUTO CHANNEL NUMBER
+  // =========================================
   for (let attempt = 0; attempt < 5; attempt += 1) {
     let channelNumber;
+
     try {
       channelNumber = await getNextChannelNumber();
     } catch (counterError) {
-      // Counter itself failed — sync and retry once
       await syncChannelNumberCounter();
       channelNumber = await getNextChannelNumber();
     }
@@ -40,46 +74,76 @@ exports.createChannel = async (data) => {
     }
 
     try {
-      return await Channel.create({ ...data, channelNumber });
+      return await Channel.create({
+        ...data,
+        channelNumber
+      });
     } catch (error) {
       if (!isDuplicateChannelNumberError(error)) {
         throw error;
       }
-      // Duplicate — loop and get next number
     }
   }
 
-  throw new Error("Unable to allocate a unique channel number after 5 attempts");
+  throw new Error(
+    "Unable to allocate a unique channel number after 5 attempts"
+  );
 };
 
-// List
+// =====================================================
+// GET CHANNELS
+// =====================================================
 exports.getChannels = async (query) => {
   await ensureChannelNumbersOnce();
 
-  const { status, category, search, page = 1, limit = 10 } = query;
+  const {
+    status,
+    category,
+    search,
+    page = 1,
+    limit = 10
+  } = query;
 
   const filter = {};
 
   if (status) filter.status = status.toLowerCase();
-  if (category) filter.category = category.toLowerCase();
+
+  if (category) {
+    filter.category = category.toLowerCase();
+  }
 
   if (search) {
     filter.$or = [
-      { name: { $regex: search, $options: "i" } },
-      { slug: { $regex: search, $options: "i" } }
+      {
+        name: {
+          $regex: search,
+          $options: "i"
+        }
+      },
+      {
+        slug: {
+          $regex: search,
+          $options: "i"
+        }
+      }
     ];
+
     if (!isNaN(search)) {
-      filter.$or.push({ channelNumber: Number(search) });
+      filter.$or.push({
+        channelNumber: Number(search)
+      });
     }
   }
 
-  const skip = (Number(page) - 1) * Number(limit);
+  const skip =
+    (Number(page) - 1) * Number(limit);
 
   const [channels, total] = await Promise.all([
     Channel.find(filter)
       .sort({ channelNumber: 1 })
       .skip(skip)
       .limit(Number(limit)),
+
     Channel.countDocuments(filter)
   ]);
 
@@ -89,48 +153,117 @@ exports.getChannels = async (query) => {
       total,
       page: Number(page),
       limit: Number(limit),
-      pages: Math.ceil(total / Number(limit))
+      pages: Math.ceil(
+        total / Number(limit)
+      )
     }
   };
 };
 
-// Single by ID
-exports.getChannelById = async (id) => Channel.findById(id);
+// =====================================================
+// SINGLE BY ID
+// =====================================================
+exports.getChannelById = async (id) =>
+  Channel.findById(id);
 
-// Single by Slug
-exports.getChannelBySlug = async (slug) => Channel.findOne({ slug });
+// =====================================================
+// SINGLE BY SLUG
+// =====================================================
+exports.getChannelBySlug = async (slug) =>
+  Channel.findOne({ slug });
 
-// Update
-exports.updateChannel = async (id, data) =>
-  Channel.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+// =====================================================
+// UPDATE CHANNEL
+// =====================================================
+exports.updateChannel = async (id, data) => {
 
-// Delete
-exports.deleteChannel = async (id) => Channel.findByIdAndDelete(id);
+  // =========================================
+  // MANUAL CHANNEL NUMBER UPDATE
+  // =========================================
+  if (data.channelNumber !== undefined) {
 
-// Go Live
+    const manualNumber = Number(data.channelNumber);
+
+    if (isNaN(manualNumber) || manualNumber <= 0) {
+      throw new Error("Invalid channel number");
+    }
+
+    const existing = await Channel.findOne({
+      channelNumber: manualNumber,
+      _id: { $ne: id }
+    });
+
+    if (existing) {
+      throw new Error("Channel number already exists");
+    }
+
+    data.channelNumber = manualNumber;
+  }
+
+  return await Channel.findByIdAndUpdate(
+    id,
+    data,
+    {
+      new: true,
+      runValidators: true
+    }
+  );
+};
+
+// =====================================================
+// DELETE CHANNEL
+// =====================================================
+exports.deleteChannel = async (id) =>
+  Channel.findByIdAndDelete(id);
+
+// =====================================================
+// GO LIVE
+// =====================================================
 exports.goLive = async (id) =>
-  Channel.findByIdAndUpdate(id, { status: "live" }, { new: true });
+  Channel.findByIdAndUpdate(
+    id,
+    { status: "live" },
+    { new: true }
+  );
 
-// Go Offline
+// =====================================================
+// GO OFFLINE
+// =====================================================
 exports.goOffline = async (id) =>
-  Channel.findByIdAndUpdate(id, { status: "offline" }, { new: true });
+  Channel.findByIdAndUpdate(
+    id,
+    { status: "offline" },
+    { new: true }
+  );
 
-// Toggle Featured
+// =====================================================
+// TOGGLE FEATURED
+// =====================================================
 exports.toggleFeatured = async (id) => {
   const channel = await Channel.findById(id);
+
   if (!channel) return null;
+
   channel.featured = !channel.featured;
+
   await channel.save();
+
   return channel;
 };
 
-// Public Live Channels
-exports.getLiveChannels = async (query = {}) => {
+// =====================================================
+// PUBLIC LIVE CHANNELS
+// =====================================================
+exports.getLiveChannels = async (
+  query = {}
+) => {
   await ensureChannelNumbersOnce();
 
   const { category, search } = query;
 
-  const filter = { status: "live" };
+  const filter = {
+    status: "live"
+  };
 
   if (category && category !== "all") {
     filter.category = category.toLowerCase();
@@ -138,17 +271,38 @@ exports.getLiveChannels = async (query = {}) => {
 
   if (search) {
     filter.$or = [
-      { name: { $regex: search, $options: "i" } },
-      { slug: { $regex: search, $options: "i" } }
+      {
+        name: {
+          $regex: search,
+          $options: "i"
+        }
+      },
+      {
+        slug: {
+          $regex: search,
+          $options: "i"
+        }
+      }
     ];
+
     if (!isNaN(search)) {
-      filter.$or.push({ channelNumber: Number(search) });
+      filter.$or.push({
+        channelNumber: Number(search)
+      });
     }
   }
 
-  return Channel.find(filter).sort({ featured: -1, channelNumber: 1 });
+  return Channel.find(filter).sort({
+    featured: -1,
+    channelNumber: 1
+  });
 };
 
-// Watchable Channel
+// =====================================================
+// WATCHABLE CHANNEL
+// =====================================================
 exports.getWatchableChannel = async (id) =>
-  Channel.findOne({ _id: id, status: "live" });
+  Channel.findOne({
+    _id: id,
+    status: "live"
+  });

@@ -19,7 +19,7 @@ exports.sendPasswordOtp = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
 
-    const admin = await Admin.findById(req.admin.adminId);
+    const admin = await Admin.findById(req.admin._id);
 
     if (!admin) {
       return res.status(404).json({
@@ -85,7 +85,7 @@ exports.changePassword = async (req, res) => {
   try {
     const { oldPassword, otp, newPassword } = req.body;
 
-    const admin = await Admin.findById(req.admin.adminId);
+    const admin = await Admin.findById(req.admin._id);
 
     if (!admin) {
       return res.status(404).json({
@@ -150,7 +150,7 @@ exports.sendEmailOtp = async (req, res) => {
   try {
     const { oldEmail, newEmail } = req.body;
 
-    const admin = await Admin.findById(req.admin.adminId);
+    const admin = await Admin.findById(req.admin._id);
 
     if (!admin) {
       return res.status(404).json({
@@ -231,7 +231,7 @@ exports.changeEmail = async (req, res) => {
       });
     }
 
-    const admin = await Admin.findById(req.admin.adminId);
+    const admin = await Admin.findById(req.admin._id);
 
     if (!admin) {
       return res.status(404).json({

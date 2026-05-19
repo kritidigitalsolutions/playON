@@ -37,7 +37,6 @@ const uploadFile = async (file, folder, label) => {
 exports.createChannel = async (req, res) => {
   try {
     const body = { ...req.body };
-    delete body.channelNumber;
 
     const streamType =
       body.streamType ||
@@ -135,7 +134,7 @@ exports.getChannelBySlug = async (req, res) => {
 exports.updateChannel = async (req, res) => {
   try {
     const data = { ...req.body };
-    delete data.channelNumber;
+    
 
     if (req.body.name) data.slug = makeSlug(req.body.name);
 
