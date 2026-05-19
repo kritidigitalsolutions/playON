@@ -280,8 +280,8 @@ function ImageUploadField({ label, preview, onChange, previewAlt, previewClassNa
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file && file.size > 2 * 1024 * 1024) {
-              if (pushToast) pushToast("Image is too large. Max 2MB allowed.", "error");
+            if (file && file.size > 5 * 1024 * 1024) {
+              if (pushToast) pushToast("Image is too large. Max 5MB allowed.", "error");
               e.target.value = "";
               return;
             }

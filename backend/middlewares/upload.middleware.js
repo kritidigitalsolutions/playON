@@ -40,8 +40,8 @@ const upload = multer({
   fileFilter,
 
   limits: {
-    // 2MB per image
-    fileSize: 2 * 1024 * 1024
+    // 5MB per image
+    fileSize: 5 * 1024 * 1024
   }
 });
 
