@@ -16,19 +16,11 @@ const teamSchema = new mongoose.Schema(
     },
 
     sport: {
-      type: String,
-      required: true,
-      enum: [
-        "cricket",
-        "football",
-        "basketball",
-        "kabaddi",
-        "tennis",
-        "volleyball",
-        "other"
-      ],
-      lowercase: true
-    },
+  type: String,
+  required: true,
+  lowercase: true,
+  trim: true
+},
 
     logo: {
       type: String,

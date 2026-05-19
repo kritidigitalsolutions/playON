@@ -29,6 +29,14 @@ const isValidUrl = (url) => {
   }
 };
 
+// Sanitize ObjectId helper
+const sanitizeId = (id) => {
+  if (!id) return null;
+  const s = String(id).trim();
+  if (s === "" || s === "null" || s === "undefined" || s === "none") return null;
+  return s;
+};
+
 // Parse tags helper
 const parseTags = (tags) => {
   if (!tags) return [];
@@ -90,10 +98,6 @@ exports.createHighlight =
   async (req, res) => {
     try {
       const {
-        matchId,
-        seriesId,
-        teamA,
-        teamB,
         title,
         description,
         category,
@@ -105,6 +109,12 @@ exports.createHighlight =
         isFeatured,
         order
       } = req.body;
+
+      // Sanitize ObjectId fields — FormData sends empty strings/null strings which are truthy
+      const matchId = sanitizeId(req.body.matchId);
+      const seriesId = sanitizeId(req.body.seriesId);
+      const teamA = sanitizeId(req.body.teamA);
+      const teamB = sanitizeId(req.body.teamB);
 
       // Validation
       if (
@@ -519,10 +529,6 @@ exports.updateHighlight =
       }
 
       const {
-        matchId,
-        seriesId,
-        teamA,
-        teamB,
         title,
         description,
         category,
@@ -534,6 +540,12 @@ exports.updateHighlight =
         isFeatured,
         order
       } = req.body;
+
+      // Sanitize ObjectId fields — FormData sends empty strings/null strings which are truthy
+      const matchId = sanitizeId(req.body.matchId);
+      const seriesId = sanitizeId(req.body.seriesId);
+      const teamA = sanitizeId(req.body.teamA);
+      const teamB = sanitizeId(req.body.teamB);
 
       const updateData = {};
 

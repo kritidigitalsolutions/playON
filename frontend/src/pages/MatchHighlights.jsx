@@ -465,24 +465,32 @@ function HlModal({ open, onClose, matchId, seriesId, selectedSeries, highlight, 
     setSaving(true); setErr("");
     try {
       const fd = new FormData();
+      const skipIfEmpty = ["matchId", "seriesId", "teamA", "teamB"];
       Object.entries(form).forEach(([k, v]) => {
         let val = v;
         if (k === "duration") val = formatTimeToSeconds(v);
-        if (val !== null && v !== undefined) fd.append(k, val);
+        // Don't send empty ObjectId fields — backend treats "" as truthy and tries findById("")
+        if (skipIfEmpty.includes(k) && !val) return;
+        if (val !== null && val !== undefined) fd.append(k, val);
       });
       if (thumbFile) fd.append("thumbnail", thumbFile);
       if (videoFile) fd.append("videoFile", videoFile);
 
 
       if (highlight) {
-        await api.patch(`/admin/highlights/${highlight._id}`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+        await api.patch(`/admin/highlights/${highlight._id}`, fd, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
       } else {
-        await api.post("/admin/highlights", fd, { headers: { "Content-Type": "multipart/form-data" } });
+        await api.post("/admin/highlights", fd, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
       }
       onSaved();
       onClose();
     } catch (er) {
-      setErr(er?.response?.data?.message || "Save failed");
+      console.error("Highlight save error:", er);
+      setErr(er?.response?.data?.message || er?.message || "Save failed");
     } finally {
       setSaving(false);
     }
@@ -581,8 +589,8 @@ function HlModal({ open, onClose, matchId, seriesId, selectedSeries, highlight, 
                 <input ref={videoRef} type="file" accept="video/*" className="hidden"
                   onChange={e => {
                     const file = e.target.files[0];
-                    if (file && file.size > 100 * 1024 * 1024) {
-                      setErr("Video file is too large. Max 100MB allowed.");
+                    if (file && file.size > 500 * 1024 * 1024) {
+                      setErr("Video file is too large. Max 500MB allowed.");
                       setVideoFile(null);
                       e.target.value = "";
                     } else {

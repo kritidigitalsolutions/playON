@@ -18,7 +18,7 @@ const SPORT_COLORS = {
 };
 
 const defaultForm = {
-  _id: "", name: "", slug: "", shortName: "", sport: "cricket",
+  _id: "", name: "", slug: "", shortName: "", sport: "",
   country: "", logo: "", isActive: true, sortOrder: "0",
   logoFile: null, logoPreview: ""
 };
@@ -98,9 +98,10 @@ function Teams() {
   const openEdit = (t) => {
     setEditMode(true);
     setFormErrors({});
+    const validSport = allSports.some(s => s.slug === t.sport) ? t.sport : (allSports[0]?.slug || "");
     setForm({
       _id: t._id || "", name: t.name || "", slug: t.slug || "", shortName: t.shortName || "",
-      sport: t.sport || "cricket", country: t.country || "", logo: t.logo || "",
+      sport: validSport, country: t.country || "", logo: t.logo || "",
       isActive: Boolean(t.isActive), sortOrder: String(t.sortOrder ?? 0),
       logoFile: null, logoPreview: t.logo || ""
     });
@@ -113,6 +114,7 @@ function Teams() {
     const e = {};
     if (!form.name.trim()) e.name = "Team name is required";
     if (!form.sport) e.sport = "Sport is required";
+    else if (!allSports.some(s => s.slug === form.sport)) e.sport = "Please choose a valid sport";
     setFormErrors(e);
     return Object.keys(e).length === 0;
   };
