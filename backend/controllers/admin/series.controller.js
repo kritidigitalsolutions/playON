@@ -83,19 +83,28 @@ exports.createSeries = async (req, res) => {
       });
     }
 
-    let bannerUrl = "";
-    let tournamentLogoUrl = "";
+    const uploadPromises = [];
+    const uploadKeys = [];
 
     if (req.files?.banner?.[0]) {
-      bannerUrl = await uploadToFirebase(req.files.banner[0], "series");
+      uploadPromises.push(uploadToFirebase(req.files.banner[0], "series"));
+      uploadKeys.push("banner");
     }
 
     if (req.files?.tournamentLogo?.[0]) {
-      tournamentLogoUrl = await uploadToFirebase(
-        req.files.tournamentLogo[0],
-        "series"
-      );
+      uploadPromises.push(uploadToFirebase(req.files.tournamentLogo[0], "series"));
+      uploadKeys.push("tournamentLogo");
     }
+
+    const uploadedUrls = await Promise.all(uploadPromises);
+
+    let bannerUrl = "";
+    let tournamentLogoUrl = "";
+
+    uploadKeys.forEach((key, index) => {
+      if (key === "banner") bannerUrl = uploadedUrls[index];
+      if (key === "tournamentLogo") tournamentLogoUrl = uploadedUrls[index];
+    });
 
     const series = await Series.create({
       title: cleanTitle,
@@ -348,23 +357,30 @@ exports.updateSeries = async (req, res) => {
         isHomeScreen === "true";
     }
 
+    const deletePromises = [];
+    const uploadPromises = [];
+    const uploadKeys = [];
+
     if (req.files?.banner?.[0]) {
-      if (series.banner) await deleteFromFirebase(series.banner);
-      const bannerUrl = await uploadToFirebase(
-        req.files.banner[0],
-        "series"
-      );
-      series.banner = bannerUrl;
+      if (series.banner) deletePromises.push(deleteFromFirebase(series.banner));
+      uploadPromises.push(uploadToFirebase(req.files.banner[0], "series"));
+      uploadKeys.push("banner");
     }
 
     if (req.files?.tournamentLogo?.[0]) {
-      if (series.tournamentLogo) await deleteFromFirebase(series.tournamentLogo);
-      const tournamentLogoUrl = await uploadToFirebase(
-        req.files.tournamentLogo[0],
-        "series"
-      );
-      series.tournamentLogo = tournamentLogoUrl;
+      if (series.tournamentLogo) deletePromises.push(deleteFromFirebase(series.tournamentLogo));
+      uploadPromises.push(uploadToFirebase(req.files.tournamentLogo[0], "series"));
+      uploadKeys.push("tournamentLogo");
     }
+
+    const [_, uploadedUrls] = await Promise.all([
+      Promise.all(deletePromises),
+      Promise.all(uploadPromises)
+    ]);
+
+    uploadKeys.forEach((key, index) => {
+      series[key] = uploadedUrls[index];
+    });
 
     await series.save();
     await series.populate([

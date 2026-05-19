@@ -192,65 +192,49 @@ exports.createHighlight =
       let finalVideoUrl = "";
       let finalThumbnail = "";
 
+      const uploadPromises = [];
+      const uploadKeys = [];
+
       // VIDEO UPLOAD MODE
-      if (
-        finalSourceType ===
-        "upload"
-      ) {
-        if (
-          !req.files?.videoFile?.[0]
-        ) {
+      if (finalSourceType === "upload") {
+        if (!req.files?.videoFile?.[0]) {
           return res.status(400).json({
             success: false,
-
-            message:
-              "Video file is required"
+            message: "Video file is required"
           });
         }
-
-        finalVideoUrl =
-          await uploadToFirebase(
-            req.files.videoFile[0],
-            "highlights/videos"
-          );
-      }
-
-      // VIDEO URL MODE
-      else {
+        uploadPromises.push(uploadToFirebase(req.files.videoFile[0], "highlights/videos"));
+        uploadKeys.push("video");
+      } else {
         if (!videoUrl?.trim()) {
           return res.status(400).json({
             success: false,
-
-            message:
-              "videoUrl is required"
+            message: "videoUrl is required"
           });
         }
 
-        if (
-          !isValidUrl(videoUrl)
-        ) {
+        if (!isValidUrl(videoUrl)) {
           return res.status(400).json({
             success: false,
-
-            message:
-              "Invalid video URL"
+            message: "Invalid video URL"
           });
         }
 
-        finalVideoUrl =
-          videoUrl.trim();
+        finalVideoUrl = videoUrl.trim();
       }
 
       // OPTIONAL THUMBNAIL
-      if (
-        req.files?.thumbnail?.[0]
-      ) {
-        finalThumbnail =
-          await uploadToFirebase(
-            req.files.thumbnail[0],
-            "highlights/thumbnails"
-          );
+      if (req.files?.thumbnail?.[0]) {
+        uploadPromises.push(uploadToFirebase(req.files.thumbnail[0], "highlights/thumbnails"));
+        uploadKeys.push("thumbnail");
       }
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+
+      uploadKeys.forEach((key, index) => {
+        if (key === "video") finalVideoUrl = uploadedUrls[index];
+        if (key === "thumbnail") finalThumbnail = uploadedUrls[index];
+      });
 
       const highlight =
         await Highlight.create({
@@ -676,78 +660,53 @@ exports.updateHighlight =
       updateData.sourceType =
         effectiveSourceType;
 
-      // NEW VIDEO UPLOAD
-      if (
-        effectiveSourceType ===
-          "upload" &&
-        req.files?.videoFile?.[0]
-      ) {
-        if (
-          existing.sourceType ===
-            "upload" &&
-          existing.videoUrl
-        ) {
-          await deleteFromFirebase(
-            existing.videoUrl
-          );
-        }
+      const deletePromises = [];
+      const uploadPromises = [];
+      const uploadKeys = [];
 
-        updateData.videoUrl =
-          await uploadToFirebase(
-            req.files.videoFile[0],
-            "highlights/videos"
-          );
+      // NEW VIDEO UPLOAD
+      if (effectiveSourceType === "upload" && req.files?.videoFile?.[0]) {
+        if (existing.sourceType === "upload" && existing.videoUrl) {
+          deletePromises.push(deleteFromFirebase(existing.videoUrl));
+        }
+        uploadPromises.push(uploadToFirebase(req.files.videoFile[0], "highlights/videos"));
+        uploadKeys.push("video");
       }
 
       // NEW VIDEO URL
-      else if (
-        effectiveSourceType ===
-          "url" &&
-        videoUrl !== undefined
-      ) {
-        if (
-          !isValidUrl(videoUrl)
-        ) {
+      else if (effectiveSourceType === "url" && videoUrl !== undefined) {
+        if (!isValidUrl(videoUrl)) {
           return res.status(400).json({
             success: false,
-
-            message:
-              "Invalid video URL"
+            message: "Invalid video URL"
           });
         }
 
-        if (
-          existing.sourceType ===
-            "upload" &&
-          existing.videoUrl
-        ) {
-          await deleteFromFirebase(
-            existing.videoUrl
-          );
+        if (existing.sourceType === "upload" && existing.videoUrl) {
+          deletePromises.push(deleteFromFirebase(existing.videoUrl));
         }
 
-        updateData.videoUrl =
-          videoUrl.trim();
+        updateData.videoUrl = videoUrl.trim();
       }
 
       // NEW THUMBNAIL
-      if (
-        req.files?.thumbnail?.[0]
-      ) {
-        if (
-          existing.thumbnail
-        ) {
-          await deleteFromFirebase(
-            existing.thumbnail
-          );
+      if (req.files?.thumbnail?.[0]) {
+        if (existing.thumbnail) {
+          deletePromises.push(deleteFromFirebase(existing.thumbnail));
         }
-
-        updateData.thumbnail =
-          await uploadToFirebase(
-            req.files.thumbnail[0],
-            "highlights/thumbnails"
-          );
+        uploadPromises.push(uploadToFirebase(req.files.thumbnail[0], "highlights/thumbnails"));
+        uploadKeys.push("thumbnail");
       }
+
+      const [_, uploadedUrls] = await Promise.all([
+        Promise.all(deletePromises),
+        Promise.all(uploadPromises)
+      ]);
+
+      uploadKeys.forEach((key, index) => {
+        if (key === "video") updateData.videoUrl = uploadedUrls[index];
+        if (key === "thumbnail") updateData.thumbnail = uploadedUrls[index];
+      });
 
       const highlight =
         await Highlight.findByIdAndUpdate(
@@ -806,7 +765,7 @@ exports.deleteHighlight =
       // Delete uploaded video
       if (
         highlight.sourceType ===
-          "upload" &&
+        "upload" &&
         highlight.videoUrl
       ) {
         await deleteFromFirebase(

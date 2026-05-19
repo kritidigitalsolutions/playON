@@ -11,6 +11,7 @@ import { formatNumber, getBadgeClass } from "../utils/helpers";
 const defaultForm = {
   _id: "",
   name: "",
+  channelNumber: "",
   category: "other",
   description: "",
   streamUrl: "",
@@ -180,6 +181,7 @@ function LiveTV() {
     setForm({
       _id: channel?._id || "",
       name: channel?.name || "",
+      channelNumber: channel?.channelNumber || "",
       category: channel?.category || "other",
       description: channel?.description || "",
       streamUrl: channel?.streamUrl || "",
@@ -222,6 +224,9 @@ function LiveTV() {
 
       const payload = new FormData();
       payload.append("name", form.name || "");
+      if (form.channelNumber !== "") {
+        payload.append("channelNumber", form.channelNumber);
+      }
       payload.append("category", form.category || "other");
       payload.append("description", form.description || "");
       payload.append("streamUrl", form.streamUrl || "");
@@ -556,14 +561,14 @@ function LiveTV() {
             type="button"
             onClick={() => setCategoryFilter("all")}
             className={`inline-flex h-8 items-center gap-2 rounded-full border px-3 text-xs transition ${categoryFilter === "all"
-                ? "border-green-400 bg-green-50 text-green-700 dark:border-green-600 dark:bg-green-900/30 dark:text-green-400"
-                : "border-slate-200 text-slate-600 hover:border-slate-300 dark:text-slate-300"
+              ? "border-green-400 bg-green-50 text-green-700 dark:border-green-600 dark:bg-green-900/30 dark:text-green-400"
+              : "border-slate-200 text-slate-600 hover:border-slate-300 dark:text-slate-300"
               }`}
           >
             All
             <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${categoryFilter === "all"
-                ? "bg-green-200 text-green-700 dark:bg-green-700 dark:text-green-200"
-                : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+              ? "bg-green-200 text-green-700 dark:bg-green-700 dark:text-green-200"
+              : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
               }`}
             >
               {channels.length}
@@ -574,8 +579,8 @@ function LiveTV() {
             <div
               key={category._id}
               className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs transition ${categoryFilter === category.slug
-                  ? "border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-900/30"
-                  : "border-slate-200"
+                ? "border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-900/30"
+                : "border-slate-200"
                 }`}
             >
               <button
@@ -586,8 +591,8 @@ function LiveTV() {
               >
                 {category.name}
                 <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${categoryFilter === category.slug
-                    ? "bg-green-200 text-green-700 dark:bg-green-700 dark:text-green-200"
-                    : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                  ? "bg-green-200 text-green-700 dark:bg-green-700 dark:text-green-200"
+                  : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
                   }`}
                 >
                   {category.count}
@@ -655,7 +660,7 @@ function LiveTV() {
                 {filteredChannels.map((channel) => (
                   <tr key={channel._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="px-4 py-3">
-                       <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{channel.channelNumber || "-"}</span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{channel.channelNumber || "-"}</span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -741,6 +746,26 @@ function LiveTV() {
                       className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
                     />
                     {formErrors.name ? <span className="mt-1 block text-xs text-rose-500">{formErrors.name}</span> : null}
+                  </label>
+                  <label className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">
+                      Channel Number (Optional)
+                    </span>
+
+                    <input
+                      type="number"
+                      min="1"
+                      value={form.channelNumber}
+                      onChange={(e) =>
+                        onFormChange("channelNumber", e.target.value)
+                      }
+                      placeholder="Auto generate if empty"
+                      className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:border-indigo-400 dark:bg-slate-950 dark:text-slate-100"
+                    />
+
+                    <p className="mt-1 text-[11px] text-slate-400">
+                      Leave empty for automatic channel number
+                    </p>
                   </label>
 
                   <label className="block text-sm">
@@ -999,32 +1024,32 @@ function LiveTV() {
                     <p className="mt-0.5 truncate text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize">{String(value)}</p>
                   </div>
                 ))}
-                
+
                 {selectedDetails.description && (
                   <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
-                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Description</p>
-                     <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-3">{selectedDetails.description}</p>
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">Description</p>
+                    <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-3">{selectedDetails.description}</p>
                   </div>
                 )}
-                
+
                 {selectedDetails.streamUrl && (
                   <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
-                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Stream URL</p>
-                     <p className="mt-0.5 truncate text-sm font-mono text-indigo-500 select-all">{selectedDetails.streamUrl}</p>
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">Stream URL</p>
+                    <p className="mt-0.5 truncate text-sm font-mono text-indigo-500 select-all">{selectedDetails.streamUrl}</p>
                   </div>
                 )}
 
                 {selectedDetails.backupUrl && (
                   <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
-                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Backup URL</p>
-                     <p className="mt-0.5 truncate text-sm font-mono text-slate-600 dark:text-slate-400 select-all">{selectedDetails.backupUrl}</p>
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">Backup URL</p>
+                    <p className="mt-0.5 truncate text-sm font-mono text-slate-600 dark:text-slate-400 select-all">{selectedDetails.backupUrl}</p>
                   </div>
                 )}
 
                 {selectedDetails.rtmpUrl && (
                   <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
-                     <p className="text-[10px] uppercase tracking-wide text-slate-400">RTMP URL</p>
-                     <p className="mt-0.5 truncate text-sm font-mono text-slate-600 dark:text-slate-400 select-all">{selectedDetails.rtmpUrl}</p>
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">RTMP URL</p>
+                    <p className="mt-0.5 truncate text-sm font-mono text-slate-600 dark:text-slate-400 select-all">{selectedDetails.rtmpUrl}</p>
                   </div>
                 )}
               </div>

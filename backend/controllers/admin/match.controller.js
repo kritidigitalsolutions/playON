@@ -5,7 +5,7 @@ const Highlight = require("../../models/highlight.model");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
 const deleteFromFirebase = require("../../utils/deleteFromFirebase");
 const autoNotify = require("../../utils/autoNotify");
-const { 
+const {
   normalizeAdminStatus
 } = require("../../services/matchStatus.service");
 
@@ -104,38 +104,39 @@ const formatMatchWithStream = (req, match, stream) => ({
 // Create
 exports.createMatch = async (req, res) => {
   try {
+    const uploadPromises = [];
+    const uploadKeys = [];
+
+    if (req.files?.thumbnail?.[0]) {
+      uploadPromises.push(uploadToFirebase(req.files.thumbnail[0], "matches"));
+      uploadKeys.push("thumbnail");
+    }
+    if (req.files?.banner?.[0]) {
+      uploadPromises.push(uploadToFirebase(req.files.banner[0], "matches"));
+      uploadKeys.push("banner");
+    }
+    if (req.files?.teamALogo?.[0]) {
+      uploadPromises.push(uploadToFirebase(req.files.teamALogo[0], "matches"));
+      uploadKeys.push("teamALogo");
+    }
+    if (req.files?.teamBLogo?.[0]) {
+      uploadPromises.push(uploadToFirebase(req.files.teamBLogo[0], "matches"));
+      uploadKeys.push("teamBLogo");
+    }
+
+    const uploadedUrls = await Promise.all(uploadPromises);
+
     let thumbnail = "";
     let banner = "";
     let teamALogo = "";
     let teamBLogo = "";
 
-    if (req.files?.thumbnail?.[0]) {
-      thumbnail = await uploadToFirebase(
-        req.files.thumbnail[0],
-        "matches"
-      );
-    }
-
-    if (req.files?.banner?.[0]) {
-      banner = await uploadToFirebase(
-        req.files.banner[0],
-        "matches"
-      );
-    }
-
-    if (req.files?.teamALogo?.[0]) {
-      teamALogo = await uploadToFirebase(
-        req.files.teamALogo[0],
-        "matches"
-      );
-    }
-
-    if (req.files?.teamBLogo?.[0]) {
-      teamBLogo = await uploadToFirebase(
-        req.files.teamBLogo[0],
-        "matches"
-      );
-    }
+    uploadKeys.forEach((key, index) => {
+      if (key === "thumbnail") thumbnail = uploadedUrls[index];
+      if (key === "banner") banner = uploadedUrls[index];
+      if (key === "teamALogo") teamALogo = uploadedUrls[index];
+      if (key === "teamBLogo") teamBLogo = uploadedUrls[index];
+    });
 
     const data = {
       ...normalizeMatchBody(req.body, { includeDefaults: true }),
@@ -339,48 +340,50 @@ exports.updateMatch = async (req, res) => {
       }
     }
 
+    const deletePromises = [];
+    const uploadPromises = [];
+    const uploadKeys = [];
+
     if (req.files?.thumbnail?.[0]) {
       if (existingMatch.thumbnail) {
-        await deleteFromFirebase(existingMatch.thumbnail);
+        deletePromises.push(deleteFromFirebase(existingMatch.thumbnail));
       }
-      data.thumbnail = await uploadToFirebase(
-        req.files.thumbnail[0],
-        "matches"
-      );
+      uploadPromises.push(uploadToFirebase(req.files.thumbnail[0], "matches"));
+      uploadKeys.push("thumbnail");
     }
-
 
     if (req.files?.banner?.[0]) {
       if (existingMatch.banner) {
-        await deleteFromFirebase(existingMatch.banner);
+        deletePromises.push(deleteFromFirebase(existingMatch.banner));
       }
-      data.banner = await uploadToFirebase(
-        req.files.banner[0],
-        "matches"
-      );
+      uploadPromises.push(uploadToFirebase(req.files.banner[0], "matches"));
+      uploadKeys.push("banner");
     }
-
 
     if (req.files?.teamALogo?.[0]) {
       if (existingMatch.teamALogo) {
-        await deleteFromFirebase(existingMatch.teamALogo);
+        deletePromises.push(deleteFromFirebase(existingMatch.teamALogo));
       }
-      data.teamALogo = await uploadToFirebase(
-        req.files.teamALogo[0],
-        "matches"
-      );
+      uploadPromises.push(uploadToFirebase(req.files.teamALogo[0], "matches"));
+      uploadKeys.push("teamALogo");
     }
-
 
     if (req.files?.teamBLogo?.[0]) {
       if (existingMatch.teamBLogo) {
-        await deleteFromFirebase(existingMatch.teamBLogo);
+        deletePromises.push(deleteFromFirebase(existingMatch.teamBLogo));
       }
-      data.teamBLogo = await uploadToFirebase(
-        req.files.teamBLogo[0],
-        "matches"
-      );
+      uploadPromises.push(uploadToFirebase(req.files.teamBLogo[0], "matches"));
+      uploadKeys.push("teamBLogo");
     }
+
+    const [_, uploadedUrls] = await Promise.all([
+      Promise.all(deletePromises),
+      Promise.all(uploadPromises)
+    ]);
+
+    uploadKeys.forEach((key, index) => {
+      data[key] = uploadedUrls[index];
+    });
 
 
     const match = await matchService.updateMatch(req.params.id, data);
