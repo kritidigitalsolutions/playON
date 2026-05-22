@@ -38,5 +38,3 @@ exports.hasPermission = (moduleName, action) => {
     }
   };
 };
-
-

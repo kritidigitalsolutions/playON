@@ -1,8 +1,16 @@
 const multer = require("multer");
 const path = require("path");
+const os = require("os");
 
-// MEMORY STORAGE FOR VERCEL
-const storage = multer.memoryStorage();
+// Stream large files to temporary disk directory instead of RAM buffer to prevent crashes
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, os.tmpdir());
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
 
 const fileFilter = (req, file, cb) => {
   // Thumbnail validation

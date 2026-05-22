@@ -16,9 +16,9 @@ const getBaseURL = () => {
   if (process.env.REACT_APP_API_URL) return process.env.REACT_APP_API_URL;
   // In production (Vercel), use the deployed backend URL
   if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
-    return "https://play-on-weld.vercel.app/api";
+    return "https://api.playonsports.online/api";
   }
-  return "http://localhost:8000/api";
+  return "https://api.playonsports.online/api";
 };
 
 const api = axios.create({
