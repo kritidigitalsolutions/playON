@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.cametech.playon",
+      "sha256_cert_fingerprints": [
+        "F3:3B:0B:FB:B5:99:69:43:57:52:EF:29:74:4F:EA:AC:CA:D7:8F:6A:BB:06:F8:F5:CF:98:BD:4B:30:DB:73:F8"
+      ]
+    }
+  }
+]

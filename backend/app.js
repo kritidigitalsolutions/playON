@@ -10,7 +10,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(
+  "/.well-known",
+  express.static(path.join(__dirname, "public/.well-known"), {
+    setHeaders: (res) => {
+      res.set("Content-Type", "application/json");
+    },
+  })
+);
+
+
 
 // Test Route
 app.get("/", (req, res) => {
