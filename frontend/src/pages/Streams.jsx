@@ -286,11 +286,6 @@ function Streams() {
   //   }
   // };
   const handleWatch = async (stream) => {
-    if (stream.status !== "live") {
-      setError("Stream is not live yet");
-      return;
-    }
-
     try {
       const response = await api.get(`/admin/streams/${stream._id}/watch`);
 
@@ -305,7 +300,7 @@ function Streams() {
       }
     } catch (apiError) {
       setError(
-        apiError?.response?.data?.message || "Stream not available"
+        apiError?.response?.data?.message || "provide Stream url"
       );
     }
   };
@@ -409,12 +404,7 @@ function Streams() {
               <button
                 type="button"
                 onClick={() => handleWatch(stream)}
-                disabled={stream.status !== "live"}
-                className={`admin-action-btn
-    ${stream.status === "live"
-                    ? ""
-                    : "cursor-not-allowed opacity-50"
-                  }`}
+                className="admin-action-btn"
               >
                 Watch
               </button>

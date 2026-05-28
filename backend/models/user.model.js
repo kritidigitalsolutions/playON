@@ -141,6 +141,13 @@ const userSchema = new mongoose.Schema(
     hasCompletedReferralReward: {
       type: Boolean,
       default: false
+    },
+
+    // Tracks the timestamp of the user's most recent login.
+    // Used to filter notifications: only show notifications after this date.
+    lastLoginAt: {
+      type: Date,
+      default: null
     }
   },
   { timestamps: true }

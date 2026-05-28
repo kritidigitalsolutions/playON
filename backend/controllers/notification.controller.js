@@ -1,13 +1,22 @@
 const Notification = require("../models/notification.model");
+const User = require("../models/user.model");
+
+// Helper: get the date to filter notifications from (user's last login)
+const getFilterDate = async (userId) => {
+  const user = await User.findById(userId).select("lastLoginAt createdAt");
+  return user?.lastLoginAt || user?.createdAt || new Date(0);
+};
 
 // Get my notifications
 exports.getMyNotifications = async (req, res) => {
   try {
     const userId = req.user.userId;
+    const filterDate = await getFilterDate(userId);
 
     const notifications =
       await Notification.find({
         isActive: true,
+        createdAt: { $gte: filterDate },
         $or: [
           { targetUser: userId },
           { targetUser: null }
@@ -16,20 +25,20 @@ exports.getMyNotifications = async (req, res) => {
       }).sort({ createdAt: -1 });
 
     const result = notifications.map((item) => {
-  const obj = item.toObject();
+      const obj = item.toObject();
 
-  if (!obj.targetUser) {
-    obj.isRead = item.readBy.some(
-      (r) =>
-        r.user.toString() ===
-        userId.toString()
-    );
-  }
+      if (!obj.targetUser) {
+        obj.isRead = item.readBy.some(
+          (r) =>
+            r.user.toString() ===
+            userId.toString()
+        );
+      }
 
-  obj.image = obj.metadata?.image || "";
+      obj.image = obj.metadata?.image || "";
 
-  return obj;
-});
+      return obj;
+    });
 
     res.json({
       success: true,
@@ -48,10 +57,12 @@ exports.getMyNotifications = async (req, res) => {
 exports.getUnreadCount = async (req, res) => {
   try {
     const userId = req.user.userId;
+    const filterDate = await getFilterDate(userId);
 
     const notifications =
       await Notification.find({
         isActive: true,
+        createdAt: { $gte: filterDate },
         $or: [
           { targetUser: userId },
           { targetUser: null }
@@ -141,10 +152,12 @@ exports.markAsRead = async (req, res) => {
 exports.markAllAsRead = async (req, res) => {
   try {
     const userId = req.user.userId;
+    const filterDate = await getFilterDate(userId);
 
     const notifications =
       await Notification.find({
         isActive: true,
+        createdAt: { $gte: filterDate },
         $or: [
           { targetUser: userId },
           { targetUser: null }
@@ -229,9 +242,11 @@ exports.deleteNotification = async (req, res) => {
 exports.getReadCount = async (req, res) => {
   try {
     const userId = req.user.userId;
+    const filterDate = await getFilterDate(userId);
 
     const notifications = await Notification.find({
       isActive: true,
+      createdAt: { $gte: filterDate },
       $or: [
         { targetUser: userId },
         { targetUser: null }

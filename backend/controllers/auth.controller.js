@@ -338,6 +338,9 @@ exports.verifyOtp = async (req, res) => {
       await user.save();
     }
 
+    // Stamp lastLoginAt so the notification filter knows which session to start from
+    await User.findByIdAndUpdate(user._id, { lastLoginAt: new Date() });
+
     const token = jwt.sign(
       { userId: user._id },
       process.env.JWT_SECRET,
@@ -492,6 +495,9 @@ exports.googleLogin = async (req, res) => {
 
       isNewUser = true;
     }
+
+    // Stamp lastLoginAt so the notification filter knows which session to start from
+    await User.findByIdAndUpdate(user._id, { lastLoginAt: new Date() });
 
     const token = jwt.sign(
       { userId: user._id, provider: "google" },

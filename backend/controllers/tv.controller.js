@@ -84,6 +84,10 @@ exports.loginWithCode = async (req, res) => {
       });
     }
 
+    // Stamp lastLoginAt so the notification filter knows which session to start from
+    user.lastLoginAt = new Date();
+    await user.save();
+
     const token = jwt.sign(
       { userId: user._id },
       process.env.JWT_SECRET,

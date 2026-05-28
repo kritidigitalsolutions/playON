@@ -237,10 +237,11 @@ exports.watchStream = async (req, res) => {
         message: "Stream not found"
       });
     }
-    if (stream.status !== "live") {
+
+    if (!stream.streamUrl) {
       return res.status(400).json({
         success: false,
-        message: "Stream is not live yet"
+        message: "provide Stream url"
       });
     }
 

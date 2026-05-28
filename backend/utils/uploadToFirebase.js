@@ -1,5 +1,6 @@
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 const { bucket } = require("../config/firebase");
 
 const uploadToFirebase = async (file, folder = "general") => {
@@ -13,12 +14,15 @@ const uploadToFirebase = async (file, folder = "general") => {
 
   const fileName = `${folder}/${Date.now()}-${cleanName}${ext}`;
   const firebaseFile = bucket.file(fileName);
+  const downloadToken = crypto.randomUUID();
 
   const fileOptions = {
     metadata: {
-      contentType: file.mimetype
+      contentType: file.mimetype,
+      metadata: {
+        firebaseStorageDownloadTokens: downloadToken
+      }
     },
-    public: true,
     validation: "md5"
   };
 
@@ -42,7 +46,7 @@ const uploadToFirebase = async (file, folder = "general") => {
     throw new Error("File content (buffer or path) is missing");
   }
 
-  return `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+  return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(fileName)}?alt=media&token=${downloadToken}`;
 };
 
 module.exports = uploadToFirebase;
