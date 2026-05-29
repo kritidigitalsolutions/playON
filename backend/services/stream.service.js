@@ -116,8 +116,7 @@ exports.getLiveStreams = async () => {
 
 // Match Stream
 exports.getStreamByMatch = async (matchId) => {
-  return await Stream.findOne({
-    matchId,
-    status: { $in: ["live", "scheduled"] }
-  }).populate("matchId", "title teamA teamB sport score status");
+  return await Stream.findOne({ matchId })
+    .sort({ createdAt: -1 })
+    .populate("matchId", "title teamA teamB sport score status");
 };

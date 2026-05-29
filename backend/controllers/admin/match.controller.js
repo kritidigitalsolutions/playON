@@ -567,13 +567,25 @@ exports.watchMatch = async (req, res) => {
         message: "Match not found"
       });
     }
+    if (match.status !== "live") {
+      return res.status(400).json({
+        success: false,
+        message: "Match is not live yet"
+      });
+    }
 
     const stream = await matchStreamSync.getLatestStreamByMatch(req.params.id);
 
     if (!stream || !stream.streamUrl) {
+      return res.status(404).json({
+        success: false,
+        message: "No stream URL found for this match"
+      });
+    }
+    if (stream.status !== "live") {
       return res.status(400).json({
         success: false,
-        message: "provide Stream url"
+        message: "Stream is not live yet"
       });
     }
 

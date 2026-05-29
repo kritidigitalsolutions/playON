@@ -110,8 +110,8 @@ exports.playStream = async (req, res) => {
       return res.status(404).json({ success: false, message: "No stream found" });
     }
 
-    if (stream.status !== "live") {
-      return res.status(400).json({ success: false, message: "Stream is not live" });
+    if (!stream.streamUrl) {
+      return res.status(400).json({ success: false, message: "Stream not configured" });
     }
 
     // ✅ PREMIUM GATE
