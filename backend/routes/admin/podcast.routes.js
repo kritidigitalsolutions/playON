@@ -15,7 +15,10 @@ const {
 } = require("../../controllers/admin/podcast.controller");
 
 // upload config
-const podcastUpload = upload.single("thumbnail");
+const podcastUpload = upload.fields([
+  { name: "thumbnail", maxCount: 1 },
+  { name: "liveLogo", maxCount: 1 }
+]);
 
 // CREATE
 router.post(

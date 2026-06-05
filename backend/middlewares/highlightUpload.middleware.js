@@ -13,15 +13,15 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  // Thumbnail validation
-  if (file.fieldname === "thumbnail") {
+  // Thumbnail and Live Logo validation
+  if (file.fieldname === "thumbnail" || file.fieldname === "liveLogo") {
     if (file.mimetype.startsWith("image/")) {
       return cb(null, true);
     }
 
     return cb(
       new Error(
-        "Thumbnail must be an image file"
+        `${file.fieldname === "thumbnail" ? "Thumbnail" : "Live Logo"} must be an image file`
       )
     );
   }

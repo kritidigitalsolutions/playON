@@ -23,10 +23,14 @@ const defaultForm = {
   status: "offline",
   featured: false,
   isPremium: false,
-  thumbnailFile: null,
-  logoFile: null
-};
 
+
+  liveLogo: "",
+  showLiveLogo: false,
+
+  thumbnailFile: null,
+  liveLogoFile: null
+};
 const defaultCategoryForm = {
   _id: "",
   name: ""
@@ -192,9 +196,14 @@ function LiveTV() {
       quality: channel?.quality || "auto",
       status: channel?.status || "offline",
       featured: Boolean(channel?.featured),
-      isPremium: Boolean(channel?.isPremium),
-      thumbnailFile: null,
-      logoFile: null
+isPremium: Boolean(channel?.isPremium),
+
+
+liveLogo: channel?.liveLogo || "",
+showLiveLogo: Boolean(channel?.showLiveLogo),
+
+thumbnailFile: null,
+liveLogoFile: null
     });
     setModalOpen(true);
   };
@@ -238,8 +247,9 @@ function LiveTV() {
       payload.append("status", form.status || "offline");
       payload.append("featured", String(Boolean(form.featured)));
       payload.append("isPremium", String(Boolean(form.isPremium)));
+      payload.append("showLiveLogo",String(Boolean(form.showLiveLogo)));
       if (form.thumbnailFile) payload.append("thumbnail", form.thumbnailFile);
-      if (form.logoFile) payload.append("logo", form.logoFile);
+      if (form.liveLogoFile) payload.append("liveLogo", form.liveLogoFile);
 
       let response;
       if (editMode && form._id) {
@@ -335,14 +345,22 @@ function LiveTV() {
       if (response?.data?.success) {
         const stream = response.data.stream || {};
 
-        setWatchData({
-          title: response.data.channel?.name || "Live Channel",
-          streamUrl: stream.streamUrl || channel.streamUrl,
-          streamType: stream.streamType || channel.streamType,
-          backupUrl: stream.backupUrl || channel.backupUrl,
-          rtmpUrl: stream.rtmpUrl || channel.rtmpUrl,
-          srtUrl: stream.srtUrl || channel.srtUrl
-        });
+      setWatchData({
+  title: response.data.channel?.name || "Live Channel",
+  streamUrl: stream.streamUrl || channel.streamUrl,
+  streamType: stream.streamType || channel.streamType,
+  backupUrl: stream.backupUrl || channel.backupUrl,
+  rtmpUrl: stream.rtmpUrl || channel.rtmpUrl,
+  srtUrl: stream.srtUrl || channel.srtUrl,
+
+  liveLogo:
+    response.data.channel?.liveLogo || channel.liveLogo || "",
+
+  showLiveLogo:
+    response.data.channel?.showLiveLogo ??
+    channel.showLiveLogo ??
+    false
+});
       }
     } catch (apiError) {
       setError(apiError?.response?.data?.message || "Stream not available");
@@ -878,14 +896,22 @@ function LiveTV() {
                   </label>
 
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Logo</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => onFormChange("logoFile", e.target.files?.[0] || null)}
-                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
-                    />
-                  </label>
+  <span className="mb-1 block text-slate-500 dark:text-slate-400">
+    Live Logo
+  </span>
+
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) =>
+      onFormChange(
+        "liveLogoFile",
+        e.target.files?.[0] || null
+      )
+    }
+    className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
+  />
+</label>
 
                   <label className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Description</span>
@@ -899,25 +925,36 @@ function LiveTV() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4 md:col-span-2">
-                  <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                    <input
-                      type="checkbox"
-                      checked={form.featured}
-                      onChange={(e) => onFormChange("featured", e.target.checked)}
-                      className="h-4 w-4"
-                    />
-                    Featured Channel
-                  </label>
-                  <label className="flex items-center gap-2 text-sm text-violet-600 dark:text-violet-400">
-                    <input
-                      type="checkbox"
-                      checked={form.isPremium}
-                      onChange={(e) => onFormChange("isPremium", e.target.checked)}
-                      className="h-4 w-4"
-                    />
-                    👑 Premium (subscription required)
-                  </label>
-                </div>
+  <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+    <input
+      type="checkbox"
+      checked={form.featured}
+      onChange={(e) => onFormChange("featured", e.target.checked)}
+      className="h-4 w-4"
+    />
+    Featured Channel
+  </label>
+
+  <label className="flex items-center gap-2 text-sm text-violet-600 dark:text-violet-400">
+    <input
+      type="checkbox"
+      checked={form.isPremium}
+      onChange={(e) => onFormChange("isPremium", e.target.checked)}
+      className="h-4 w-4"
+    />
+    👑 Premium (subscription required)
+  </label>
+
+  <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+    <input
+      type="checkbox"
+      checked={form.showLiveLogo}
+      onChange={(e) => onFormChange("showLiveLogo", e.target.checked)}
+      className="h-4 w-4"
+    />
+    Show Live Logo
+  </label>
+</div>
 
                 <div className="flex justify-end gap-3">
                   <button type="button" onClick={closeModal} className="admin-secondary-btn">

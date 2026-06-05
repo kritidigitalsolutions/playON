@@ -46,7 +46,9 @@ const uploadToFirebase = async (file, folder = "general") => {
     throw new Error("File content (buffer or path) is missing");
   }
 
-  return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(fileName)}?alt=media&token=${downloadToken}`;
+  await firebaseFile.makePublic();
+
+  return `https://storage.googleapis.com/${bucket.name}/${fileName}`;
 };
 
 module.exports = uploadToFirebase;

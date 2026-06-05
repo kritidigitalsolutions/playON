@@ -43,7 +43,7 @@ const CAT_COLORS = {
 
 const TEAM_SPORTS = ["cricket", "football", "basketball", "kabaddi", "tennis", "volleyball", "other"];
 
-const EMPTY_FORM = { title: "", description: "", category: "other", sourceType: "url", videoUrl: "", duration: "00:00", tags: "", isPremium: false, isFeatured: false, order: 0, matchId: "", seriesId: "", teamA: "", teamB: "" };
+const EMPTY_FORM = { title: "", description: "", category: "other", sourceType: "url", videoUrl: "", duration: "00:00", tags: "", isPremium: false, isFeatured: false, order: 0, matchId: "", seriesId: "", teamA: "", teamB: "", liveLogo: "", showLiveLogo: false };
 
 
 function Badge({ category }) {
@@ -388,10 +388,12 @@ function HlModal({ open, onClose, matchId, seriesId, selectedSeries, highlight, 
   const [form, setForm] = useState(EMPTY_FORM);
   const [thumbFile, setThumbFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
+  const [liveLogoFile, setLiveLogoFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
   const videoRef = useRef();
   const thumbRef = useRef();
+  const liveLogoRef = useRef();
   const [allTeams, setAllTeams] = useState([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
 
@@ -421,13 +423,15 @@ function HlModal({ open, onClose, matchId, seriesId, selectedSeries, highlight, 
         matchId: highlight.matchId?._id || highlight.matchId || "",
         seriesId: highlight.seriesId?._id || highlight.seriesId || "",
         teamA: highlight.teamA?._id || highlight.teamA || "",
-        teamB: highlight.teamB?._id || highlight.teamB || ""
+        teamB: highlight.teamB?._id || highlight.teamB || "",
+        liveLogo: highlight.liveLogo || "",
+        showLiveLogo: !!highlight.showLiveLogo
       });
     } else {
       setForm({ ...EMPTY_FORM, matchId: matchId || "", seriesId: seriesId || "" });
     }
 
-    setThumbFile(null); setVideoFile(null); setErr("");
+    setThumbFile(null); setVideoFile(null); setLiveLogoFile(null); setErr("");
   }, [highlight, open, matchId, seriesId]);
 
   const handleCreateTeam = async (teamData) => {
@@ -475,6 +479,11 @@ function HlModal({ open, onClose, matchId, seriesId, selectedSeries, highlight, 
       });
       if (thumbFile) fd.append("thumbnail", thumbFile);
       if (videoFile) fd.append("videoFile", videoFile);
+      if (liveLogoFile) {
+        fd.append("liveLogo", liveLogoFile);
+      } else {
+        fd.append("liveLogo", form.liveLogo || "");
+      }
 
 
       if (highlight) {
@@ -627,6 +636,37 @@ function HlModal({ open, onClose, matchId, seriesId, selectedSeries, highlight, 
             </div>
 
             <div>
+              <label className={labelCls}>Live Logo (optional)</label>
+              <div onClick={() => liveLogoRef.current?.click()}
+                className="flex items-center gap-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 px-4 py-3 cursor-pointer hover:border-indigo-400 transition">
+                <Film size={18} className="text-slate-400" />
+                <span className="text-sm text-slate-500 dark:text-slate-400 truncate">{liveLogoFile ? liveLogoFile.name : (form.liveLogo ? "Change live logo" : "Click to select image")}</span>
+              </div>
+              <input ref={liveLogoRef} type="file" accept="image/*" className="hidden"
+                onChange={e => {
+                  const file = e.target.files[0];
+                  if (file && file.size > 2 * 1024 * 1024) {
+                    setErr("Live logo image is too large. Max 2MB allowed.");
+                    setLiveLogoFile(null);
+                    e.target.value = "";
+                  } else {
+                    setLiveLogoFile(file || null);
+                    setErr("");
+                  }
+                }}
+              />
+              {(liveLogoFile || form.liveLogo) && (
+                <div className="mt-2 relative inline-block">
+                  <img src={liveLogoFile ? URL.createObjectURL(liveLogoFile) : form.liveLogo} alt="Live Logo Preview" className="h-16 w-16 rounded-xl object-contain border border-slate-200 dark:border-slate-700" />
+                  <button type="button" onClick={() => { setLiveLogoFile(null); setForm(p => ({ ...p, liveLogo: "" })); }}
+                    className="absolute -top-2 -right-2 h-6 w-6 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 shadow-sm">
+                    <X size={12} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div>
               <label className={labelCls}>Description</label>
               <textarea className={cx(inputCls, "h-20 py-2 resize-none")} value={form.description} onChange={e => set("description", e.target.value)} placeholder="Optional description..." />
             </div>
@@ -650,6 +690,10 @@ function HlModal({ open, onClose, matchId, seriesId, selectedSeries, highlight, 
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.isFeatured} onChange={e => set("isFeatured", e.target.checked)} className="rounded" />
                 <span className="text-sm text-slate-700 dark:text-slate-300">Featured</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={form.showLiveLogo} onChange={e => set("showLiveLogo", e.target.checked)} className="rounded" />
+                <span className="text-sm text-slate-700 dark:text-slate-300">Show Live Logo</span>
               </label>
             </div>
 
@@ -1067,6 +1111,19 @@ export default function MatchHighlights() {
                         )}
                       </div>
                     </div>
+
+                    {selectedHighlight.liveLogo && (
+                      <div>
+                        <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Live Logo</p>
+                        <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                          <img src={selectedHighlight.liveLogo} alt="Live Logo" className="h-8 w-8 object-contain" />
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">Live Logo</p>
+                            <p className="text-[10px] text-slate-500">{selectedHighlight.showLiveLogo ? "Visible on player" : "Hidden on player"}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     <div>
                       <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Competing Teams</p>

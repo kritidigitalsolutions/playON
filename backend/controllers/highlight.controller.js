@@ -33,6 +33,11 @@ const formatHighlight = (req, doc) => {
     thumbnail: resolveUrl(
       req,
       h.thumbnail
+    ),
+
+    liveLogo: resolveUrl(
+      req,
+      h.liveLogo
     )
   };
 };

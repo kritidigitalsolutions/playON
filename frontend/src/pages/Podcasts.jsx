@@ -66,7 +66,11 @@ const defaultForm = {
   isPremium: false,
   status: "active",
   thumbnailFile: null,
-  thumbnailPreview: ""
+  thumbnailPreview: "",
+  liveLogo: "",
+  showLiveLogo: false,
+  liveLogoFile: null,
+  liveLogoPreview: ""
 };
 
 const classNames = (...parts) => parts.filter(Boolean).join(" ");
@@ -177,6 +181,22 @@ function Podcasts() {
     }
   };
 
+  const handleLiveLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        pushToast("Live Logo image is too large. Max 2MB allowed.", "error");
+        e.target.value = "";
+        return;
+      }
+      setForm(p => ({
+        ...p,
+        liveLogoFile: file,
+        liveLogoPreview: URL.createObjectURL(file)
+      }));
+    }
+  };
+
   const openCreate = () => {
     setEditMode(false);
     setForm(defaultForm);
@@ -201,7 +221,11 @@ function Podcasts() {
       isPremium: Boolean(p.isPremium),
       status: p.status || "active",
       thumbnailFile: null,
-      thumbnailPreview: p.thumbnail || ""
+      thumbnailPreview: p.thumbnail || "",
+      liveLogo: p.liveLogo || "",
+      showLiveLogo: Boolean(p.showLiveLogo),
+      liveLogoFile: null,
+      liveLogoPreview: p.liveLogo || ""
     });
     setModalOpen(true);
   };
@@ -239,9 +263,16 @@ function Podcasts() {
       formData.append("isFeatured", String(Boolean(form.isFeatured)));
       formData.append("isPremium", String(Boolean(form.isPremium)));
       formData.append("status", form.status);
+      formData.append("showLiveLogo", String(Boolean(form.showLiveLogo)));
 
       if (form.thumbnailFile) {
         formData.append("thumbnail", form.thumbnailFile);
+      }
+
+      if (form.liveLogoFile) {
+        formData.append("liveLogo", form.liveLogoFile);
+      } else {
+        formData.append("liveLogo", form.liveLogo || "");
       }
 
       const res = editMode && form._id
@@ -663,10 +694,14 @@ function Podcasts() {
                   </label>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-4">
                   <label className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-3 text-sm">
                     <input type="checkbox" checked={form.isFeatured} onChange={e => onFormChange("isFeatured", e.target.checked)} className="h-4 w-4" />
                     <span>Featured</span>
+                  </label>
+                  <label className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-3 text-sm">
+                    <input type="checkbox" checked={form.showLiveLogo} onChange={e => onFormChange("showLiveLogo", e.target.checked)} className="h-4 w-4" />
+                    <span>Show Live Logo</span>
                   </label>
                   <label className="flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50/30 px-3 py-3 text-sm dark:border-violet-500/20 dark:bg-violet-500/5">
                     <input type="checkbox" checked={form.isPremium} onChange={e => onFormChange("isPremium", e.target.checked)} className="h-4 w-4 text-violet-500" />
@@ -678,21 +713,41 @@ function Podcasts() {
                   </select>
                 </div>
 
-                <div className="block text-sm">
-                  <span className="mb-1 block text-slate-500 dark:text-slate-400">Thumbnail Image</span>
-                  <div className="group relative aspect-video w-full overflow-hidden rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 transition-colors hover:border-indigo-400 dark:bg-slate-950">
-                    {form.thumbnailPreview ? (
-                      <>
-                        <img src={form.thumbnailPreview} alt="Preview" className="h-full w-full object-cover" />
-                        <button type="button" onClick={() => setForm(p => ({ ...p, thumbnailFile: null, thumbnailPreview: "" }))} className="absolute top-2 right-2 rounded-lg bg-black/50 p-1.5 text-white hover:bg-black/70"><X size={14} /></button>
-                      </>
-                    ) : (
-                      <label className="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2">
-                        <ImageIcon size={28} className="text-slate-300 group-hover:text-indigo-400" />
-                        <span className="text-xs text-slate-400">Click to upload thumbnail</span>
-                        <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                      </label>
-                    )}
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Thumbnail Image</span>
+                    <div className="group relative aspect-video w-full overflow-hidden rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 transition-colors hover:border-indigo-400 dark:bg-slate-950">
+                      {form.thumbnailPreview ? (
+                        <>
+                          <img src={form.thumbnailPreview} alt="Preview" className="h-full w-full object-cover" />
+                          <button type="button" onClick={() => setForm(p => ({ ...p, thumbnailFile: null, thumbnailPreview: "" }))} className="absolute top-2 right-2 rounded-lg bg-black/50 p-1.5 text-white hover:bg-black/70"><X size={14} /></button>
+                        </>
+                      ) : (
+                        <label className="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2">
+                          <ImageIcon size={28} className="text-slate-300 group-hover:text-indigo-400" />
+                          <span className="text-xs text-slate-400">Click to upload thumbnail</span>
+                          <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Live Logo (Optional)</span>
+                    <div className="group relative aspect-video w-full overflow-hidden rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 transition-colors hover:border-indigo-400 dark:bg-slate-950">
+                      {form.liveLogoPreview ? (
+                        <>
+                          <img src={form.liveLogoPreview} alt="Preview" className="h-full w-full object-contain p-2" />
+                          <button type="button" onClick={() => setForm(p => ({ ...p, liveLogoFile: null, liveLogoPreview: "" }))} className="absolute top-2 right-2 rounded-lg bg-black/50 p-1.5 text-white hover:bg-black/70"><X size={14} /></button>
+                        </>
+                      ) : (
+                        <label className="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2">
+                          <ImageIcon size={28} className="text-slate-300 group-hover:text-indigo-400" />
+                          <span className="text-xs text-slate-400">Click to upload live logo</span>
+                          <input type="file" accept="image/*" className="hidden" onChange={handleLiveLogoChange} />
+                        </label>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -735,6 +790,7 @@ function Podcasts() {
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${selectedPodcast.status === 'active' ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{selectedPodcast.status}</span>
                     {selectedPodcast.isFeatured && <span className="bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">Featured</span>}
                     {selectedPodcast.isPremium && <span className="bg-violet-100 text-violet-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">👑 Premium</span>}
+                    {selectedPodcast.liveLogo && <span className="bg-blue-500/10 text-blue-600 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">Live Logo: {selectedPodcast.showLiveLogo ? "Visible" : "Hidden"}</span>}
                   </div>
                 </div>
               </div>

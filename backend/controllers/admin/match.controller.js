@@ -78,13 +78,16 @@ const formatMatch = (req, doc) => {
     isTrending: match.isTrending ?? false,
     isFeatured: match.isFeatured ?? false,
     isPremium: match.isPremium ?? false,
+    showLiveLogo: match.showLiveLogo ?? false,
 
     thumbnail: fileUrl(req, match.thumbnail),
     banner: fileUrl(req, match.banner),
     teamALogo: fileUrl(req, match.teamALogo),
-    teamBLogo: fileUrl(req, match.teamBLogo)
+    teamBLogo: fileUrl(req, match.teamBLogo),
+    liveLogo: fileUrl(req, match.liveLogo)
   };
 };
+
 
 const formatStream = (req, doc) => {
   if (!doc) return null;
@@ -123,6 +126,12 @@ exports.createMatch = async (req, res) => {
       uploadPromises.push(uploadToFirebase(req.files.teamBLogo[0], "matches"));
       uploadKeys.push("teamBLogo");
     }
+    if (req.files?.liveLogo?.[0]) {
+  uploadPromises.push(
+    uploadToFirebase(req.files.liveLogo[0], "matches")
+  );
+  uploadKeys.push("liveLogo");
+}
 
     const uploadedUrls = await Promise.all(uploadPromises);
 
@@ -130,12 +139,14 @@ exports.createMatch = async (req, res) => {
     let banner = "";
     let teamALogo = "";
     let teamBLogo = "";
+      let liveLogo = "";
 
     uploadKeys.forEach((key, index) => {
       if (key === "thumbnail") thumbnail = uploadedUrls[index];
       if (key === "banner") banner = uploadedUrls[index];
       if (key === "teamALogo") teamALogo = uploadedUrls[index];
       if (key === "teamBLogo") teamBLogo = uploadedUrls[index];
+      if (key === "liveLogo") liveLogo = uploadedUrls[index];
     });
 
     const data = {
@@ -147,6 +158,8 @@ exports.createMatch = async (req, res) => {
       banner,
       teamALogo,
       teamBLogo,
+      liveLogo,
+      showLiveLogo: parseBoolean(req.body.showLiveLogo),
       createdBy: req.admin._id
     };
 
@@ -311,6 +324,11 @@ exports.updateMatch = async (req, res) => {
     if (req.body.isPremium !== undefined) {
       data.isPremium = parseBoolean(req.body.isPremium);
     }
+    if (req.body.showLiveLogo !== undefined) {
+  data.showLiveLogo = parseBoolean(
+    req.body.showLiveLogo
+  );
+}
 
     const existingMatch = await matchService.getMatchById(req.params.id);
     if (!existingMatch) {
@@ -375,6 +393,22 @@ exports.updateMatch = async (req, res) => {
       uploadPromises.push(uploadToFirebase(req.files.teamBLogo[0], "matches"));
       uploadKeys.push("teamBLogo");
     }
+    if (req.files?.liveLogo?.[0]) {
+  if (existingMatch.liveLogo) {
+    deletePromises.push(
+      deleteFromFirebase(existingMatch.liveLogo)
+    );
+  }
+
+  uploadPromises.push(
+    uploadToFirebase(
+      req.files.liveLogo[0],
+      "matches"
+    )
+  );
+
+  uploadKeys.push("liveLogo");
+}
 
     const [_, uploadedUrls] = await Promise.all([
       Promise.all(deletePromises),
@@ -440,6 +474,9 @@ exports.deleteMatch = async (req, res) => {
     if (match.banner) await deleteFromFirebase(match.banner);
     if (match.teamALogo) await deleteFromFirebase(match.teamALogo);
     if (match.teamBLogo) await deleteFromFirebase(match.teamBLogo);
+    if (match.liveLogo) {
+  await deleteFromFirebase(match.liveLogo);
+}
 
     // Delete connected highlights
     const highlights = await Highlight.find({ matchId: req.params.id });

@@ -14,7 +14,10 @@ const {
   deleteHighlight
 } = require("../../controllers/admin/starPlayer.controller");
 
-const uploadSingle = upload.single("thumbnail");
+const starPlayerUpload = upload.fields([
+  { name: "thumbnail", maxCount: 1 },
+  { name: "liveLogo", maxCount: 1 }
+]);
 
 // ----------------------------------------
 // CREATE
@@ -23,7 +26,7 @@ router.post(
   "/",
   isAdmin,
   hasPermission("starplayer", "create"),
-  uploadSingle,
+  starPlayerUpload,
   createHighlight
 );
 
@@ -64,7 +67,7 @@ router.put(
   "/:id",
   isAdmin,
   hasPermission("starplayer", "edit"),
-  uploadSingle,
+  starPlayerUpload,
   updateHighlight
 );
 

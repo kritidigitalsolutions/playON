@@ -136,7 +136,15 @@ const matchSchema = new mongoose.Schema(
       type: String,
       default: ""
     },
+liveLogo: {
+  type: String,
+  default: ""
+},
 
+showLiveLogo: {
+  type: Boolean,
+  default: false
+},
     // score: {
     //   type: String,
     //   default: ""

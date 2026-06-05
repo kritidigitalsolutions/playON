@@ -129,7 +129,13 @@ function UniversalPlayer({ streamUrl, streamType }) {
 function WatchModal({ isOpen, onClose, watchData }) {
   if (!isOpen || !watchData) return null;
 
-  const { title, streamUrl, streamType } = watchData;
+  const {
+    title,
+    streamUrl,
+    streamType,
+    liveLogo,
+    showLiveLogo
+  } = watchData;
 
   const renderPlayer = () => {
     if (!streamUrl) {
@@ -175,9 +181,19 @@ function WatchModal({ isOpen, onClose, watchData }) {
             </button>
           </div>
 
-          <div className="relative w-full bg-black">
-            {renderPlayer()}
-          </div>
+        <div className="relative w-full bg-black">
+  {renderPlayer()}
+
+  {showLiveLogo && liveLogo && (
+    <div className="pointer-events-none absolute right-4 top-4 z-50">
+      <img
+        src={liveLogo}
+        alt="Live Logo"
+        className="max-h-16 w-auto object-contain drop-shadow-lg"
+      />
+    </div>
+  )}
+</div>
         </motion.div>
       </motion.div>
     </AnimatePresence>

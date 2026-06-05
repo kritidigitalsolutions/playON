@@ -33,7 +33,10 @@ exports.getStreams = async (query) => {
 
   const [streams, total] = await Promise.all([
     Stream.find(filter)
-      .populate("matchId", "title teamA teamB sport status")
+      .populate(
+  "matchId",
+  "title teamA teamB sport status liveLogo showLiveLogo"
+)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Number(limit)),
@@ -54,9 +57,9 @@ exports.getStreams = async (query) => {
 // Single Stream
 exports.getStreamById = async (id) => {
   return await Stream.findById(id).populate(
-    "matchId",
-    "title teamA teamB sport status"
-  );
+  "matchId",
+  "title teamA teamB sport status liveLogo showLiveLogo"
+);
 };
 
 // Update Stream
@@ -64,7 +67,10 @@ exports.updateStream = async (id, data) => {
   return await Stream.findByIdAndUpdate(id, data, {
     new: true,
     runValidators: true
-  }).populate("matchId", "title teamA teamB sport status");
+  }).populate(
+  "matchId",
+  "title teamA teamB sport status liveLogo showLiveLogo"
+);
 };
 
 // Delete Stream
@@ -83,7 +89,10 @@ exports.goLive = async (id) => {
       health: "good"
     },
     { new: true }
-  ).populate("matchId", "title teamA teamB sport status");
+  ).populate(
+  "matchId",
+  "title teamA teamB sport status liveLogo showLiveLogo"
+);
 };
 
 // End Stream
@@ -95,7 +104,10 @@ exports.endStream = async (id) => {
       endedAt: new Date()
     },
     { new: true }
-  ).populate("matchId", "title teamA teamB sport status");
+  ).populate(
+  "matchId",
+  "title teamA teamB sport status liveLogo showLiveLogo"
+);
 };
 
 // Update Viewer Count
@@ -110,7 +122,7 @@ exports.updateViewerCount = async (id, count) => {
 // Public Live Streams
 exports.getLiveStreams = async () => {
   return await Stream.find({ status: "live" })
-    .populate("matchId", "title teamA teamB sport score status banner")
+    .populate("matchId", "title teamA teamB sport score status banner liveLogo showLiveLogo")
     .sort({ startedAt: -1 });
 };
 
@@ -118,5 +130,5 @@ exports.getLiveStreams = async () => {
 exports.getStreamByMatch = async (matchId) => {
   return await Stream.findOne({ matchId })
     .sort({ createdAt: -1 })
-    .populate("matchId", "title teamA teamB sport score status");
+    .populate("matchId", "title teamA teamB sport score status liveLogo showLiveLogo");
 };

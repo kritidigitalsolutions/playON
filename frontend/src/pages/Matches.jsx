@@ -161,10 +161,17 @@ const defaultForm = {
   bannerFile: null,
   teamALogoFile: null,
   teamBLogoFile: null,
-  thumbnailPreview: "",
-  bannerPreview: "",
-  teamALogoPreview: "",
-  teamBLogoPreview: ""
+
+liveLogo: "",
+showLiveLogo: false,
+
+liveLogoFile: null,
+
+thumbnailPreview: "",
+bannerPreview: "",
+teamALogoPreview: "",
+teamBLogoPreview: "",
+liveLogoPreview: ""
 };
 
 const classNames = (...parts) => parts.filter(Boolean).join(" ");
@@ -514,11 +521,18 @@ function Matches() {
       thumbnailPreview: match.thumbnail || "",
       bannerPreview: match.banner || "",
       teamALogoPreview: match.teamALogo || "",
-      teamBLogoPreview: match.teamBLogo || "",
-      thumbnailFile: null,
-      bannerFile: null,
-      teamALogoFile: null,
-      teamBLogoFile: null
+teamBLogoPreview: match.teamBLogo || "",
+
+liveLogo: match.liveLogo || "",
+showLiveLogo: Boolean(match.showLiveLogo),
+
+liveLogoPreview: match.liveLogo || "",
+
+thumbnailFile: null,
+bannerFile: null,
+teamALogoFile: null,
+teamBLogoFile: null,
+liveLogoFile: null
     });
     setModalOpen(true);
   };
@@ -598,13 +612,23 @@ function Matches() {
       const response = await api.get(`/admin/matches/${match._id}/watch`);
 
       if (response?.data?.success) {
-        setWatchData({
-          title:
-            response.data.match?.title ||
-            `${response.data.match?.teamA} vs ${response.data.match?.teamB}`,
-          streamUrl: response.data.stream?.streamUrl,
-          streamType: response.data.stream?.streamType
-        });
+       setWatchData({
+  title:
+    response.data.match?.title ||
+    `${response.data.match?.teamA} vs ${response.data.match?.teamB}`,
+
+  streamUrl:
+    response.data.stream?.streamUrl,
+
+  streamType:
+    response.data.stream?.streamType,
+
+  liveLogo:
+    response.data.match?.liveLogo,
+
+  showLiveLogo:
+    response.data.match?.showLiveLogo
+});
       }
     } catch (error) {
       pushToast(
@@ -701,11 +725,24 @@ function Matches() {
       payload.append("isFeatured", String(Boolean(form.isFeatured)));
       payload.append("isTrending", String(Boolean(form.isTrending)));
       payload.append("isPremium", String(Boolean(form.isPremium)));
+      payload.append("showLiveLogo",String(Boolean(form.showLiveLogo)));  
       appendStreamFields(payload);
       if (form.thumbnailFile) payload.append("thumbnail", form.thumbnailFile);
       if (form.bannerFile) payload.append("banner", form.bannerFile);
       if (form.teamALogoFile) payload.append("teamALogo", form.teamALogoFile);
       if (form.teamBLogoFile) payload.append("teamBLogo", form.teamBLogoFile);
+      if (!form.liveLogoFile) {
+  payload.append(
+    "liveLogo",
+    form.liveLogo || ""
+  );
+}
+      if (form.liveLogoFile) {
+  payload.append(
+    "liveLogo",
+    form.liveLogoFile
+  );
+}
       payload.append("highlightlyMatchId", form.highlightlyMatchId || "");
       payload.append("highlightlySport", form.highlightlySport || form.sport || "");
       const scoreSources = form.scoreSources
@@ -1331,37 +1368,49 @@ function Matches() {
                     )}
                   </div>
 
-                  <div className="flex gap-6 md:col-span-2">
-                    <label className="flex items-center gap-2 text-sm text-slate-600">
-                      <input
-                        type="checkbox"
-                        checked={form.isFeatured}
-                        onChange={(e) => onFormChange("isFeatured", e.target.checked)}
-                        className="h-4 w-4"
-                      />
-                      Featured
-                    </label>
+<div className="flex flex-wrap gap-6 md:col-span-2">
+  <label className="flex items-center gap-2 text-sm text-slate-600">
+    <input
+      type="checkbox"
+      checked={form.isFeatured}
+      onChange={(e) => onFormChange("isFeatured", e.target.checked)}
+      className="h-4 w-4"
+    />
+    Featured
+  </label>
 
-                    <label className="flex items-center gap-2 text-sm text-slate-600">
-                      <input
-                        type="checkbox"
-                        checked={form.isTrending}
-                        onChange={(e) => onFormChange("isTrending", e.target.checked)}
-                        className="h-4 w-4"
-                      />
-                      Trending
-                    </label>
+  <label className="flex items-center gap-2 text-sm text-slate-600">
+    <input
+      type="checkbox"
+      checked={form.isTrending}
+      onChange={(e) => onFormChange("isTrending", e.target.checked)}
+      className="h-4 w-4"
+    />
+    Trending
+  </label>
 
-                    <label className="flex items-center gap-2 text-sm text-violet-600">
-                      <input
-                        type="checkbox"
-                        checked={form.isPremium}
-                        onChange={(e) => onFormChange("isPremium", e.target.checked)}
-                        className="h-4 w-4"
-                      />
-                      👑 Premium (subscription required)
-                    </label>
-                  </div>
+  <label className="flex items-center gap-2 text-sm text-slate-600">
+    <input
+      type="checkbox"
+      checked={form.showLiveLogo}
+      onChange={(e) =>
+        onFormChange("showLiveLogo", e.target.checked)
+      }
+      className="h-4 w-4"
+    />
+    Show Live Logo
+  </label>
+
+  <label className="flex items-center gap-2 text-sm text-violet-600">
+    <input
+      type="checkbox"
+      checked={form.isPremium}
+      onChange={(e) => onFormChange("isPremium", e.target.checked)}
+      className="h-4 w-4"
+    />
+    👑 Premium (subscription required)
+  </label>
+</div>
 
                   <label className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-slate-500 dark:text-slate-400">Description</span>
@@ -1407,6 +1456,21 @@ function Matches() {
                     onChange={(file) => onFileChange("bannerFile", "bannerPreview", file)}
                     pushToast={pushToast}
                   />
+
+                  <ImageUploadField
+  label="Live Player Logo"
+  preview={form.liveLogoPreview}
+  previewAlt="Live logo preview"
+  previewClassName="object-contain p-2"
+  onChange={(file) =>
+    onFileChange(
+      "liveLogoFile",
+      "liveLogoPreview",
+      file
+    )
+  }
+  pushToast={pushToast}
+/>
                 </div>
 
                 <div className="flex justify-end gap-3">
@@ -1444,6 +1508,13 @@ function Matches() {
                 <MediaPreview label="Team B Logo" src={selectedMatch.teamBLogo} alt={`${selectedMatch.teamB || "Team B"} logo`} fit="object-contain p-3" />
                 <MediaPreview label="Thumbnail" src={selectedMatch.thumbnail} alt={`${selectedMatch.title || "Match"} thumbnail`} />
                 <MediaPreview label="Banner" src={selectedMatch.banner} alt={`${selectedMatch.title || "Match"} banner`} />
+              <MediaPreview
+  label="Live Logo"
+  src={selectedMatch.liveLogo}
+  alt="Live Logo"
+  fit="object-contain p-3"
+/>
+
               </div>
 
               <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -1458,6 +1529,10 @@ function Matches() {
                 <DetailItem label="Status" value={selectedMatch.status || "upcoming"} />
                 <DetailItem label="Featured" value={Boolean(selectedMatch.isFeatured)} />
                 <DetailItem label="Trending" value={Boolean(selectedMatch.isTrending)} />
+                <DetailItem
+  label="Show Live Logo"
+  value={Boolean(selectedMatch.showLiveLogo)}
+/>
                 <DetailItem label="Live Started At" value={formatDate(selectedMatch.liveStartedAt)} />
                 <DetailItem label="Live Ended At" value={formatDate(selectedMatch.liveEndedAt)} />
                 <DetailItem label="Created At" value={formatDate(selectedMatch.createdAt)} />

@@ -32,7 +32,8 @@ const formatPodcast = (req, doc) => {
   return {
     ...podcast,
     isPremium: !!podcast.isPremium,
-    thumbnail: fileUrl(req, podcast.thumbnail)
+    thumbnail: fileUrl(req, podcast.thumbnail),
+    liveLogo: fileUrl(req, podcast.liveLogo)
   };
 };
 

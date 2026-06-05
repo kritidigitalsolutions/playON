@@ -88,6 +88,11 @@ const formatHighlight = (req, doc) => {
     thumbnail: resolveUrl(
       req,
       h.thumbnail
+    ),
+
+    liveLogo: resolveUrl(
+      req,
+      h.liveLogo
     )
   };
 };
@@ -223,10 +228,18 @@ exports.createHighlight =
         finalVideoUrl = videoUrl.trim();
       }
 
+      let finalLiveLogo = "";
+
       // OPTIONAL THUMBNAIL
       if (req.files?.thumbnail?.[0]) {
         uploadPromises.push(uploadToFirebase(req.files.thumbnail[0], "highlights/thumbnails"));
         uploadKeys.push("thumbnail");
+      }
+
+      // OPTIONAL LIVE LOGO
+      if (req.files?.liveLogo?.[0]) {
+        uploadPromises.push(uploadToFirebase(req.files.liveLogo[0], "highlights/liveLogos"));
+        uploadKeys.push("liveLogo");
       }
 
       const uploadedUrls = await Promise.all(uploadPromises);
@@ -234,6 +247,7 @@ exports.createHighlight =
       uploadKeys.forEach((key, index) => {
         if (key === "video") finalVideoUrl = uploadedUrls[index];
         if (key === "thumbnail") finalThumbnail = uploadedUrls[index];
+        if (key === "liveLogo") finalLiveLogo = uploadedUrls[index];
       });
 
       const highlight =
@@ -282,6 +296,14 @@ exports.createHighlight =
           isFeatured:
             parseBoolean(
               isFeatured
+            ),
+
+          liveLogo:
+            finalLiveLogo,
+
+          showLiveLogo:
+            parseBoolean(
+              req.body.showLiveLogo
             ),
 
           order:
@@ -643,6 +665,16 @@ exports.updateHighlight =
           );
       }
 
+      if (
+        req.body.showLiveLogo !==
+        undefined
+      ) {
+        updateData.showLiveLogo =
+          parseBoolean(
+            req.body.showLiveLogo
+          );
+      }
+
       if (order !== undefined) {
         updateData.order =
           Number(order) || 0;
@@ -698,6 +730,17 @@ exports.updateHighlight =
         uploadKeys.push("thumbnail");
       }
 
+      // NEW LIVE LOGO
+      if (req.files?.liveLogo?.[0]) {
+        if (existing.liveLogo) {
+          deletePromises.push(deleteFromFirebase(existing.liveLogo));
+        }
+        uploadPromises.push(uploadToFirebase(req.files.liveLogo[0], "highlights/liveLogos"));
+        uploadKeys.push("liveLogo");
+      } else if (req.body.liveLogo !== undefined) {
+        updateData.liveLogo = req.body.liveLogo;
+      }
+
       const [_, uploadedUrls] = await Promise.all([
         Promise.all(deletePromises),
         Promise.all(uploadPromises)
@@ -706,6 +749,7 @@ exports.updateHighlight =
       uploadKeys.forEach((key, index) => {
         if (key === "video") updateData.videoUrl = uploadedUrls[index];
         if (key === "thumbnail") updateData.thumbnail = uploadedUrls[index];
+        if (key === "liveLogo") updateData.liveLogo = uploadedUrls[index];
       });
 
       const highlight =
@@ -777,6 +821,13 @@ exports.deleteHighlight =
       if (highlight.thumbnail) {
         await deleteFromFirebase(
           highlight.thumbnail
+        );
+      }
+
+      // Delete live logo
+      if (highlight.liveLogo) {
+        await deleteFromFirebase(
+          highlight.liveLogo
         );
       }
 

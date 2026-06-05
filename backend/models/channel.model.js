@@ -76,9 +76,19 @@ const channelSchema = new mongoose.Schema(
       default: ""
     },
 
-    logo: {
-      type: String,
-      default: ""
+   logo: {
+  type: String,
+  default: ""
+},
+
+liveLogo: {
+  type: String,
+  default: ""
+},
+
+    showLiveLogo: {
+      type: Boolean,
+      default: false
     },
 
     status: {

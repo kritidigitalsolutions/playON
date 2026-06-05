@@ -138,6 +138,18 @@ const highlightSchema =
         default: false
       },
 
+      liveLogo: {
+        type: String,
+
+        default: ""
+      },
+
+      showLiveLogo: {
+        type: Boolean,
+
+        default: false
+      },
+
       views: {
         type: Number,
 

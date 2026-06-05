@@ -30,6 +30,11 @@ const hlFields = highlightUpload.fields([
   {
     name: "videoFile",
     maxCount: 1
+  },
+
+  {
+    name: "liveLogo",
+    maxCount: 1
   }
 ]);
 

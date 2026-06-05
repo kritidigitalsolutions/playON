@@ -31,7 +31,11 @@ const defaultForm = {
   duration: "",
   isFeatured: false,
   isPremium: false,
-  thumbnailFile: null
+  thumbnailFile: null,
+  liveLogo: "",
+  showLiveLogo: false,
+  liveLogoFile: null,
+  liveLogoPreview: ""
 };
 
 const defaultPlayerForm = {
@@ -146,7 +150,12 @@ function StarPlayers() {
       isFeatured: Boolean(hl?.isFeatured),
       isPremium: Boolean(hl?.isPremium),
       thumbnailFile: null,
-      sources: hl?.sources || []
+      thumbnailPreview: hl?.thumbnail || "",
+      sources: hl?.sources || [],
+      liveLogo: hl?.liveLogo || "",
+      showLiveLogo: Boolean(hl?.showLiveLogo),
+      liveLogoFile: null,
+      liveLogoPreview: hl?.liveLogo || ""
     });
     setModalOpen(true);
   };
@@ -188,7 +197,14 @@ function StarPlayers() {
       payload.append("duration", form.duration || "");
       payload.append("isFeatured", String(Boolean(form.isFeatured)));
       payload.append("isPremium", String(Boolean(form.isPremium)));
+      payload.append("showLiveLogo", String(Boolean(form.showLiveLogo)));
       if (form.thumbnailFile) payload.append("thumbnail", form.thumbnailFile);
+
+      if (form.liveLogoFile) {
+        payload.append("liveLogo", form.liveLogoFile);
+      } else {
+        payload.append("liveLogo", form.liveLogo || "");
+      }
 
       let response;
       if (editMode && form._id) {
@@ -589,7 +605,37 @@ function StarPlayers() {
                       }}
                       className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800"
                     />
+                  </label>
 
+                  <label className="block text-sm md:col-span-2">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Live Logo (Optional)</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file && file.size > 2 * 1024 * 1024) {
+                          setError("Live logo is too large. Max 2MB allowed.");
+                          e.target.value = "";
+                          return;
+                        }
+                        setForm(p => ({
+                          ...p,
+                          liveLogoFile: file,
+                          liveLogoPreview: URL.createObjectURL(file)
+                        }));
+                      }}
+                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800"
+                    />
+                    {form.liveLogoPreview && (
+                      <div className="mt-2 relative inline-block">
+                        <img src={form.liveLogoPreview} alt="Live Logo Preview" className="h-16 w-16 rounded-xl object-contain border border-slate-200 dark:border-slate-700" />
+                        <button type="button" onClick={() => setForm(p => ({ ...p, liveLogoFile: null, liveLogoPreview: "" }))}
+                          className="absolute -top-2 -right-2 h-6 w-6 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 shadow-sm">
+                          <X size={12} />
+                        </button>
+                      </div>
+                    )}
                   </label>
 
                   <label className="block text-sm flex items-center gap-2 mt-2">
@@ -600,6 +646,16 @@ function StarPlayers() {
                       className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                     />
                     <span className="text-slate-700 dark:text-slate-300">Featured Highlight</span>
+                  </label>
+
+                  <label className="block text-sm flex items-center gap-2 mt-2">
+                    <input
+                      type="checkbox"
+                      checked={form.showLiveLogo}
+                      onChange={(e) => onFormChange("showLiveLogo", e.target.checked)}
+                      className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-slate-700 dark:text-slate-300">Show Live Logo</span>
                   </label>
 
                   <label className="block text-sm flex items-center gap-2 mt-2">
@@ -737,6 +793,15 @@ function StarPlayers() {
                   <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Premium</p>
                   <p className="font-medium">{selectedHighlight.isPremium ? "👑 Yes" : "Free"}</p>
                 </div>
+                {selectedHighlight.liveLogo && (
+                  <div className="col-span-2 flex items-center gap-3 mt-2 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+                    <img src={selectedHighlight.liveLogo} alt="Live Logo" className="h-8 w-8 object-contain" />
+                    <div>
+                      <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">Live Logo</p>
+                      <p className="text-[10px] text-slate-500">{selectedHighlight.showLiveLogo ? "Visible on player" : "Hidden on player"}</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="mt-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800">

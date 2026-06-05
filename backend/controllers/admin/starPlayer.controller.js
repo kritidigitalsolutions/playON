@@ -92,10 +92,14 @@ exports.createHighlight = async (req, res) => {
       finalPlayerName = newPlayer.name;
     }
 
-    // THUMBNAIL
+    // THUMBNAIL & LIVE LOGO
     let thumbnailUrl = "";
-    if (req.file) {
-      thumbnailUrl = await uploadToFirebase(req.file, "highlights");
+    let liveLogoUrl = "";
+    if (req.files?.thumbnail?.[0]) {
+      thumbnailUrl = await uploadToFirebase(req.files.thumbnail[0], "highlights");
+    }
+    if (req.files?.liveLogo?.[0]) {
+      liveLogoUrl = await uploadToFirebase(req.files.liveLogo[0], "highlights");
     }
 
     // CREATE HIGHLIGHT
@@ -112,6 +116,8 @@ exports.createHighlight = async (req, res) => {
       isFeatured: isFeatured === "true" || isFeatured === true,
       isPremium: isPremium === "true" || isPremium === true,
       thumbnail: thumbnailUrl,
+      liveLogo: liveLogoUrl,
+      showLiveLogo: req.body.showLiveLogo === "true" || req.body.showLiveLogo === true,
       createdBy: req.admin?._id || req.admin?.adminId
     });
 
@@ -260,14 +266,27 @@ exports.updateHighlight = async (req, res) => {
 
     if (data.isFeatured !== undefined) data.isFeatured = data.isFeatured === "true" || data.isFeatured === true;
     if (data.isPremium !== undefined) data.isPremium = data.isPremium === "true" || data.isPremium === true;
+    if (data.showLiveLogo !== undefined) data.showLiveLogo = data.showLiveLogo === "true" || data.showLiveLogo === true;
+
+    const existing = await Highlight.findById(req.params.id);
+    if (!existing) return res.status(404).json({ success: false, message: "Highlight not found" });
 
     // Thumbnail update
-    if (req.file) {
-      const existing = await Highlight.findById(req.params.id);
+    if (req.files?.thumbnail?.[0]) {
       if (existing?.thumbnail) {
         await deleteFromFirebase(existing.thumbnail);
       }
-      data.thumbnail = await uploadToFirebase(req.file, "highlights");
+      data.thumbnail = await uploadToFirebase(req.files.thumbnail[0], "highlights");
+    }
+
+    // Live Logo update
+    if (req.files?.liveLogo?.[0]) {
+      if (existing?.liveLogo) {
+        await deleteFromFirebase(existing.liveLogo);
+      }
+      data.liveLogo = await uploadToFirebase(req.files.liveLogo[0], "highlights");
+    } else if (req.body.liveLogo !== undefined) {
+      data.liveLogo = req.body.liveLogo;
     }
 
 
@@ -333,6 +352,9 @@ exports.deleteHighlight = async (req, res) => {
 
     if (highlight.thumbnail) {
       await deleteFromFirebase(highlight.thumbnail);
+    }
+    if (highlight.liveLogo) {
+      await deleteFromFirebase(highlight.liveLogo);
     }
 
     await Highlight.findByIdAndDelete(req.params.id);

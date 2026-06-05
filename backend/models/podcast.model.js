@@ -117,6 +117,16 @@ const podcastSchema = new mongoose.Schema(
       default: false
     },
 
+    liveLogo: {
+      type: String,
+      default: ""
+    },
+
+    showLiveLogo: {
+      type: Boolean,
+      default: false
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",

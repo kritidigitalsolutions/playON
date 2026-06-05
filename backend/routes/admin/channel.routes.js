@@ -20,7 +20,8 @@ const {
 
 const channelUploads = upload.fields([
   { name: "thumbnail", maxCount: 1 },
-  { name: "logo", maxCount: 1 }
+  { name: "logo", maxCount: 1 },
+  { name: "liveLogo", maxCount: 1 }
 ]);
 
 // Public

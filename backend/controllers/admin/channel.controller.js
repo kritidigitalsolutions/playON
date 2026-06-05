@@ -17,11 +17,12 @@ const fileUrl = (req, filePath) => {
 
 const formatChannel = (req, doc) => {
   const channel = doc.toObject ? doc.toObject() : doc;
-  return {
-    ...channel,
-    thumbnail: fileUrl(req, channel.thumbnail),
-    logo: fileUrl(req, channel.logo)
-  };
+ return {
+  ...channel,
+  thumbnail: fileUrl(req, channel.thumbnail),
+  logo: fileUrl(req, channel.logo),
+  liveLogo: fileUrl(req, channel.liveLogo)
+};
 };
 
 // Upload helper — throws with a clear message on failure
@@ -54,25 +55,36 @@ exports.createChannel = async (req, res) => {
       uploadPromises.push(uploadFile(req.files.logo[0], "channels", "Logo"));
       uploadKeys.push("logo");
     }
+if (req.files?.liveLogo?.[0]) {
+  uploadPromises.push(
+    uploadFile(req.files.liveLogo[0], "channels", "Live Logo")
+  );
 
+  uploadKeys.push("liveLogo");
+}
     const uploadedUrls = await Promise.all(uploadPromises);
 
-    let thumbnail = "";
-    let logo = "";
+   let thumbnail = "";
+let logo = "";
+let liveLogo = "";
 
-    uploadKeys.forEach((key, index) => {
-      if (key === "thumbnail") thumbnail = uploadedUrls[index];
-      if (key === "logo") logo = uploadedUrls[index];
-    });
+ uploadKeys.forEach((key, index) => {
+  if (key === "thumbnail") thumbnail = uploadedUrls[index];
+  if (key === "logo") logo = uploadedUrls[index];
+  if (key === "liveLogo") liveLogo = uploadedUrls[index];
+});
 
-    const data = {
-      ...body,
-      slug: makeSlug(body.name),
-      streamType,
-      thumbnail,
-      logo,
-      createdBy: req.admin?._id || null
-    };
+   const data = {
+  ...body,
+  slug: makeSlug(body.name),
+  streamType,
+  thumbnail,
+  logo,
+  liveLogo,
+  showLiveLogo:
+    String(body.showLiveLogo).toLowerCase() === "true",
+  createdBy: req.admin?._id || null
+};
 
     const channel = await channelService.createChannel(data);
 
@@ -154,7 +166,11 @@ exports.updateChannel = async (req, res) => {
       data.streamType = req.body.streamUrl.includes(".m3u8") ? "hls" : "other";
     }
 
-    if (req.files?.thumbnail?.[0] || req.files?.logo?.[0]) {
+    if (
+  req.files?.thumbnail?.[0] ||
+  req.files?.logo?.[0] ||
+  req.files?.liveLogo?.[0]
+) {
       const existing = await channelService.getChannelById(req.params.id);
 
       const deletePromises = [];
@@ -177,6 +193,20 @@ exports.updateChannel = async (req, res) => {
         uploadKeys.push("logo");
       }
 
+if (req.files?.liveLogo?.[0]) {
+  if (existing?.liveLogo) {
+    deletePromises.push(
+      deleteFromFirebase(existing.liveLogo).catch(() => {})
+    );
+  }
+
+  uploadPromises.push(
+    uploadFile(req.files.liveLogo[0], "channels", "Live Logo")
+  );
+
+  uploadKeys.push("liveLogo");
+}
+
       const [_, uploadedUrls] = await Promise.all([
         Promise.all(deletePromises),
         Promise.all(uploadPromises)
@@ -186,7 +216,10 @@ exports.updateChannel = async (req, res) => {
         data[key] = uploadedUrls[index];
       });
     }
-
+if (req.body.showLiveLogo !== undefined) {
+  data.showLiveLogo =
+    String(req.body.showLiveLogo).toLowerCase() === "true";
+}
     const channel = await channelService.updateChannel(req.params.id, data);
     if (!channel) {
       return res.status(404).json({ success: false, message: "Channel not found" });
@@ -213,6 +246,8 @@ exports.deleteChannel = async (req, res) => {
 
     if (channel.thumbnail) await deleteFromFirebase(channel.thumbnail).catch(() => { });
     if (channel.logo) await deleteFromFirebase(channel.logo).catch(() => { });
+    if (channel.liveLogo)
+  await deleteFromFirebase(channel.liveLogo).catch(() => {});
 
     await channelService.deleteChannel(req.params.id);
 

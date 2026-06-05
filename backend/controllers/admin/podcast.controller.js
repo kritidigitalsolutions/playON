@@ -42,11 +42,14 @@ exports.createPodcast = async (req, res) => {
     }
 
     let thumbnail = "";
+    let liveLogo = "";
 
-    if (req.file) {
-      thumbnail = await uploadToFirebase(req.file, "podcasts");
+    if (req.files?.thumbnail?.[0]) {
+      thumbnail = await uploadToFirebase(req.files.thumbnail[0], "podcasts");
     }
-
+    if (req.files?.liveLogo?.[0]) {
+      liveLogo = await uploadToFirebase(req.files.liveLogo[0], "podcasts");
+    }
 
     const podcast = await Podcast.create({
       sportId,
@@ -61,6 +64,8 @@ exports.createPodcast = async (req, res) => {
       isPremium: isPremium === "true" || isPremium === true,
       status: status || "active",
       thumbnail,
+      liveLogo,
+      showLiveLogo: req.body.showLiveLogo === "true" || req.body.showLiveLogo === true,
       createdBy: req.admin?._id || null
     });
 
@@ -137,18 +142,30 @@ exports.updatePodcast = async (req, res) => {
 
     if (updateData.isFeatured !== undefined) updateData.isFeatured = updateData.isFeatured === "true" || updateData.isFeatured === true;
     if (updateData.isPremium !== undefined) updateData.isPremium = updateData.isPremium === "true" || updateData.isPremium === true;
+    if (updateData.showLiveLogo !== undefined) updateData.showLiveLogo = updateData.showLiveLogo === "true" || updateData.showLiveLogo === true;
 
     if (updateData.sportId) {
       const sportExists = await Sport.findById(updateData.sportId);
       if (!sportExists) return res.status(404).json({ success: false, message: "Sport not found" });
     }
 
-    if (req.file) {
-      const existing = await Podcast.findById(req.params.id);
+    const existing = await Podcast.findById(req.params.id);
+    if (!existing) return res.status(404).json({ success: false, message: "Podcast not found" });
+
+    if (req.files?.thumbnail?.[0]) {
       if (existing?.thumbnail) {
         await deleteFromFirebase(existing.thumbnail);
       }
-      updateData.thumbnail = await uploadToFirebase(req.file, "podcasts");
+      updateData.thumbnail = await uploadToFirebase(req.files.thumbnail[0], "podcasts");
+    }
+
+    if (req.files?.liveLogo?.[0]) {
+      if (existing?.liveLogo) {
+        await deleteFromFirebase(existing.liveLogo);
+      }
+      updateData.liveLogo = await uploadToFirebase(req.files.liveLogo[0], "podcasts");
+    } else if (req.body.liveLogo !== undefined) {
+      updateData.liveLogo = req.body.liveLogo;
     }
 
 
@@ -193,6 +210,9 @@ exports.deletePodcast = async (req, res) => {
 
     if (podcast.thumbnail) {
       await deleteFromFirebase(podcast.thumbnail);
+    }
+    if (podcast.liveLogo) {
+      await deleteFromFirebase(podcast.liveLogo);
     }
 
     await Podcast.findByIdAndDelete(req.params.id);

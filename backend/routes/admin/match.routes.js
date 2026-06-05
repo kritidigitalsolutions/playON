@@ -23,7 +23,8 @@ const matchUploads = upload.fields([
   { name: "thumbnail", maxCount: 1 },
   { name: "banner", maxCount: 1 },
   { name: "teamALogo", maxCount: 1 },
-  { name: "teamBLogo", maxCount: 1 }
+  { name: "teamBLogo", maxCount: 1 },
+  { name: "liveLogo", maxCount: 1 }
 ]);
 
 router.post(
