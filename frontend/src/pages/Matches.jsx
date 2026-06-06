@@ -603,11 +603,6 @@ liveLogoFile: null
   //   }
   // };
   const handleWatch = async (match) => {
-    if (match.status !== "live") {
-      pushToast("Match is not live yet", "error");
-      return;
-    }
-
     try {
       const response = await api.get(`/admin/matches/${match._id}/watch`);
 
@@ -1036,12 +1031,7 @@ liveLogoFile: null
                         <button
                           type="button"
                           onClick={() => handleWatch(match)}
-                          disabled={match.status !== "live"}
-                          className={`admin-action-btn-sm h-8 w-8 rounded-full !p-0
-    ${match.status === "live"
-                              ? ""
-                              : "cursor-not-allowed opacity-50"
-                            }`}
+                          className="admin-action-btn-sm h-8 w-8 rounded-full !p-0"
                         >
                           <Play size={15} />
                         </button>
