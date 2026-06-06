@@ -126,10 +126,6 @@ exports.getHighlightsByMatch =
 
             .limit(limitNum)
 
-            .select(
-              "-createdBy -deletedAt"
-            )
-
             .lean(),
 
           Highlight.countDocuments(
@@ -202,11 +198,6 @@ exports.getSingleHighlight =
           .populate(
             "teamB",
             "name shortName logo sport"
-          )
-
-
-          .select(
-            "-createdBy -deletedAt"
           )
 
           .lean();

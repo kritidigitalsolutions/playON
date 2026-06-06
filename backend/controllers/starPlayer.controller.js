@@ -2,6 +2,31 @@ const Highlight = require("../models/starPlayer.model");
 const subscriptionService = require("../services/subscription.service");
 const jwt = require("jsonwebtoken");
 
+const fileUrl = (req, filePath) => {
+  if (!filePath) return "";
+
+  if (
+    filePath.startsWith("http://") ||
+    filePath.startsWith("https://")
+  ) {
+    return filePath;
+  }
+
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  return `${baseUrl}/${filePath.replace(/\\/g, "/")}`;
+};
+
+const formatHighlight = (req, doc) => {
+  const highlight = doc.toObject ? doc.toObject() : doc;
+
+  return {
+    ...highlight,
+    isPremium: !!highlight.isPremium,
+    thumbnail: fileUrl(req, highlight.thumbnail),
+    liveLogo: fileUrl(req, highlight.liveLogo)
+  };
+};
+
 // ----------------------------------------
 // HELPER — resolve userId from optional Bearer token
 // ----------------------------------------
@@ -50,7 +75,7 @@ exports.getStarPlayers = async (req, res) => {
     res.json({
       success: true,
       count: highlights.length,
-      highlights: highlights.map((h) => ({ ...h.toObject(), isPremium: !!h.isPremium }))
+      highlights: highlights.map((h) => formatHighlight(req, h))
     });
 
   } catch (error) {
@@ -74,7 +99,7 @@ exports.getFeaturedStarPlayers = async (req, res) => {
 
     res.json({
       success: true,
-      highlights: highlights.map((h) => ({ ...h.toObject(), isPremium: !!h.isPremium }))
+      highlights: highlights.map((h) => formatHighlight(req, h))
     });
 
   } catch (error) {
@@ -130,7 +155,7 @@ exports.getSingleStarPlayer = async (req, res) => {
 
     res.json({
       success: true,
-      highlight: { ...highlight.toObject(), isPremium: !!highlight.isPremium }
+      highlight: formatHighlight(req, highlight)
     });
 
   } catch (error) {

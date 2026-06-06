@@ -3,6 +3,23 @@ const Sport = require("../../models/sport.model");
 const uploadToFirebase = require("../../utils/uploadToFirebase");
 const deleteFromFirebase = require("../../utils/deleteFromFirebase");
 
+const fileUrl = (req, filePath) => {
+  if (!filePath) return "";
+  if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
+    return filePath;
+  }
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  return `${baseUrl}/${filePath.replace(/\\/g, "/")}`;
+};
+
+const formatPodcast = (req, doc) => {
+  const podcast = doc.toObject ? doc.toObject() : doc;
+  return {
+    ...podcast,
+    thumbnail: fileUrl(req, podcast.thumbnail),
+    liveLogo: fileUrl(req, podcast.liveLogo)
+  };
+};
 
 // CREATE PODCAST
 exports.createPodcast = async (req, res) => {
@@ -72,7 +89,7 @@ exports.createPodcast = async (req, res) => {
     res.json({
       success: true,
       message: "Podcast created successfully",
-      podcast
+      podcast: formatPodcast(req, podcast)
     });
 
   } catch (error) {
@@ -91,7 +108,7 @@ exports.getAllPodcasts = async (req, res) => {
     res.json({
       success: true,
       count: podcasts.length,
-      podcasts
+      podcasts: podcasts.map((item) => formatPodcast(req, item))
     });
 
   } catch (error) {
@@ -116,7 +133,7 @@ exports.getSinglePodcast = async (req, res) => {
 
     res.json({
       success: true,
-      podcast
+      podcast: formatPodcast(req, podcast)
     });
 
   } catch (error) {
@@ -185,7 +202,7 @@ exports.updatePodcast = async (req, res) => {
     res.json({
       success: true,
       message: "Podcast updated successfully",
-      podcast
+      podcast: formatPodcast(req, podcast)
     });
 
   } catch (error) {

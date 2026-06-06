@@ -6,6 +6,24 @@ const autoNotify = require("../../utils/autoNotify");
 const Sport = require("../../models/sport.model");
 const Player = require("../../models/player.model");
 
+const fileUrl = (req, filePath) => {
+  if (!filePath) return "";
+  if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
+    return filePath;
+  }
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  return `${baseUrl}/${filePath.replace(/\\/g, "/")}`;
+};
+
+const formatHighlight = (req, doc) => {
+  const highlight = doc.toObject ? doc.toObject() : doc;
+  return {
+    ...highlight,
+    thumbnail: fileUrl(req, highlight.thumbnail),
+    liveLogo: fileUrl(req, highlight.liveLogo)
+  };
+};
+
 // ----------------------------------------
 // CREATE HIGHLIGHT (SPORT BASED)
 // ----------------------------------------
@@ -134,7 +152,7 @@ exports.createHighlight = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Highlight created successfully",
-      highlight
+      highlight: formatHighlight(req, highlight)
     });
 
   } catch (error) {
@@ -180,7 +198,7 @@ exports.getHighlights = async (req, res) => {
     res.json({
       success: true,
       count: highlights.length,
-      highlights
+      highlights: highlights.map((item) => formatHighlight(req, item))
     });
 
   } catch (error) {
@@ -209,7 +227,7 @@ exports.getSingleHighlight = async (req, res) => {
 
     res.json({
       success: true,
-      highlight
+      highlight: formatHighlight(req, highlight)
     });
 
   } catch (error) {
@@ -238,7 +256,7 @@ exports.watchHighlight = async (req, res) => {
 
     res.json({
       success: true,
-      highlight
+      highlight: formatHighlight(req, highlight)
     });
 
   } catch (error) {
@@ -325,7 +343,7 @@ exports.updateHighlight = async (req, res) => {
     res.json({
       success: true,
       message: "Highlight updated successfully",
-      highlight
+      highlight: formatHighlight(req, highlight)
     });
 
   } catch (error) {

@@ -769,45 +769,73 @@ function Podcasts() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-              className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+              className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900 overflow-y-auto max-h-[90vh] pretty-scroll">
               <div className="mb-4 flex items-start justify-between gap-4">
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Podcast Details</h2>
                 <button type="button" onClick={() => setSelectedPodcast(null)} className="text-slate-500 hover:text-slate-800"><X size={18} /></button>
               </div>
 
-              <div className="flex items-start gap-5">
-                <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:bg-slate-800">
-                  {selectedPodcast.thumbnail ? (
-                    <img src={selectedPodcast.thumbnail} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-slate-300"><PlayCircle size={32} /></div>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">{selectedPodcast.title}</h3>
-                  <p className="text-sm text-slate-500 mt-1">{selectedPodcast.sportId?.name || "Unknown Sport"}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${selectedPodcast.status === 'active' ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{selectedPodcast.status}</span>
-                    {selectedPodcast.isFeatured && <span className="bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">Featured</span>}
-                    {selectedPodcast.isPremium && <span className="bg-violet-100 text-violet-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">👑 Premium</span>}
-                    {selectedPodcast.liveLogo && <span className="bg-blue-500/10 text-blue-600 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">Live Logo: {selectedPodcast.showLiveLogo ? "Visible" : "Hidden"}</span>}
+              <div className="flex items-center gap-4">
+                {selectedPodcast.thumbnail ? (
+                  <img src={selectedPodcast.thumbnail} alt="" className="h-16 w-16 rounded-2xl border border-slate-200 object-cover bg-slate-50" />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
+                    <PlayCircle size={28} />
                   </div>
+                )}
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 truncate" title={selectedPodcast.title}>{selectedPodcast.title}</h3>
+                  <p className="text-sm text-slate-400 truncate">{selectedPodcast.sportId?.name || "Unknown Sport"}</p>
                 </div>
               </div>
 
-              <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
-                <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
-                  <p className="text-[10px] uppercase tracking-wide text-slate-400">Duration</p>
-                  <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100">{formatSecondsToTime(selectedPodcast.duration)}</p>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-2 text-center flex flex-col justify-between min-h-[110px]">
+                  <p className="text-[10px] uppercase tracking-wide text-slate-400 mb-1">Thumbnail</p>
+                  {selectedPodcast.thumbnail ? (
+                    <img src={selectedPodcast.thumbnail} alt="Thumbnail" className="mx-auto max-h-16 max-w-full object-contain rounded" />
+                  ) : (
+                    <div className="flex h-16 items-center justify-center text-[10px] text-slate-400">No Thumbnail</div>
+                  )}
                 </div>
-                <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
-                  <p className="text-[10px] uppercase tracking-wide text-slate-400">Category</p>
-                  <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100">{selectedPodcast.category || "-"}</p>
+                <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-2 text-center flex flex-col justify-between min-h-[110px]">
+                  <p className="text-[10px] uppercase tracking-wide text-slate-400 mb-1">Live Logo</p>
+                  {selectedPodcast.liveLogo ? (
+                    <img src={selectedPodcast.liveLogo} alt="Live Logo" className="mx-auto max-h-16 max-w-full object-contain" />
+                  ) : (
+                    <div className="flex h-16 items-center justify-center text-[10px] text-slate-400">No Live Logo</div>
+                  )}
                 </div>
-                <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
-                  <p className="text-[10px] uppercase tracking-wide text-slate-400">ID</p>
-                  <p className="mt-0.5 truncate text-[10px] font-mono text-slate-500">{selectedPodcast._id}</p>
-                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                {[
+                  { label: "Podcast ID", value: selectedPodcast._id },
+                  { label: "Title", value: selectedPodcast.title },
+                  { label: "Sport", value: selectedPodcast.sportId?.name || "-" },
+                  { label: "Category", value: selectedPodcast.category || "-" },
+                  { label: "Duration", value: formatSecondsToTime(selectedPodcast.duration) },
+                  { label: "Legacy Type", value: selectedPodcast.type || "-" },
+                  { label: "Status", value: selectedPodcast.status },
+                  { label: "Featured", value: selectedPodcast.isFeatured ? "Yes" : "No" },
+                  { label: "Premium", value: selectedPodcast.isPremium ? "Yes" : "No" },
+                  { label: "Show Live Logo", value: selectedPodcast.showLiveLogo ? "Yes" : "No" },
+                  { label: "Created By", value: selectedPodcast.createdBy || "-" },
+                  { label: "Created At", value: selectedPodcast.createdAt ? new Date(selectedPodcast.createdAt).toLocaleString() : "-" },
+                  { label: "Updated At", value: selectedPodcast.updatedAt ? new Date(selectedPodcast.updatedAt).toLocaleString() : "-" }
+                ].map(({ label, value }) => (
+                  <div key={label} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p>
+                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize" title={String(value)}>{String(value)}</p>
+                  </div>
+                ))}
+
+                {selectedPodcast.description && (
+                  <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">Description</p>
+                    <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-3">{selectedPodcast.description}</p>
+                  </div>
+                )}
               </div>
 
               <div className="mt-6">
@@ -867,22 +895,41 @@ function Podcasts() {
                 <button type="button" onClick={() => setPlayingPodcast(null)} className="text-slate-500 hover:text-slate-800"><X size={18} /></button>
               </div>
 
-              {getPlayerConfig(playingPodcast).kind === "audio" ? (
-                <audio controls autoPlay className="w-full" src={getPlayerConfig(playingPodcast).src} />
-              ) : getPlayerConfig(playingPodcast).kind === "video" ? (
-                <video controls autoPlay className="max-h-[70vh] w-full rounded-xl bg-slate-950" src={getPlayerConfig(playingPodcast).src} />
-              ) : (
-                <div className="aspect-video overflow-hidden rounded-xl bg-slate-950 shadow-2xl">
-                  <iframe
-                    src={getPlayerConfig(playingPodcast).src}
-                    title={playingPodcast.title}
-                    className="h-full w-full"
-                    allow="autoplay; encrypted-media; picture-in-picture"
-                    allowFullScreen
-                    referrerPolicy="strict-origin-when-cross-origin"
-                  />
-                </div>
-              )}
+              <div className="relative w-full bg-slate-950 rounded-xl overflow-hidden mt-2">
+                {getPlayerConfig(playingPodcast).kind === "audio" ? (
+                  <div className="flex flex-col items-center justify-center p-6 bg-slate-900 text-white gap-4">
+                    {playingPodcast.thumbnail ? (
+                      <img src={playingPodcast.thumbnail} alt="" className="h-48 w-48 rounded-xl object-cover shadow-lg" />
+                    ) : (
+                      <div className="flex h-48 w-48 items-center justify-center rounded-xl bg-slate-800 text-slate-400"><PlayCircle size={64} /></div>
+                    )}
+                    <audio controls autoPlay className="w-full max-w-md" src={getPlayerConfig(playingPodcast).src} />
+                  </div>
+                ) : getPlayerConfig(playingPodcast).kind === "video" ? (
+                  <video controls autoPlay className="max-h-[70vh] w-full" src={getPlayerConfig(playingPodcast).src} />
+                ) : (
+                  <div className="aspect-video">
+                    <iframe
+                      src={getPlayerConfig(playingPodcast).src}
+                      title={playingPodcast.title}
+                      className="h-full w-full"
+                      allow="autoplay; encrypted-media; picture-in-picture"
+                      allowFullScreen
+                      referrerPolicy="strict-origin-when-cross-origin"
+                    />
+                  </div>
+                )}
+
+                {playingPodcast.showLiveLogo && playingPodcast.liveLogo && (
+                  <div className="pointer-events-none absolute right-4 top-4 z-50">
+                    <img
+                      src={playingPodcast.liveLogo}
+                      alt="Live Logo"
+                      className="max-h-12 w-auto object-contain drop-shadow-lg"
+                    />
+                  </div>
+                )}
+              </div>
             </motion.div>
           </motion.div>
         )}

@@ -32,7 +32,8 @@ const formatChannel = (req, doc) => {
     ...channel,
     isPremium: !!channel.isPremium,
     thumbnail: fileUrl(req, channel.thumbnail),
-    logo: fileUrl(req, channel.logo)
+    logo: fileUrl(req, channel.logo),
+    liveLogo: fileUrl(req, channel.liveLogo)
   };
 };
 

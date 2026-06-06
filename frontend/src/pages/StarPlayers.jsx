@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, MessageSquare, Pencil, Play, Plus, RefreshCw, Trash2, Video, X } from "lucide-react";
+import { Eye, MessageSquare, Pencil, Play, PlayCircle, Plus, RefreshCw, Trash2, Video, X } from "lucide-react";
 import api from "../api/axios";
 import ConfirmModal from "../components/ConfirmModal";
 import CommentModal from "../components/CommentModal";
@@ -317,6 +317,33 @@ function StarPlayers() {
       }
       return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : url;
     } catch { return url; }
+  };
+
+  const getPlayerConfig = (highlight) => {
+    const src = highlight.url || highlight.videoUrl || "";
+    const type = (highlight.category || highlight.type || "other").toLowerCase();
+
+    const lowerUrl = src.toLowerCase().split("?")[0];
+    const isAudioUrl = /\.(mp3|m4a|aac|ogg|oga|wav)$/.test(lowerUrl);
+    const isVideoUrl = /\.(mp4|webm|ogg|ogv|mov|m3u8)$/.test(lowerUrl);
+
+    if (type === "audio" || isAudioUrl) {
+      return { kind: "audio", src };
+    }
+
+    if (type === "mp4" || type === "m3u8" || isVideoUrl) {
+      return { kind: "video", src };
+    }
+
+    if (type === "youtube" || src.includes("youtube.com") || src.includes("youtu.be")) {
+      return { kind: "embed", src: getYouTubeEmbedUrl(src) };
+    }
+
+    if (type === "iframe") {
+      return { kind: "embed", src };
+    }
+
+    return { kind: "embed", src };
   };
 
   return (
@@ -699,49 +726,43 @@ function StarPlayers() {
 
               <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 relative aspect-video bg-black shadow-2xl">
                 {(() => {
-                  const url = (playingHighlight.videoUrl || playingHighlight.url || "").toLowerCase();
-                  const type = (playingHighlight.type || playingHighlight.category || "").toLowerCase();
-
-                  // YouTube
-                  if (type === "youtube" || url.includes("youtube.com") || url.includes("youtu.be")) {
+                  const config = getPlayerConfig(playingHighlight);
+                  if (config.kind === "audio") {
                     return (
-                      <iframe
-                        src={getYouTubeEmbedUrl(playingHighlight.videoUrl || playingHighlight.url)}
-                        title={playingHighlight.title || "Video player"}
-                        className="w-full h-full"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
+                      <div className="flex flex-col items-center justify-center h-full bg-slate-900 text-white gap-4 p-6">
+                        {playingHighlight.thumbnail ? (
+                          <img src={playingHighlight.thumbnail} alt="" className="h-32 w-32 rounded-xl object-cover shadow-lg" />
+                        ) : (
+                          <div className="flex h-32 w-32 items-center justify-center rounded-xl bg-slate-800 text-slate-400"><PlayCircle size={48} /></div>
+                        )}
+                        <audio controls autoPlay className="w-full max-w-md" src={config.src} />
+                      </div>
                     );
                   }
-
-                  // Iframe
-                  if (type === "iframe") {
-                    return (
-                      <iframe
-                        src={playingHighlight.videoUrl || playingHighlight.url}
-                        title={playingHighlight.title || "Iframe content"}
-                        className="w-full h-full border-0"
-                        allowFullScreen
-                      />
-                    );
+                  if (config.kind === "video") {
+                    return <video src={config.src} className="w-full h-full object-contain" controls autoPlay />;
                   }
-
-                  // Video (MP4, M3U8, etc)
-                  if (type === "mp4" || type === "m3u8" || url.endsWith(".m3u8") || url.endsWith(".mp4") || url.includes(".m3u8?") || url.includes(".mp4?")) {
-                    return <video src={playingHighlight.videoUrl || playingHighlight.url} className="w-full h-full object-contain" controls autoPlay />;
-                  }
-
-                  // Fallback
+                  // Embed (youtube, iframe, other)
                   return (
-                    <div className="flex flex-col items-center justify-center h-full text-slate-400 p-6 text-center">
-                      <Video size={40} className="mb-3 opacity-20" />
-                      <p className="font-medium text-sm">Preview not available for this format.</p>
-                      <p className="text-[10px] mt-1 opacity-60 break-all max-w-xs">{playingHighlight.videoUrl || playingHighlight.url}</p>
-                    </div>
+                    <iframe
+                      src={config.src}
+                      title={playingHighlight.title || "Video player"}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
                   );
                 })()}
+
+                {playingHighlight.showLiveLogo && playingHighlight.liveLogo && (
+                  <div className="pointer-events-none absolute right-4 top-4 z-50">
+                    <img
+                      src={playingHighlight.liveLogo}
+                      alt="Live Logo"
+                      className="max-h-12 w-auto object-contain drop-shadow-lg"
+                    />
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -751,57 +772,69 @@ function StarPlayers() {
       <AnimatePresence>
         {selectedHighlight ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900">
-              <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Highlight Details</h2>
-                  <p className="mt-1 text-sm text-slate-500">Full metadata and management options.</p>
-                </div>
-                <button type="button" onClick={() => setSelectedHighlight(null)} className="text-slate-500 transition hover:text-slate-800 dark:hover:text-slate-200">
-                  <X size={18} />
-                </button>
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900 overflow-y-auto max-h-[90vh] pretty-scroll">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Highlight Details</h2>
+                <button type="button" onClick={() => setSelectedHighlight(null)} className="text-slate-500 hover:text-slate-800"><X size={18} /></button>
               </div>
 
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-20 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700">
-                  {selectedHighlight.thumbnail ? (
-                    <img src={selectedHighlight.thumbnail} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-slate-300"><Video size={24} /></div>
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">{selectedHighlight.title}</h3>
-                  <p className="text-sm text-indigo-500 font-medium mt-1">{selectedHighlight.playerName}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
-                <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Sport</p>
-                  <p className="font-medium">{selectedHighlight.sportId?.name || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Type</p>
-                  <p className="font-medium capitalize">{selectedHighlight.type}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Duration</p>
-                  <p className="font-medium">{formatSecondsToTime(selectedHighlight.duration)}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Premium</p>
-                  <p className="font-medium">{selectedHighlight.isPremium ? "👑 Yes" : "Free"}</p>
-                </div>
-                {selectedHighlight.liveLogo && (
-                  <div className="col-span-2 flex items-center gap-3 mt-2 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
-                    <img src={selectedHighlight.liveLogo} alt="Live Logo" className="h-8 w-8 object-contain" />
-                    <div>
-                      <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">Live Logo</p>
-                      <p className="text-[10px] text-slate-500">{selectedHighlight.showLiveLogo ? "Visible on player" : "Hidden on player"}</p>
-                    </div>
+              <div className="flex items-center gap-4">
+                {selectedHighlight.thumbnail ? (
+                  <img src={selectedHighlight.thumbnail} alt="" className="h-16 w-16 rounded-2xl border border-slate-200 object-cover bg-slate-50" />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
+                    <Video size={28} />
                   </div>
                 )}
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 truncate" title={selectedHighlight.title}>{selectedHighlight.title}</h3>
+                  <p className="text-sm text-slate-400 truncate">{selectedHighlight.playerName}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-2 text-center flex flex-col justify-between min-h-[110px]">
+                  <p className="text-[10px] uppercase tracking-wide text-slate-400 mb-1">Thumbnail</p>
+                  {selectedHighlight.thumbnail ? (
+                    <img src={selectedHighlight.thumbnail} alt="Thumbnail" className="mx-auto max-h-16 max-w-full object-contain rounded" />
+                  ) : (
+                    <div className="flex h-16 items-center justify-center text-[10px] text-slate-400">No Thumbnail</div>
+                  )}
+                </div>
+                <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-2 text-center flex flex-col justify-between min-h-[110px]">
+                  <p className="text-[10px] uppercase tracking-wide text-slate-400 mb-1">Live Logo</p>
+                  {selectedHighlight.liveLogo ? (
+                    <img src={selectedHighlight.liveLogo} alt="Live Logo" className="mx-auto max-h-16 max-w-full object-contain" />
+                  ) : (
+                    <div className="flex h-16 items-center justify-center text-[10px] text-slate-400">No Live Logo</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                {[
+                  { label: "Highlight ID", value: selectedHighlight._id },
+                  { label: "Title", value: selectedHighlight.title },
+                  { label: "Player", value: selectedHighlight.playerName || "-" },
+                  { label: "Player ID", value: selectedHighlight.playerId?._id || selectedHighlight.playerId || "-" },
+                  { label: "Sport", value: selectedHighlight.sportId?.name || "-" },
+                  { label: "Sport ID", value: selectedHighlight.sportId?._id || selectedHighlight.sportId || "-" },
+                  { label: "Team", value: selectedHighlight.team || "-" },
+                  { label: "Duration", value: formatSecondsToTime(selectedHighlight.duration) },
+                  { label: "Legacy Type", value: selectedHighlight.type || "-" },
+                  { label: "Legacy Video URL", value: selectedHighlight.videoUrl || "-" },
+                  { label: "Featured", value: selectedHighlight.isFeatured ? "Yes" : "No" },
+                  { label: "Premium", value: selectedHighlight.isPremium ? "Yes" : "No" },
+                  { label: "Show Live Logo", value: selectedHighlight.showLiveLogo ? "Yes" : "No" },
+                  { label: "Created By", value: selectedHighlight.createdBy || "-" },
+                  { label: "Created At", value: selectedHighlight.createdAt ? new Date(selectedHighlight.createdAt).toLocaleString() : "-" },
+                  { label: "Updated At", value: selectedHighlight.updatedAt ? new Date(selectedHighlight.updatedAt).toLocaleString() : "-" }
+                ].map(({ label, value }) => (
+                  <div key={label} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p>
+                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-800 dark:text-slate-100" title={String(value)}>{String(value)}</p>
+                  </div>
+                ))}
               </div>
 
               <div className="mt-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800">

@@ -122,6 +122,15 @@ function PlayModal({ hl, onClose }) {
             ) : (
               <video src={hl.videoUrl} className="h-full w-full object-contain" controls autoPlay />
             )}
+            {hl.showLiveLogo && hl.liveLogo && (
+              <div className="pointer-events-none absolute right-4 top-4 z-50">
+                <img
+                  src={hl.liveLogo}
+                  alt="Live Logo"
+                  className="max-h-12 w-auto object-contain drop-shadow-lg"
+                />
+              </div>
+            )}
           </div>
           {hl.description && (
             <div className="px-5 py-4 border-t border-white/10">
@@ -1195,6 +1204,45 @@ export default function MatchHighlights() {
                     </div>
                   </div>
                 )}
+
+                <div>
+                  <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">All Metadata Details</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: "Highlight ID", value: selectedHighlight._id },
+                      { label: "Title", value: selectedHighlight.title },
+                      { label: "Category", value: selectedHighlight.category || "-" },
+                      { label: "Source Type", value: selectedHighlight.sourceType || "-" },
+                      { label: "Video URL", value: selectedHighlight.videoUrl || "-" },
+                      { label: "Thumbnail URL", value: selectedHighlight.thumbnail || "-" },
+                      { label: "Live Logo URL", value: selectedHighlight.liveLogo || "-" },
+                      { label: "Duration (secs)", value: selectedHighlight.duration || 0 },
+                      { label: "Duration (formatted)", value: formatSecondsToTime(selectedHighlight.duration) },
+                      { label: "Tags", value: selectedHighlight.tags?.join(", ") || "-" },
+                      { label: "Featured", value: selectedHighlight.isFeatured ? "Yes" : "No" },
+                      { label: "Premium", value: selectedHighlight.isPremium ? "Yes" : "No" },
+                      { label: "Show Live Logo", value: selectedHighlight.showLiveLogo ? "Yes" : "No" },
+                      { label: "Views", value: selectedHighlight.views || 0 },
+                      { label: "Display Order", value: selectedHighlight.order || 0 },
+                      { label: "Match ID", value: selectedHighlight.matchId?._id || selectedHighlight.matchId || "-" },
+                      { label: "Match Title", value: selectedHighlight.matchId?.title || "-" },
+                      { label: "Series ID", value: selectedHighlight.seriesId?._id || selectedHighlight.seriesId || "-" },
+                      { label: "Series Title", value: selectedHighlight.seriesId?.title || "-" },
+                      { label: "Team A ID", value: selectedHighlight.teamA?._id || selectedHighlight.teamA || "-" },
+                      { label: "Team A Name", value: selectedHighlight.teamA?.name || "-" },
+                      { label: "Team B ID", value: selectedHighlight.teamB?._id || selectedHighlight.teamB || "-" },
+                      { label: "Team B Name", value: selectedHighlight.teamB?.name || "-" },
+                      { label: "Created By", value: selectedHighlight.createdBy || "-" },
+                      { label: "Created At", value: selectedHighlight.createdAt ? new Date(selectedHighlight.createdAt).toLocaleString() : "-" },
+                      { label: "Updated At", value: selectedHighlight.updatedAt ? new Date(selectedHighlight.updatedAt).toLocaleString() : "-" }
+                    ].map(({ label, value }) => (
+                      <div key={label} className="rounded-xl bg-slate-50 dark:bg-slate-800 p-3">
+                        <p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p>
+                        <p className="mt-0.5 truncate text-xs font-semibold text-slate-800 dark:text-slate-100" title={String(value)}>{String(value)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Bottom Actions */}

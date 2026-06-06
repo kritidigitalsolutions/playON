@@ -1026,7 +1026,7 @@ liveLogoFile: null
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-              className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900 overflow-y-auto max-h-[90vh] pretty-scroll">
+              className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900 overflow-y-auto max-h-[90vh] pretty-scroll">
               <div className="mb-4 flex items-start justify-between gap-4">
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Live TV Details</h2>
                 <button type="button" onClick={() => setSelectedDetails(null)} className="text-slate-500 hover:text-slate-800"><X size={18} /></button>
@@ -1034,7 +1034,7 @@ liveLogoFile: null
 
               <div className="flex items-center gap-4">
                 {selectedDetails.logo || selectedDetails.thumbnail ? (
-                  <img src={selectedDetails.logo || selectedDetails.thumbnail} alt={selectedDetails.name} className="h-16 w-16 rounded-2xl border border-slate-200 object-cover" />
+                  <img src={selectedDetails.logo || selectedDetails.thumbnail} alt={selectedDetails.name} className="h-16 w-16 rounded-2xl border border-slate-200 object-cover bg-slate-50" />
                 ) : (
                   <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
                     <Tv size={28} />
@@ -1046,19 +1046,54 @@ liveLogoFile: null
                 </div>
               </div>
 
+              <div className="mt-4 grid grid-cols-3 gap-3">
+                <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-2 text-center flex flex-col justify-between min-h-[110px]">
+                  <p className="text-[10px] uppercase tracking-wide text-slate-400 mb-1">Logo</p>
+                  {selectedDetails.logo ? (
+                    <img src={selectedDetails.logo} alt="Logo" className="mx-auto max-h-16 max-w-full object-contain" />
+                  ) : (
+                    <div className="flex h-16 items-center justify-center text-[10px] text-slate-400">No Logo</div>
+                  )}
+                </div>
+                <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-2 text-center flex flex-col justify-between min-h-[110px]">
+                  <p className="text-[10px] uppercase tracking-wide text-slate-400 mb-1">Thumbnail</p>
+                  {selectedDetails.thumbnail ? (
+                    <img src={selectedDetails.thumbnail} alt="Thumbnail" className="mx-auto max-h-16 max-w-full object-contain rounded" />
+                  ) : (
+                    <div className="flex h-16 items-center justify-center text-[10px] text-slate-400">No Thumbnail</div>
+                  )}
+                </div>
+                <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-2 text-center flex flex-col justify-between min-h-[110px]">
+                  <p className="text-[10px] uppercase tracking-wide text-slate-400 mb-1">Live Logo</p>
+                  {selectedDetails.liveLogo ? (
+                    <img src={selectedDetails.liveLogo} alt="Live Logo" className="mx-auto max-h-16 max-w-full object-contain" />
+                  ) : (
+                    <div className="flex h-16 items-center justify-center text-[10px] text-slate-400">No Live Logo</div>
+                  )}
+                </div>
+              </div>
+
               <div className="mt-5 grid grid-cols-2 gap-3">
                 {[
+                  { label: "Channel ID", value: selectedDetails._id },
+                  { label: "Name", value: selectedDetails.name },
+                  { label: "Slug", value: selectedDetails.slug || "-" },
+                  { label: "Category", value: selectedDetails.category || "other" },
                   { label: "Status", value: selectedDetails.status },
                   { label: "Channel #", value: selectedDetails.channelNumber || "-" },
                   { label: "Stream Type", value: selectedDetails.streamType },
                   { label: "Quality", value: selectedDetails.quality },
                   { label: "Viewers", value: formatNumber(selectedDetails.viewerCount || 0) },
                   { label: "Featured", value: selectedDetails.featured ? "Yes" : "No" },
-                  { label: "Premium", value: selectedDetails.isPremium ? "Yes" : "No" }
+                  { label: "Premium", value: selectedDetails.isPremium ? "Yes" : "No" },
+                  { label: "Show Live Logo", value: selectedDetails.showLiveLogo ? "Yes" : "No" },
+                  { label: "Created By", value: selectedDetails.createdBy || "-" },
+                  { label: "Created At", value: selectedDetails.createdAt ? new Date(selectedDetails.createdAt).toLocaleString() : "-" },
+                  { label: "Updated At", value: selectedDetails.updatedAt ? new Date(selectedDetails.updatedAt).toLocaleString() : "-" }
                 ].map(({ label, value }) => (
                   <div key={label} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p>
-                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize">{String(value)}</p>
+                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize" title={String(value)}>{String(value)}</p>
                   </div>
                 ))}
 
@@ -1072,21 +1107,28 @@ liveLogoFile: null
                 {selectedDetails.streamUrl && (
                   <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Stream URL</p>
-                    <p className="mt-0.5 truncate text-sm font-mono text-indigo-500 select-all">{selectedDetails.streamUrl}</p>
+                    <p className="mt-0.5 truncate text-sm font-mono text-indigo-500 select-all" title={selectedDetails.streamUrl}>{selectedDetails.streamUrl}</p>
                   </div>
                 )}
 
                 {selectedDetails.backupUrl && (
                   <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Backup URL</p>
-                    <p className="mt-0.5 truncate text-sm font-mono text-slate-600 dark:text-slate-400 select-all">{selectedDetails.backupUrl}</p>
+                    <p className="mt-0.5 truncate text-sm font-mono text-slate-600 dark:text-slate-400 select-all" title={selectedDetails.backupUrl}>{selectedDetails.backupUrl}</p>
                   </div>
                 )}
 
                 {selectedDetails.rtmpUrl && (
                   <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">RTMP URL</p>
-                    <p className="mt-0.5 truncate text-sm font-mono text-slate-600 dark:text-slate-400 select-all">{selectedDetails.rtmpUrl}</p>
+                    <p className="mt-0.5 truncate text-sm font-mono text-slate-600 dark:text-slate-400 select-all" title={selectedDetails.rtmpUrl}>{selectedDetails.rtmpUrl}</p>
+                  </div>
+                )}
+
+                {selectedDetails.srtUrl && (
+                  <div className="col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">SRT URL</p>
+                    <p className="mt-0.5 truncate text-sm font-mono text-slate-600 dark:text-slate-400 select-all" title={selectedDetails.srtUrl}>{selectedDetails.srtUrl}</p>
                   </div>
                 )}
               </div>
