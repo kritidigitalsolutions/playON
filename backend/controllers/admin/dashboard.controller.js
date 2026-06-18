@@ -161,7 +161,7 @@ exports.getDashboard = async (req, res) => {
       getGrowthData(User, userFilter),
       getGrowthData(Match),
       Match.countDocuments({ status: "live" }),
-      Match.countDocuments({ status: "upcoming" }),
+      Match.countDocuments({ status: "upcomin g" }),
       Stream.countDocuments({ status: "live" }),
       Stream.countDocuments({ status: "scheduled" }),
       Channel.countDocuments({ status: "live" }),

@@ -16,7 +16,9 @@ const sendNotification = async ({
       {}
     );
 
-    if (image) {
+    // Ensure image is always present in data so client/OEM handlers can use it.
+    const hasImage = Boolean(image);
+    if (hasImage) {
       parsedData.image = image;
     }
 
@@ -30,13 +32,20 @@ const sendNotification = async ({
     };
 
     // Android rich notification image
-    if (image) {
+    if (hasImage) {
+      // Note: OEM support varies. Providing both imageUrl + image helps.
+      // Also include a clickable action so some OEMs render rich content more reliably.
       message.android = {
-  notification: {
-    imageUrl: image,
-    image: image
-  }
-};
+        notification: {
+          imageUrl: image,
+          image: image,
+          // Helps OEMs that only treat it as a “web”/rich notification.
+          // (Safe even if your client ignores it.)
+          clickAction: "FLUTTER_NOTIFICATION_CLICK",
+          // FCM Admin SDK also supports webLink; adding it for compatibility.
+          webLink: image
+        }
+      };
 
       // iOS support
       message.apns = {
@@ -51,15 +60,12 @@ const sendNotification = async ({
       };
     }
 
-    const response = await admin
-      .messaging()
-      .send(message);
+    const response = await admin.messaging().send(message);
 
     return {
       success: true,
       response
     };
-
   } catch (error) {
     return {
       success: false,

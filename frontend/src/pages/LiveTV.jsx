@@ -25,10 +25,12 @@ const defaultForm = {
   isPremium: false,
 
 
+  logo: "",
   liveLogo: "",
   showLiveLogo: false,
 
   thumbnailFile: null,
+  logoFile: null,
   liveLogoFile: null
 };
 const defaultCategoryForm = {
@@ -198,11 +200,12 @@ function LiveTV() {
       featured: Boolean(channel?.featured),
 isPremium: Boolean(channel?.isPremium),
 
-
+logo: channel?.logo || "",
 liveLogo: channel?.liveLogo || "",
 showLiveLogo: Boolean(channel?.showLiveLogo),
 
 thumbnailFile: null,
+logoFile: null,
 liveLogoFile: null
     });
     setModalOpen(true);
@@ -249,6 +252,7 @@ liveLogoFile: null
       payload.append("isPremium", String(Boolean(form.isPremium)));
       payload.append("showLiveLogo",String(Boolean(form.showLiveLogo)));
       if (form.thumbnailFile) payload.append("thumbnail", form.thumbnailFile);
+      if (form.logoFile) payload.append("logo", form.logoFile);
       if (form.liveLogoFile) payload.append("liveLogo", form.liveLogoFile);
 
       let response;
@@ -893,6 +897,22 @@ liveLogoFile: null
                       onChange={(e) => onFormChange("thumbnailFile", e.target.files?.[0] || null)}
                       className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
                     />
+                    {editMode && form.thumbnail ? (
+                      <p className="mt-1 text-[11px] text-slate-400 truncate">Current: {form.thumbnail}</p>
+                    ) : null}
+                  </label>
+
+                  <label className="block text-sm">
+                    <span className="mb-1 block text-slate-500 dark:text-slate-400">Logo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => onFormChange("logoFile", e.target.files?.[0] || null)}
+                      className="block w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:bg-slate-950 dark:text-slate-100"
+                    />
+                    {editMode && form.logo ? (
+                      <p className="mt-1 text-[11px] text-slate-400 truncate">Current: {form.logo}</p>
+                    ) : null}
                   </label>
 
                   <label className="block text-sm">

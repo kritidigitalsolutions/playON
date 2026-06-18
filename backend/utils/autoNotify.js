@@ -44,7 +44,7 @@ const autoNotify = async ({
     const users = await User.find(usersQuery);
 
     for (const user of users) {
-      await sendNotification({
+      const result = await sendNotification({
         token: user.fcmToken,
         title,
         body: message,
@@ -55,6 +55,23 @@ const autoNotify = async ({
           ...notificationData
         }
       });
+
+      // Helpful per-device logging for OEM-specific rich-image issues.
+      if (!result?.success) {
+        console.log('[FCM] send failed', {
+          userId: user._id?.toString?.() || user._id,
+          hasImage: Boolean(metadata?.image),
+          image: metadata?.image || '',
+          fcmTokenPrefix: (user.fcmToken || '').slice(0, 10),
+          error: result?.message
+        });
+      } else {
+        console.log('[FCM] send ok', {
+          userId: user._id?.toString?.() || user._id,
+          hasImage: Boolean(metadata?.image),
+          fcmTokenPrefix: (user.fcmToken || '').slice(0, 10)
+        });
+      }
     }
 
     return { success: true };
