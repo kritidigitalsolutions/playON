@@ -1,5 +1,6 @@
 const Match = require("../models/match.model");
 const highlightly = require("./providers/highlightly.provider");
+const matchStreamSync = require("./matchStreamSync.service");
 const { normalizeStatusByMatchDate } = require("./matchStatus.service");
 
 // ─── Config ───────────────────────────────────────────────────
@@ -151,6 +152,25 @@ async function syncOneMatch(dbMatch, { fullSync = true } = {}) {
     }
 
     await Match.findByIdAndUpdate(dbMatch._id, { $set: updates });
+
+    if (newStatus && newStatus !== oldStatus) {
+      try {
+        await matchStreamSync.syncForMatch(
+          {
+            _id: dbMatch._id,
+            status: newStatus,
+            matchDate: dbMatch.matchDate
+          },
+          {},
+          { force: true }
+        );
+      } catch (err) {
+        console.error(
+          `[SYNC] Stream sync failed after highlightly status update for match ${dbMatch._id}:`,
+          err.message || err
+        );
+      }
+    }
 
     return {
       synced: true,

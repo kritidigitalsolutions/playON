@@ -27,16 +27,13 @@ const uploadToFirebase = async (file, folder = "general") => {
   };
 
   if (file.buffer) {
-    // Memory Storage
     await firebaseFile.save(file.buffer, fileOptions);
   } else if (file.path) {
-    // Disk Storage
     await bucket.upload(file.path, {
       destination: fileName,
       ...fileOptions
     });
 
-    // Clean up local temp file
     try {
       fs.unlinkSync(file.path);
     } catch (err) {
@@ -46,9 +43,8 @@ const uploadToFirebase = async (file, folder = "general") => {
     throw new Error("File content (buffer or path) is missing");
   }
 
-  await firebaseFile.makePublic();
-
-  return `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+  // ✅ Token-based download URL — works regardless of UBLA/bucket privacy settings
+  return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(fileName)}?alt=media&token=${downloadToken}`;
 };
 
 module.exports = uploadToFirebase;

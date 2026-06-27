@@ -1,4 +1,5 @@
 const Match = require("../models/match.model");
+const matchStreamSync = require("./matchStreamSync.service");
 
 const TERMINAL_STATUSES = new Set(["completed", "cancelled"]);
 
@@ -30,6 +31,23 @@ exports.normalizeAdminStatus = (status, matchDate, now = new Date()) =>
 
 exports.reconcileMatchStatuses = async (now = new Date()) => {
   const staleLiveCutoff = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+
+  const futureMatches = await Match.find({
+    status: { $nin: ["upcoming", "cancelled"] },
+    matchDate: { $gt: now }
+  }).lean();
+  const staleLiveMatches = await Match.find({
+    status: "live",
+    matchDate: { $lte: staleLiveCutoff }
+  }).lean();
+  const dueMatches = await Match.find({
+    status: "upcoming",
+    matchDate: {
+      $lte: now,
+      $gt: staleLiveCutoff
+    }
+  }).lean();
+
   const [futureResult, staleLiveResult, dueResult] = await Promise.all([
     Match.updateMany(
       {
@@ -72,6 +90,46 @@ exports.reconcileMatchStatuses = async (now = new Date()) => {
       }
     )
   ]);
+
+  const changedMatches = [];
+
+  futureMatches.forEach((match) => {
+    changedMatches.push({
+      ...match,
+      status: "upcoming",
+      liveStartedAt: null,
+      liveEndedAt: null
+    });
+  });
+
+  staleLiveMatches.forEach((match) => {
+    changedMatches.push({
+      ...match,
+      status: "completed",
+      liveEndedAt: now
+    });
+  });
+
+  dueMatches.forEach((match) => {
+    changedMatches.push({
+      ...match,
+      status: "live",
+      liveStartedAt: now
+    });
+  });
+
+  await Promise.all(
+    changedMatches.map((match) =>
+      matchStreamSync
+        .syncForMatch(match, {}, { force: true })
+        .catch((err) => {
+          console.error(
+            `[SYNC] Stream sync failed for match ${match._id}:`,
+            err.message || err
+          );
+        })
+    )
+  );
 
   return {
     futureFixed: futureResult.modifiedCount || 0,

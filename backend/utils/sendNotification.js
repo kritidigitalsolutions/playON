@@ -5,18 +5,15 @@ const sendNotification = async ({
   title,
   body,
   image = "",
-  data = {}
+  data = {},
+  channelId = "default"
 }) => {
   try {
-    const parsedData = Object.keys(data).reduce(
-      (acc, key) => {
-        acc[key] = String(data[key]);
-        return acc;
-      },
-      {}
-    );
+    const parsedData = Object.keys(data).reduce((acc, key) => {
+      acc[key] = String(data[key]);
+      return acc;
+    }, {});
 
-    // Ensure image is always present in data so client/OEM handlers can use it.
     const hasImage = Boolean(image);
     if (hasImage) {
       parsedData.image = image;
@@ -28,26 +25,19 @@ const sendNotification = async ({
         title,
         body
       },
-      data: parsedData
+      data: parsedData,
+      // ✅ ALWAYS set, regardless of image
+      android: {
+        notification: {
+          clickAction: "FLUTTER_NOTIFICATION_CLICK",
+          channelId,
+          ...(hasImage && { imageUrl: image })
+        }
+      }
     };
 
-    // Android rich notification image
+    // iOS only needed when there's an image
     if (hasImage) {
-      // Note: OEM support varies. Providing both imageUrl + image helps.
-      // Also include a clickable action so some OEMs render rich content more reliably.
-      message.android = {
-        notification: {
-          imageUrl: image,
-          image: image,
-          // Helps OEMs that only treat it as a “web”/rich notification.
-          // (Safe even if your client ignores it.)
-          clickAction: "FLUTTER_NOTIFICATION_CLICK",
-          // FCM Admin SDK also supports webLink; adding it for compatibility.
-          webLink: image
-        }
-      };
-
-      // iOS support
       message.apns = {
         payload: {
           aps: {
@@ -61,16 +51,12 @@ const sendNotification = async ({
     }
 
     const response = await admin.messaging().send(message);
+    console.log("[FCM] ✅ success, messageId:", response);
 
-    return {
-      success: true,
-      response
-    };
+    return { success: true, response };
   } catch (error) {
-    return {
-      success: false,
-      message: error.message
-    };
+    console.error("[FCM] ❌ Error:", error.message, error.code);
+    return { success: false, message: error.message };
   }
 };
 

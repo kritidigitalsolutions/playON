@@ -23,6 +23,8 @@ function AdminLayout() {
     navigate(LOGIN_ROUTE);
   };
 
+  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-indigo-50 to-violet-100 p-3 transition dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 sm:p-5">
       <Sidebar

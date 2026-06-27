@@ -429,7 +429,9 @@ exports.updateMatch = async (req, res) => {
       });
     }
 
-    const stream = await matchStreamSync.syncForMatch(match, req.body);
+    const stream = await matchStreamSync.syncForMatch(match, req.body, {
+      force: hasOwn(req.body, "status") || hasOwn(req.body, "matchDate")
+    });
 
     if (existingMatch.status !== "live" && match.status === "live" && stream?.streamUrl) {
       await autoNotify({

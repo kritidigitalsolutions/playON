@@ -48,16 +48,18 @@ const startAutoLiveMatches = () => {
         console.log(`[AUTO] Match ${match._id} (${match.teamA} vs ${match.teamB}) set to live`);
 
         autoNotify({
-          title: "Match Live Now",
-          message: `${match.teamA} vs ${match.teamB} is live now.`,
-          type: "MATCH",
-          metadata: {
-            matchId: match._id,
-            streamId: stream?._id,
-            image: match.banner || match.thumbnail || ""
-          }
-        }).catch(() => {});
-      }
+    title: "Match Live Now",
+    message: `${match.teamA} vs ${match.teamB} is live now.`,
+    type: "MATCH",
+    metadata: {
+      matchId: String(match._id),
+      streamId: String(stream?._id || ""),
+      image: match.banner || match.thumbnail || ""
+    }
+  }).catch((err) => {
+    console.error("[AUTO-NOTIFY CRON] ❌ Error:", err.message, err.stack);
+  });
+} 
 
       if (futureMatches.length > 0 || dueMatches.length > 0) {
         console.log(

@@ -42,8 +42,8 @@ exports.completeProfile = async (req, res) => {
     )
       ? favoriteSports
       : favoriteSports
-      ? [favoriteSports]
-      : [];
+        ? [favoriteSports]
+        : [];
 
     // PROFILE COMPLETE
     user.isProfileComplete = true;
