@@ -152,6 +152,10 @@ app.use(
   "/api/channel-categories",
   require("./routes/user/channelCategory.routes")
 );
+
+//popup
+app.use("/api/admin/popups", require("./routes/admin/popup.routes"));
+app.use("/api/popups", require("./routes/user/popup.routes"));
 //social media links
 app.use("/api/admin", require("./routes/admin/socialMedia.routes"));
 app.use("/api", require("./routes/user/socialMedia.routes"));
@@ -180,6 +184,7 @@ app.use(
   "/api/admin/comments",
   require("./routes/admin/comment.routes")
 );
+
 if (!process.env.VERCEL) {
   startAutoLiveMatches();
 }

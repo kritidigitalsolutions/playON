@@ -23,6 +23,7 @@ import Settings from "./pages/Settings";
 import SubAdmins from "./pages/SubAdmins";
 import Legal from "./pages/Legal";
 import SocialMedia from "./pages/SocialMedia";
+import Popup from "./pages/Popup";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -113,6 +114,7 @@ function App() {
         <Route path="legal" element={<Legal />} />
         <Route path="sub-admins" element={<SubAdmins />} />
         <Route path="social-media" element={<SocialMedia />} />
+        <Route path="popup" element={<Popup />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={hasAuthToken() ? <NotFound /> : <Navigate to={LOGIN_ROUTE} replace />} />

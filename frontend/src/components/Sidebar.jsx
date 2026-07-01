@@ -24,7 +24,8 @@ import {
   Link as LinkIcon,
   Megaphone,
   Mic,
-  Clapperboard
+  Clapperboard,
+  AppWindow
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { getAdminProfile } from "../utils/auth";
@@ -52,6 +53,7 @@ const navItems = [
   { label: "Coupon Codes", path: "/promo", icon: TicketPercent },
   { label: "Legal", path: "/legal", icon: ScrollText },
   { label: "Social Media", path: "/social-media", icon: LinkIcon },
+  { label: "Popups", path: "/popup", icon: AppWindow },
   { label: "Settings", path: "/settings", icon: Settings }
 ];
 

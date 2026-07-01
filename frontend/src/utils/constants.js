@@ -15,6 +15,7 @@ export const NAV_LINKS = [
   { label: "Legal", path: "/legal" },
   { label: "Sub Admins", path: "/sub-admins" },
   { label: "Social Media", path: "/social-media" },
+  { label: "Popups", path: "/popup" },
   { label: "Settings", path: "/settings" }
 ];
 
@@ -38,6 +39,7 @@ export const PAGE_TITLES = {
   "/legal": "Legal Pages",
   "/sub-admins": "Sub Admins",
   "/social-media": "Social Media Links",
+  "/popup": "Popups",
   "/settings": "Settings"
 };
 
