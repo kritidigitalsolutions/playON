@@ -19,7 +19,8 @@ import {
   Trash2,
   Trophy,
   Upload,
-  X
+  X,
+  Loader2
 } from "lucide-react";
 import api from "../api/axios";
 import useDebounce from "../hooks/useDebounce";
@@ -342,6 +343,7 @@ function Matches() {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [updatingStatusId, setUpdatingStatusId] = useState(null);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [watchData, setWatchData] = useState(null);
   const [search, setSearch] = useState("");
@@ -792,15 +794,16 @@ liveLogoFile: null
   };
 
   const updateStatus = async (match, nextStatus) => {
-    try {
-      const stream = match.stream || {};
-      if (nextStatus === "live") {
-        if (!stream.streamUrl) {
-          pushToast("Add a stream URL before going live", "error");
-          openEdit(match);
-          return;
-        }
+    const stream = match.stream || {};
+    if (nextStatus === "live" && !stream.streamUrl) {
+      pushToast("Add a stream URL before going live", "error");
+      openEdit(match);
+      return;
+    }
 
+    try {
+      setUpdatingStatusId(match._id);
+      if (nextStatus === "live") {
         const response = await api.patch(`/admin/matches/${match._id}/live`, {
           streamTitle: stream.title || match.title || `${match.teamA} vs ${match.teamB}`,
           streamProvider: stream.provider || "",
@@ -820,6 +823,8 @@ liveLogoFile: null
       pushToast(`Match marked ${nextStatus}`, "success");
     } catch (error) {
       pushToast(error?.response?.data?.message || "Status update failed", "error");
+    } finally {
+      setUpdatingStatusId(null);
     }
   };
 
@@ -1047,8 +1052,20 @@ liveLogoFile: null
                         <button type="button" onClick={() => toggleFeatured(match)} className={classNames("admin-action-btn-sm h-8 w-8 rounded-full !p-0", match.isFeatured ? "bg-amber-100 text-amber-600 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-400 dark:hover:bg-amber-500/25" : "")}>
                           <Star size={15} className={match.isFeatured ? "fill-current" : ""} />
                         </button>
-                        <button type="button" onClick={() => updateStatus(match, match.status === "live" ? "completed" : "live")} className="admin-action-btn-sm">
-                          {match.status === "live" ? "End" : "Go Live"}
+                        <button
+                          type="button"
+                          onClick={() => updateStatus(match, match.status === "live" ? "completed" : "live")}
+                          disabled={updatingStatusId === match._id}
+                          className="admin-action-btn-sm inline-flex items-center gap-1.5 min-w-[70px] justify-center"
+                        >
+                          {updatingStatusId === match._id ? (
+                            <>
+                              <Loader2 size={13} className="animate-spin" />
+                              <span>Processing...</span>
+                            </>
+                          ) : (
+                            match.status === "live" ? "End" : "Go Live"
+                          )}
                         </button>
                         <button type="button" onClick={() => setDeleteTarget(match)} className="admin-action-btn-danger-sm h-8 w-8 rounded-full !p-0">
                           <Trash2 size={15} />

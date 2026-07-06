@@ -42,6 +42,7 @@ const navItems = [
   { label: "Matches", path: "/matches", icon: Swords },
   { label: "Subscribed Users", path: "/user-plans", icon: Wallet },
   { label: "Subscription Plans", path: "/plans", icon: Layers3 },
+  { label: "Popups", path: "/popup", icon: AppWindow },
   { label: "Banners", path: "/banners", icon: ImageIcon },
   { label: "AdMob Placements", path: "/admob-placements", icon: Megaphone },
   { label: "Star Players", path: "/star-players", icon: Star },
@@ -53,7 +54,7 @@ const navItems = [
   { label: "Coupon Codes", path: "/promo", icon: TicketPercent },
   { label: "Legal", path: "/legal", icon: ScrollText },
   { label: "Social Media", path: "/social-media", icon: LinkIcon },
-  { label: "Popups", path: "/popup", icon: AppWindow },
+
   { label: "Settings", path: "/settings", icon: Settings }
 ];
 

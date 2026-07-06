@@ -102,6 +102,7 @@ function App() {
         <Route path="matches" element={<Matches />} />
         <Route path="sports" element={<Sports />} />
         <Route path="banners" element={<Banners />} />
+        <Route path="popup" element={<Popup />} />
         <Route path="admob-placements" element={<AdmobPlacements />} />
         <Route path="podcasts" element={<Podcasts />} />
         <Route path="star-players" element={<StarPlayers />} />
@@ -114,7 +115,6 @@ function App() {
         <Route path="legal" element={<Legal />} />
         <Route path="sub-admins" element={<SubAdmins />} />
         <Route path="social-media" element={<SocialMedia />} />
-        <Route path="popup" element={<Popup />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={hasAuthToken() ? <NotFound /> : <Navigate to={LOGIN_ROUTE} replace />} />

@@ -716,7 +716,13 @@ liveLogoFile: null
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
                         <button onClick={() => toggleLive(channel)} disabled={actionChannelId === channel._id} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title={channel.status === "live" ? "Go Offline" : "Go Live"}>
-                          {channel.status === "live" ? <Square size={14} /> : <Play size={14} />}
+                          {actionChannelId === channel._id ? (
+                            <RefreshCw size={14} className="animate-spin" />
+                          ) : channel.status === "live" ? (
+                            <Square size={14} />
+                          ) : (
+                            <Play size={14} />
+                          )}
                         </button>
                         <button onClick={() => setSelectedDetails(channel)} className="admin-action-btn-sm h-8 w-8 rounded-full !p-0" title="View Details">
                           <Eye size={14} />
