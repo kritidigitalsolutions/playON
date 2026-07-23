@@ -62,26 +62,54 @@ exports.loginWithCode = async (req, res) => {
       });
     }
 
-    const record = await TvCode.findOne({
-      code: cleanCode,
-      used: false,
-      expiresAt: { $gt: new Date() }
-    });
+    let user;
+    let record;
 
-    if (!record) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid or expired code"
+    // Dummy Login Flow
+    if (cleanCode === "9999") {
+      user = await User.findOne(); // grab any available user for testing
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "No users exist in the database for dummy login"
+        });
+      }
+
+      // Create a dummy record so the connection appears in the admin panel
+      record = await TvCode.create({
+        code: "9999",
+        userId: user._id,
+        used: true,
+        deviceName: deviceName || "Dummy TV Simulator",
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000)
       });
-    }
-
-    const user = await User.findById(record.userId);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
+    } else {
+      record = await TvCode.findOne({
+        code: cleanCode,
+        used: false,
+        expiresAt: { $gt: new Date() }
       });
+
+      if (!record) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid or expired code"
+        });
+      }
+
+      user = await User.findById(record.userId);
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+
+      // Mark code used
+      record.used = true;
+      record.deviceName = deviceName || "";
+      await record.save();
     }
 
     // Stamp lastLoginAt so the notification filter knows which session to start from
@@ -93,11 +121,6 @@ exports.loginWithCode = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
-
-    // Mark code used
-    record.used = true;
-    record.deviceName = deviceName || "";
-    await record.save();
 
     res.json({
       success: true,
