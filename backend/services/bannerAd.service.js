@@ -54,10 +54,10 @@ exports.incrementClick = async (id) => {
   return await BannerAd.findByIdAndUpdate(
     id,
     { $inc: { clicks: 1 } },
-    { new: true }
+    { returnDocument: 'after' }
   );
 };
 // Update Banner
 exports.updateBanner = async (id, data) => {
-  return await BannerAd.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+  return await BannerAd.findByIdAndUpdate(id, data, { returnDocument: 'after', runValidators: true });
 };

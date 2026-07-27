@@ -61,7 +61,7 @@ exports.getPlanById = async (id) => {
 // Update
 exports.updatePlan = async (id, data) => {
   return await Plan.findByIdAndUpdate(id, data, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true
   });
 };
@@ -91,7 +91,7 @@ exports.updateSortOrder = async (
   return await Plan.findByIdAndUpdate(
     id,
     { sortOrder },
-    { new: true }
+    { returnDocument: 'after' }
   );
 };
 

@@ -9,7 +9,7 @@ exports.upsertPage = async (type, data, adminId) => {
       updatedBy: adminId
     },
     {
-      new: true,
+      returnDocument: 'after',
       upsert: true,
       runValidators: true
     }

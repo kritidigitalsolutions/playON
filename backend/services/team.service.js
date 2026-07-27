@@ -72,7 +72,7 @@ exports.getById = async (id) => {
 // Update
 exports.updateTeam = async (id, data) => {
   return await Team.findByIdAndUpdate(id, data, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true
   });
 };

@@ -22,7 +22,7 @@ const syncChannelNumberCounter = async () => {
   await Counter.findOneAndUpdate(
     { _id: COUNTER_ID },
     { $max: { seq: maxChannelNumber } },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
   );
 };
 

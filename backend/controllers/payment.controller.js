@@ -120,6 +120,8 @@ exports.createOrder = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("CREATE ORDER ERROR:", error);
+
     res.status(400).json({
       success: false,
       message: error.message
@@ -129,6 +131,10 @@ exports.createOrder = async (req, res) => {
 
 // Verify Payment + Create Subscription
 exports.verifyPayment = async (req, res) => {
+  // 🔑 Track whether res.json() has already been sent,
+  // so side-effect errors below never try to send a second response.
+  let responseSent = false;
+
   try {
     const {
       razorpay_order_id,
@@ -141,6 +147,9 @@ exports.verifyPayment = async (req, res) => {
       promoCode
     } = req.body;
 
+    // =========================
+    // STEP 1: BASIC VALIDATION
+    // =========================
     if (
       !razorpay_order_id ||
       !razorpay_payment_id ||
@@ -153,6 +162,9 @@ exports.verifyPayment = async (req, res) => {
       });
     }
 
+    // =========================
+    // STEP 2: SIGNATURE CHECK
+    // =========================
     const generatedSignature = crypto
       .createHmac(
         "sha256",
@@ -172,6 +184,9 @@ exports.verifyPayment = async (req, res) => {
 
     const userId = req.user.userId;
 
+    // =========================
+    // STEP 3: IDEMPOTENCY CHECK
+    // =========================
     const alreadyExists = await Subscription.findOne({
       paymentId: razorpay_payment_id
     });
@@ -184,6 +199,9 @@ exports.verifyPayment = async (req, res) => {
       });
     }
 
+    // =========================
+    // STEP 4: PLAN CHECK
+    // =========================
     const plan = await Plan.findById(planId);
 
     if (!plan) {
@@ -198,22 +216,38 @@ exports.verifyPayment = async (req, res) => {
     let appliedPromo = null;
 
     if (promoCode) {
-      const result = await promoService.validatePromo({
-        code: promoCode,
-        userId,
-        planId: plan._id,
-        amount: plan.price
-      });
+      try {
+        const result = await promoService.validatePromo({
+          code: promoCode,
+          userId,
+          planId: plan._id,
+          amount: plan.price
+        });
 
-      amountPaid = result.finalAmount;
-      discount = result.discount;
-      appliedPromo = result.promo.code;
+        amountPaid = result.finalAmount;
+        discount = result.discount;
+        appliedPromo = result.promo.code;
+      } catch (promoError) {
+        // Promo validation failing AFTER payment is already captured
+        // should NOT block subscription creation. Log it and proceed
+        // with full price — payment ka paisa already Razorpay le chuka hai.
+        console.error(
+          "PROMO VALIDATION FAILED (post-payment, proceeding without promo):",
+          promoError.message
+        );
+        appliedPromo = null;
+        discount = 0;
+        amountPaid = plan.price;
+      }
     }
 
     const startDate = new Date();
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + plan.durationDays);
 
+    // =========================
+    // STEP 5: CREATE SUBSCRIPTION (critical — must succeed)
+    // =========================
     const subscription = await Subscription.create({
       userId,
       planId: plan._id,
@@ -231,79 +265,123 @@ exports.verifyPayment = async (req, res) => {
     });
 
     // =========================
-    // 🔥 REFERRAL REWARD LOGIC
+    // ✅ SEND SUCCESS RESPONSE NOW
+    // Subscription is saved — user MUST get their plan confirmed,
+    // regardless of what happens in the side-effects below.
     // =========================
-    const user = await User.findById(userId);
-
-    if (
-      user &&
-      user.referredBy &&
-      !user.hasCompletedReferralReward
-    ) {
-      const { rewardReferrer } = require("../utils/referralReward");
-
-      await rewardReferrer(user.referredBy);
-
-      user.hasCompletedReferralReward = true;
-      await user.save();
-    }
-
-    // =========================
-    // PROMO USAGE TRACKING
-    // =========================
-    if (appliedPromo) {
-      const promo = await PromoCode.findOne({
-        code: appliedPromo
-      });
-
-      if (promo) {
-        await PromoCode.findByIdAndUpdate(promo._id, {
-          $inc: { usedCount: 1 }
-        });
-
-        await PromoUsage.create({
-          promoId: promo._id,
-          userId,
-          orderId: razorpay_order_id,
-          paymentId: razorpay_payment_id
-        });
-      }
-    }
-
-    // =========================
-    // AD FREE LOGIC
-    // =========================
-    if (plan.planType === "ad_free") {
-      if (user) {
-        user.adsDisabled = true;
-
-        if (plan.durationDays >= 99999) {
-          user.adsExpiry = null;
-          user.adFreePurchaseType = "lifetime";
-        } else {
-          const expiryDate = new Date();
-          expiryDate.setDate(
-            expiryDate.getDate() + plan.durationDays
-          );
-
-          user.adsExpiry = expiryDate;
-          user.adFreePurchaseType = "temporary";
-        }
-
-        await user.save();
-      }
-    }
-
     res.json({
       success: true,
       message: "Payment verified",
       subscription
     });
+    responseSent = true;
+
+    // =========================
+    // STEP 6: SIDE EFFECTS (non-blocking, isolated)
+    // Each block has its own try/catch so one failing
+    // doesn't affect the others or the already-sent response.
+    // =========================
+
+    // --- Ad-free logic ---
+    let userForAdFree = null;
+    try {
+      if (plan.planType === "ad_free") {
+        userForAdFree = await User.findById(userId);
+
+        if (userForAdFree) {
+          userForAdFree.adsDisabled = true;
+
+          if (plan.durationDays >= 99999) {
+            userForAdFree.adsExpiry = null;
+            userForAdFree.adFreePurchaseType = "lifetime";
+          } else {
+            const expiryDate = new Date();
+            expiryDate.setDate(
+              expiryDate.getDate() + plan.durationDays
+            );
+
+            userForAdFree.adsExpiry = expiryDate;
+            userForAdFree.adFreePurchaseType = "temporary";
+          }
+
+          await userForAdFree.save();
+        }
+      }
+    } catch (adFreeError) {
+      console.error(
+        "AD-FREE UPDATE ERROR (non-blocking) for paymentId",
+        razorpay_payment_id,
+        ":",
+        adFreeError
+      );
+    }
+
+    // --- Referral reward logic ---
+    try {
+      const user =
+        userForAdFree || (await User.findById(userId));
+
+      if (
+        user &&
+        user.referredBy &&
+        !user.hasCompletedReferralReward
+      ) {
+        const { rewardReferrer } = require("../utils/referralReward");
+
+        await rewardReferrer(user.referredBy);
+
+        user.hasCompletedReferralReward = true;
+        await user.save();
+      }
+    } catch (referralError) {
+      console.error(
+        "REFERRAL REWARD ERROR (non-blocking) for paymentId",
+        razorpay_payment_id,
+        ":",
+        referralError
+      );
+    }
+
+    // --- Promo usage tracking ---
+    try {
+      if (appliedPromo) {
+        const promo = await PromoCode.findOne({
+          code: appliedPromo
+        });
+
+        if (promo) {
+          await PromoCode.findByIdAndUpdate(promo._id, {
+            $inc: { usedCount: 1 }
+          });
+
+          await PromoUsage.create({
+            promoId: promo._id,
+            userId,
+            orderId: razorpay_order_id,
+            paymentId: razorpay_payment_id
+          });
+        }
+      }
+    } catch (promoUsageError) {
+      console.error(
+        "PROMO USAGE TRACKING ERROR (non-blocking) for paymentId",
+        razorpay_payment_id,
+        ":",
+        promoUsageError
+      );
+    }
 
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
+    console.error("VERIFY PAYMENT ERROR:", error);
+
+    // Agar response already ja chuka hai (side-effect phase mein error aaya),
+    // to dubara res.json() call nahi karna — warna
+    // "Cannot set headers after they are sent" crash hoga.
+    if (!responseSent) {
+      res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
   }
 };

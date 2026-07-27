@@ -53,7 +53,7 @@ exports.getActiveSports = async () => {
 };
 // Update Sport
 exports.updateSport = async (id, data) => {
-  return await Sport.findByIdAndUpdate(id, data, { new: true });
+  return await Sport.findByIdAndUpdate(id, data, { returnDocument: 'after' });
 };
 
 // Toggle Sport Status

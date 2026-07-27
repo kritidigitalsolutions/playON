@@ -50,7 +50,7 @@ exports.updateSocialMedia = async (req, res) => {
     const data = await SocialMedia.findOneAndUpdate(
       { platform },
       { url },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!data) {

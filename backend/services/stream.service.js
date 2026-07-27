@@ -65,7 +65,7 @@ exports.getStreamById = async (id) => {
 // Update Stream
 exports.updateStream = async (id, data) => {
   return await Stream.findByIdAndUpdate(id, data, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true
   }).populate(
   "matchId",
@@ -88,7 +88,7 @@ exports.goLive = async (id) => {
       endedAt: null,
       health: "good"
     },
-    { new: true }
+    { returnDocument: 'after' }
   ).populate(
   "matchId",
   "title teamA teamB sport status liveLogo showLiveLogo"
@@ -103,7 +103,7 @@ exports.endStream = async (id) => {
       status: "ended",
       endedAt: new Date()
     },
-    { new: true }
+    { returnDocument: 'after' }
   ).populate(
   "matchId",
   "title teamA teamB sport status liveLogo showLiveLogo"
@@ -115,7 +115,7 @@ exports.updateViewerCount = async (id, count) => {
   return await Stream.findByIdAndUpdate(
     id,
     { viewerCount: count },
-    { new: true }
+    { returnDocument: 'after' }
   );
 };
 

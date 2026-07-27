@@ -64,7 +64,7 @@ exports.getPlayerBySlug = async (slug) => {
 // Update
 exports.updatePlayer = async (id, data) => {
   return await Player.findByIdAndUpdate(id, data, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true
   });
 };

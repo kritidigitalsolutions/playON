@@ -148,7 +148,7 @@ exports.endStreamForMatch = async (matchId) =>
       status: "ended",
       endedAt: new Date()
     },
-    { new: true, sort: { createdAt: -1 } }
+    { returnDocument: 'after', sort: { createdAt: -1 } }
   );
 
 exports.deleteStreamsForMatch = (matchId) => Stream.deleteMany({ matchId });

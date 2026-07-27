@@ -98,7 +98,7 @@ exports.updateSubAdmin = async (req, res) => {
           role: "sub_admin"
         },
         { name, permissions },
-        { new: true }
+        { returnDocument: 'after' }
       ).select("-password");
 
     if (!admin) {

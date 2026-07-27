@@ -73,7 +73,7 @@ exports.getMatchById = async (id) => {
 // Update
 exports.updateMatch = async (id, data) => {
   return await Match.findByIdAndUpdate(id, data, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true
   });
 };
@@ -104,7 +104,7 @@ exports.goLive = async (id, payload = {}) => {
       // streamType: payload.streamType || "other",
       liveStartedAt: new Date()
     },
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   );
 };
 
@@ -116,7 +116,7 @@ exports.endLive = async (id) => {
       status: "completed",
       liveEndedAt: new Date()
     },
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   );
 };
 

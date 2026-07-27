@@ -78,7 +78,7 @@ exports.updateCategory = async (req, res) => {
           name,
           slug: makeSlug(name)
         },
-        { new: true, runValidators: true }
+        { returnDocument: 'after', runValidators: true }
       );
 
     if (!category) {

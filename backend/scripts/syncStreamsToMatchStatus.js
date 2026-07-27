@@ -43,7 +43,7 @@ const STATUS_MAP = {
         update.endedAt = null;
       }
 
-      await Stream.findByIdAndUpdate(stream._id, update, { new: true, runValidators: true });
+      await Stream.findByIdAndUpdate(stream._id, update, { returnDocument: 'after', runValidators: true });
       console.log(`Updated stream ${stream._id} for match ${match._id}: ${stream.status} -> ${desiredStatus}`);
       fixed += 1;
     }

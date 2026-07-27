@@ -26,7 +26,7 @@ exports.getPublicPlacements = async (position) => {
 
 exports.updatePlacement = async (id, data) => {
   return await AdmobPlacement.findByIdAndUpdate(id, data, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true
   });
 };

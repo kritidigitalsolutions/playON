@@ -757,7 +757,7 @@ exports.updateHighlight =
           req.params.id,
           updateData,
           {
-            new: true,
+            returnDocument: 'after',
             runValidators: true
           }
         );

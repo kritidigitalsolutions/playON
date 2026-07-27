@@ -204,7 +204,7 @@ exports.updateChannel = async (id, data) => {
     id,
     data,
     {
-      new: true,
+      returnDocument: 'after',
       runValidators: true
     }
   );
@@ -223,7 +223,7 @@ exports.goLive = async (id) =>
   Channel.findByIdAndUpdate(
     id,
     { status: "live" },
-    { new: true }
+    { returnDocument: 'after' }
   );
 
 // =====================================================
@@ -233,7 +233,7 @@ exports.goOffline = async (id) =>
   Channel.findByIdAndUpdate(
     id,
     { status: "offline" },
-    { new: true }
+    { returnDocument: 'after' }
   );
 
 // =====================================================

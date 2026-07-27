@@ -57,7 +57,7 @@ exports.getPopupById = async (id) => {
 // Update
 exports.updatePopup = async (id, data) => {
   return await Popup.findByIdAndUpdate(id, data, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true,
   }).populate("promo.promoId");
 };

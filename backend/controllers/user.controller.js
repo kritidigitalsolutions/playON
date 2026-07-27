@@ -171,7 +171,7 @@ exports.updateProfile = async (
           isDeleted: false
         },
         updateData,
-        { new: true }
+        { returnDocument: 'after' }
       );
 
     if (!updatedUser) {
@@ -207,7 +207,7 @@ exports.saveFcmToken = async (
     await User.findByIdAndUpdate(
       req.user.userId,
       { fcmToken: token },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     res.json({

@@ -330,7 +330,7 @@ exports.updateHighlight = async (req, res) => {
     const highlight = await Highlight.findByIdAndUpdate(
       req.params.id,
       data,
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!highlight) {

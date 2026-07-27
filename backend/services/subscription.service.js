@@ -78,7 +78,7 @@ exports.cancelSubscription = async (
     await Subscription.findOneAndUpdate(
       { _id: id, userId },
       { status: "cancelled" },
-      { new: true }
+      { returnDocument: 'after' }
     ).populate("planId");
 
   if (!subscription) return null;
@@ -183,7 +183,7 @@ exports.deleteSubscription = async (
       isDeleted: true,
       deletedAt: new Date()
     },
-    { new: true }
+    { returnDocument: 'after' }
   );
 };
 
@@ -279,7 +279,7 @@ exports.updateStatus = async (
   return await Subscription.findByIdAndUpdate(
     id,
     { status },
-    { new: true }
+    { returnDocument: 'after' }
   );
 };
 
