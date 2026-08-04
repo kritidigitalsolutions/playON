@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Delete Account & Data — PlayOn</title>
+<meta name="description" content="Request deletion of your PlayOn account and associated data. Learn about our data removal process.">
+<link rel="icon" href="logo playon .png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="styles.css">
+<style>
+/* Delete Page Specific Styles */
+.delete-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin: 32px 0 40px;
+}
+.delete-step {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 28px 24px;
+    position: relative;
+    transition: transform .3s ease, border-color .3s ease;
+}
+.delete-step:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,63,63,0.3);
+}
+.step-number {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff3f3f, #ff6b35);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px; color: #fff;
+    margin-bottom: 16px;
+}
+.delete-step h3 {
+    font-size: 17px; color: #fff; margin-bottom: 8px;
+}
+.delete-step p {
+    font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.6;
+}
+
+.warning-box {
+    background: rgba(255,63,63,0.08);
+    border: 1px solid rgba(255,63,63,0.2);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin: 28px 0;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+.warning-box i {
+    color: #ff3f3f;
+    font-size: 22px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+.warning-box div h4 {
+    color: #ff6b6b; font-size: 16px; margin-bottom: 6px;
+}
+.warning-box div p {
+    color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.7;
+}
+
+.info-box {
+    background: rgba(0,200,83,0.06);
+    border: 1px solid rgba(0,200,83,0.15);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin: 28px 0;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+.info-box i {
+    color: #00C853;
+    font-size: 22px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+.info-box div h4 {
+    color: #00C853; font-size: 16px; margin-bottom: 6px;
+}
+.info-box div p {
+    color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.7;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0 32px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.data-table thead th {
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.8);
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.data-table tbody td {
+    padding: 14px 20px;
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.data-table tbody tr:hover {
+    background: rgba(255,255,255,0.02);
+}
+.data-table .tag-deleted {
+    display: inline-block;
+    background: rgba(255,63,63,0.15);
+    color: #ff6b6b;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.data-table .tag-retained {
+    display: inline-block;
+    background: rgba(255,193,7,0.12);
+    color: #ffc107;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.delete-form-section {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 36px 32px;
+    margin: 36px 0;
+}
+.delete-form-section h2 {
+    font-size: 22px; color: #fff; margin-bottom: 8px;
+}
+.delete-form-section > p {
+    color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 28px;
+}
+.delete-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.delete-form input,
+.delete-form select,
+.delete-form textarea {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color .3s ease;
+}
+.delete-form input::placeholder,
+.delete-form textarea::placeholder {
+    color: rgba(255,255,255,0.3);
+}
+.delete-form input:focus,
+.delete-form select:focus,
+.delete-form textarea:focus {
+    outline: none;
+    border-color: rgba(255,63,63,0.4);
+}
+.delete-form select {
+    appearance: none;
+    cursor: pointer;
+    color: rgba(255,255,255,0.5);
+}
+.delete-form select option {
+    background: #1a1a2e;
+    color: #fff;
+}
+.delete-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+.delete-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+.delete-form .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+}
+.delete-form .checkbox-row input[type="checkbox"] {
+    width: 20px; height: 20px;
+    accent-color: #ff3f3f;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.delete-form .checkbox-row label {
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1.5;
+}
+.btn-delete {
+    background: linear-gradient(135deg, #ff3f3f, #d32f2f);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform .3s ease, box-shadow .3s ease;
+}
+.btn-delete:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(255,63,63,0.3);
+}
+
+@media(max-width:600px) {
+    .delete-form .form-row { grid-template-columns: 1fr; }
+    .delete-steps { grid-template-columns: 1fr; }
+    .warning-box, .info-box { flex-direction: column; }
+    .delete-form-section { padding: 24px 18px; }
+}
+</style>
+</head>
+<body>
+<div id="scrollProgress"></div>
+
+<!-- NAVBAR (global) -->
+<nav class="navbar scrolled" id="navbar">
+<div class="container">
+<a href="index.html" class="nav-logo"><img src="logo playon .png" alt="PlayOn"></a>
+<ul class="nav-links">
+<li><a href="index.html">Home</a></li>
+<li><a href="index.html#about">About</a></li>
+<li><a href="index.html#sports">Sports</a></li>
+<li><a href="index.html#features">Features</a></li>
+<li><a href="index.html#livetv">Live TV</a></li>
+<li><a href="index.html#download">Download</a></li>
+<li><a href="contact.html">Contact</a></li>
+</ul>
+<div class="nav-dl">
+<a href="#" class="dl-ios"><i class="fab fa-apple"></i> <span>iOS</span></a>
+<a href="#" class="dl-android"><i class="fab fa-google-play"></i> <span>Android</span></a>
+<button class="hamburger" id="hamBtn" aria-label="Menu"><i class="fas fa-bars"></i></button>
+</div>
+</div>
+</nav>
+<div class="oc-overlay" id="ocOverlay"></div>
+<div class="oc-menu" id="ocMenu">
+<button class="oc-close" id="ocClose"><i class="fas fa-times"></i></button>
+<ul>
+<li><a href="index.html" class="oc-link">Home</a></li>
+<li><a href="index.html#about" class="oc-link">About</a></li>
+<li><a href="index.html#sports" class="oc-link">Sports</a></li>
+<li><a href="index.html#features" class="oc-link">Features</a></li>
+<li><a href="index.html#livetv" class="oc-link">Live TV</a></li>
+<li><a href="index.html#download" class="oc-link">Download</a></li>
+<li><a href="contact.html" class="oc-link">Contact</a></li>
+</ul>
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:auto">
+<a href="#" class="btn-cta oc-link" style="text-align:center;display:flex;align-items:center;justify-content:center;gap:8px"><i class="fab fa-apple"></i> Download for iOS</a>
+<a href="#" class="btn-cta oc-link" style="text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,var(--blue),#0090dd)"><i class="fab fa-google-play"></i> Download for Android</a>
+</div>
+</div>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+<div class="container">
+<h1>Delete <span>Account & Data</span></h1>
+<div class="sec-head"><div class="line"></div></div>
+<p>Request complete removal of your PlayOn account, profile, and all associated data.</p>
+</div>
+</div>
+
+<!-- CONTENT -->
+<div class="page-content">
+<div class="container">
+
+<h2>Account & Data Deletion</h2>
+<p>At PlayOn, we respect your right to control your personal data. If you wish to permanently delete your PlayOn account and all associated information, you can do so by following the steps below or submitting a request through the form on this page.</p>
+
+<div class="warning-box">
+    <i class="fas fa-exclamation-triangle"></i>
+    <div>
+        <h4>This Action is Permanent & Irreversible</h4>
+        <p>Once your account is deleted, all your data — including profile information, watch history, game scores, wallet balance, earned rewards, and preferences — will be permanently erased and cannot be recovered. Please make sure you have withdrawn any remaining wallet balance before proceeding.</p>
+    </div>
+</div>
+
+<h2>How to Delete Your Account</h2>
+<p>You can delete your PlayOn account using any of the following methods:</p>
+
+<div class="delete-steps">
+    <div class="delete-step">
+        <div class="step-number">1</div>
+        <h3><i class="fas fa-mobile-alt" style="color:rgba(255,255,255,0.3);margin-right:8px"></i>From the App</h3>
+        <p>Open PlayOn App → Go to <strong>Settings</strong> → Tap <strong>Account</strong> → Select <strong>"Delete My Account"</strong> → Confirm with OTP verification.</p>
+    </div>
+    <div class="delete-step">
+        <div class="step-number">2</div>
+        <h3><i class="fas fa-envelope" style="color:rgba(255,255,255,0.3);margin-right:8px"></i>Via Email</h3>
+        <p>Send an email to <a href="mailto:privacy@playon.in" style="color:#ff6b6b">privacy@playon.in</a> from your registered email address with subject: <strong>"Delete My Account"</strong>.</p>
+    </div>
+    <div class="delete-step">
+        <div class="step-number">3</div>
+        <h3><i class="fas fa-file-alt" style="color:rgba(255,255,255,0.3);margin-right:8px"></i>Using This Form</h3>
+        <p>Fill out the deletion request form below. We will verify your identity and process the request within <strong>72 hours</strong>.</p>
+    </div>
+</div>
+
+<h2>What Data Gets Deleted?</h2>
+<p>Here's a detailed breakdown of what happens to your data once the deletion request is processed:</p>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Data Category</th>
+            <th>Action</th>
+            <th>Timeline</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Profile Information (Name, Email, Phone)</td>
+            <td><span class="tag-deleted">Permanently Deleted</span></td>
+            <td>Within 72 hours</td>
+        </tr>
+        <tr>
+            <td>Watch History & Preferences</td>
+            <td><span class="tag-deleted">Permanently Deleted</span></td>
+            <td>Within 72 hours</td>
+        </tr>
+        <tr>
+            <td>Game Scores & Leaderboard Data</td>
+            <td><span class="tag-deleted">Permanently Deleted</span></td>
+            <td>Within 72 hours</td>
+        </tr>
+        <tr>
+            <td>Wallet Balance & Rewards</td>
+            <td><span class="tag-deleted">Permanently Deleted</span></td>
+            <td>Immediate (forfeit if not withdrawn)</td>
+        </tr>
+        <tr>
+            <td>Subscription Details</td>
+            <td><span class="tag-deleted">Permanently Deleted</span></td>
+            <td>End of current billing cycle</td>
+        </tr>
+        <tr>
+            <td>Transaction History</td>
+            <td><span class="tag-retained">Retained (Legal Compliance)</span></td>
+            <td>Up to 5 years (as per RBI guidelines)</td>
+        </tr>
+        <tr>
+            <td>Support Ticket Records</td>
+            <td><span class="tag-retained">Retained (Anonymized)</span></td>
+            <td>Up to 1 year</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="info-box">
+    <i class="fas fa-shield-alt"></i>
+    <div>
+        <h4>Legal Retention Notice</h4>
+        <p>Certain financial transaction records may be retained in anonymized form for up to 5 years as required by Indian law (RBI regulations & IT Act, 2000). These records cannot be linked back to your identity after account deletion.</p>
+    </div>
+</div>
+
+<h2>Processing Timeline</h2>
+<ul>
+    <li><strong>Request Acknowledgment:</strong> Within 24 hours of submission</li>
+    <li><strong>Identity Verification:</strong> OTP sent to registered email/phone</li>
+    <li><strong>Account Deactivation:</strong> Immediate after verification</li>
+    <li><strong>Complete Data Erasure:</strong> Within 72 hours</li>
+    <li><strong>Confirmation Email:</strong> Sent upon complete deletion</li>
+</ul>
+
+<h2>Before You Delete</h2>
+<p>We recommend you take the following steps before requesting deletion:</p>
+<ul>
+    <li><i class="fas fa-wallet" style="color:#ffc107;margin-right:8px"></i>Withdraw any remaining wallet balance</li>
+    <li><i class="fas fa-trophy" style="color:#ff6b35;margin-right:8px"></i>Redeem any pending rewards or prizes</li>
+    <li><i class="fas fa-receipt" style="color:#7B2FFF;margin-right:8px"></i>Download your transaction history from the app</li>
+    <li><i class="fas fa-times-circle" style="color:#ff3f3f;margin-right:8px"></i>Cancel any active subscriptions</li>
+    <li><i class="fas fa-download" style="color:#00C853;margin-right:8px"></i>Export your data from Settings → Privacy → Download My Data</li>
+</ul>
+
+<!-- DELETION REQUEST FORM -->
+<div class="delete-form-section" id="delete-form">
+    <h2><i class="fas fa-user-slash" style="color:#ff3f3f;margin-right:10px"></i>Request Account Deletion</h2>
+    <p>Fill in the details below. We'll verify your identity and process the deletion request.</p>
+    <form class="delete-form" onsubmit="event.preventDefault();document.getElementById('successMsg').style.display='flex';this.reset();window.scrollTo({top:document.getElementById('successMsg').offsetTop-100,behavior:'smooth'});">
+        <div class="form-row">
+            <input type="text" placeholder="Full Name (as on account)" required>
+            <input type="email" placeholder="Registered Email Address" required>
+        </div>
+        <div class="form-row">
+            <input type="tel" placeholder="Registered Phone Number" required>
+            <select required>
+                <option value="">Reason for Deletion</option>
+                <option>I no longer use the app</option>
+                <option>Privacy concerns</option>
+                <option>Too many notifications</option>
+                <option>Found a better alternative</option>
+                <option>Account security concerns</option>
+                <option>Other</option>
+            </select>
+        </div>
+        <textarea placeholder="Any additional comments (optional)..."></textarea>
+        <div class="checkbox-row">
+            <input type="checkbox" id="confirmDelete" required>
+            <label for="confirmDelete">I understand that this action is <strong>permanent and irreversible</strong>. All my data, wallet balance, rewards, and account information will be permanently deleted.</label>
+        </div>
+        <div class="checkbox-row">
+            <input type="checkbox" id="confirmWithdraw" required>
+            <label for="confirmWithdraw">I confirm that I have withdrawn my wallet balance and redeemed any pending rewards.</label>
+        </div>
+        <button type="submit" class="btn-delete">
+            <i class="fas fa-trash-alt"></i> Submit Deletion Request
+        </button>
+    </form>
+</div>
+
+<!-- Success Message (hidden by default) -->
+<div class="info-box" id="successMsg" style="display:none;border-color:rgba(0,200,83,0.3);margin-top:20px">
+    <i class="fas fa-check-circle" style="font-size:28px"></i>
+    <div>
+        <h4>Deletion Request Submitted Successfully!</h4>
+        <p>Your account deletion request has been received. We will send a verification OTP to your registered email/phone within 24 hours. Once verified, your account will be deactivated immediately and all data will be erased within 72 hours. A confirmation email will be sent upon completion.</p>
+    </div>
+</div>
+
+<h2>Need Help Instead?</h2>
+<p>If you're experiencing issues with the app, we'd love to help before you decide to leave. Consider these alternatives:</p>
+<ul>
+    <li><a href="contact.html" style="color:#ff6b6b">Contact our support team</a> for any issues</li>
+    <li>Adjust your <strong>notification preferences</strong> in the app settings</li>
+    <li>Update your <strong>privacy settings</strong> to control data sharing</li>
+    <li>Check our <a href="index.html#faq" style="color:#ff6b6b">FAQs</a> for common solutions</li>
+</ul>
+
+<h2>Contact Our Privacy Team</h2>
+<p>For any questions related to data deletion, privacy, or GDPR/DPDP Act compliance:</p>
+<ul>
+    <li><i class="fas fa-envelope" style="color:#ff6b6b;margin-right:8px"></i>Email: <a href="mailto:privacy@playon.in" style="color:#ff6b6b">privacy@playon.in</a></li>
+    <li><i class="fas fa-phone" style="color:#ff6b35;margin-right:8px"></i>Toll Free: +91 1800-XXX-XXXX</li>
+    <li><i class="fas fa-map-marker-alt" style="color:#7B2FFF;margin-right:8px"></i>PlayOn Technologies Pvt. Ltd., Mumbai, Maharashtra, India</li>
+</ul>
+
+</div>
+</div>
+
+<!-- FOOTER (global) -->
+<footer class="footer">
+<div class="container">
+<div class="footer-inner">
+<div class="footer-brand"><img src="logo playon .png" alt="PlayOn"><p>India's #1 Sports & Entertainment App. Stream live sports, watch TV, play games & win real prizes.</p>
+<div class="social-icons">
+<a href="https://www.instagram.com/play_on2026/" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+<a href="https://x.com/playon2026" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+<a href="https://www.facebook.com/share/1EUtkYpvCG/" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+</div></div>
+<div class="footer-links">
+<div><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="index.html#about">About</a></li><li><a href="index.html#sports">Sports</a></li><li><a href="index.html#livetv">Live TV</a></li><li><a href="contact.html">Contact Us</a></li></ul></div>
+<div><h4>Legal</h4><ul><li><a href="privacy.html">Privacy Policy</a></li><li><a href="terms.html">Terms & Conditions</a></li><li><a href="delete-url.html">Delete Account</a></li><li><a href="#">Cookie Policy</a></li></ul></div>
+<div><h4>Support</h4><ul><li><a href="contact.html">Contact Us</a></li><li><a href="index.html#faq">FAQs</a></li><li><a href="#">Help Center</a></li><li><a href="#">Advertise</a></li></ul></div>
+</div>
+</div>
+<div class="footer-bottom"><p>&copy; 2025 PlayOn. All Rights Reserved. Made with <span class="heart">❤️</span> for Indian Sports Fans</p></div>
+</div>
+</footer>
+<script>
+const hamBtn=document.getElementById('hamBtn'),ocMenu=document.getElementById('ocMenu'),ocOverlay=document.getElementById('ocOverlay'),ocClose=document.getElementById('ocClose');
+hamBtn.addEventListener('click',()=>{ocMenu.classList.add('active');ocOverlay.classList.add('active');document.body.style.overflow='hidden'});
+function closeM(){ocMenu.classList.remove('active');ocOverlay.classList.remove('active');document.body.style.overflow=''}
+ocClose.addEventListener('click',closeM);ocOverlay.addEventListener('click',closeM);
+document.querySelectorAll('.oc-link').forEach(l=>l.addEventListener('click',closeM));
+window.addEventListener('scroll',()=>{document.getElementById('scrollProgress').style.width=(document.documentElement.scrollTop/(document.documentElement.scrollHeight-window.innerHeight))*100+'%'});
+</script>
+</body>
+</html>

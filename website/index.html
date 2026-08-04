@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PlayOn — India's #1 Live Sports, TV & Gaming App</title>
+<meta name="description" content="Watch live cricket, football, hockey & more. Stream 50+ TV channels. Play games & win real prizes. Download PlayOn now!">
+<link rel="icon" href="logo playon .png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="scrollProgress"></div>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+<div class="container">
+<a href="index.html" class="nav-logo"><img src="logo playon .png" alt="PlayOn"></a>
+<ul class="nav-links">
+<li><a href="#hero">Home</a></li>
+<li><a href="#about">About</a></li>
+<li><a href="#sports">Sports</a></li>
+<li><a href="#features">Features</a></li>
+<li><a href="#livetv">Live TV</a></li>
+<li><a href="#download">Download</a></li>
+<li><a href="contact.html">Contact</a></li>
+</ul>
+<div class="nav-dl">
+<a href="#" class="dl-ios"><i class="fab fa-apple"></i> <span>iOS</span></a>
+<a href="#" class="dl-android"><i class="fab fa-google-play"></i> <span>Android</span></a>
+<button class="hamburger" id="hamBtn" aria-label="Menu"><i class="fas fa-bars"></i></button>
+</div>
+</div>
+</nav>
+<div class="oc-overlay" id="ocOverlay"></div>
+<div class="oc-menu" id="ocMenu">
+<button class="oc-close" id="ocClose"><i class="fas fa-times"></i></button>
+<ul>
+<li><a href="#hero" class="oc-link">Home</a></li>
+<li><a href="#about" class="oc-link">About</a></li>
+<li><a href="#sports" class="oc-link">Sports</a></li>
+<li><a href="#features" class="oc-link">Features</a></li>
+<li><a href="#livetv" class="oc-link">Live TV</a></li>
+<li><a href="#download" class="oc-link">Download</a></li>
+<li><a href="contact.html" class="oc-link">Contact</a></li>
+</ul>
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:auto">
+<a href="#" class="btn-cta oc-link" style="text-align:center;display:flex;align-items:center;justify-content:center;gap:8px"><i class="fab fa-apple"></i> Download for iOS</a>
+<a href="#" class="btn-cta oc-link" style="text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,var(--blue),#0090dd)"><i class="fab fa-google-play"></i> Download for Android</a>
+</div>
+</div>
+
+<!-- 1. HERO BANNER -->
+<section class="hero" id="hero">
+<div class="swiper heroSwiper">
+<div class="swiper-wrapper">
+<div class="swiper-slide hero-slide">
+<div class="slide-bg" style="background-image:url('img/banner/cricket%20hero%20banner.png')"></div>
+<div class="slide-overlay"></div>
+<div class="hero-content"><div class="hero-badge"><span class="pulse"></span> LIVE NOW</div><h1>Watch Cricket LIVE — Anytime, Anywhere</h1><p>Stream IPL, World Cup & every international match live on PlayOn.</p><div class="hero-btns"><button class="btn-watch"><i class="fas fa-play"></i> Watch Now</button><a href="#" class="store-btn"><i class="fab fa-apple"></i><div class="s-text"><small>Download on the</small><strong>App Store</strong></div></a><a href="#" class="store-btn"><i class="fab fa-google-play"></i><div class="s-text"><small>Get it on</small><strong>Google Play</strong></div></a></div></div>
+</div>
+<div class="swiper-slide hero-slide">
+<div class="slide-bg" style="background-image:url('img/banner/football%20hero%20banner.jpg')"></div>
+<div class="slide-overlay"></div>
+<div class="hero-content"><div class="hero-badge"><span class="pulse"></span> LIVE NOW</div><h1>Football Fever — Premier League & More</h1><p>Every goal, every tackle. Watch the world's biggest football leagues live.</p><div class="hero-btns"><button class="btn-watch"><i class="fas fa-play"></i> Watch Now</button><a href="#" class="store-btn"><i class="fab fa-apple"></i><div class="s-text"><small>Download on the</small><strong>App Store</strong></div></a><a href="#" class="store-btn"><i class="fab fa-google-play"></i><div class="s-text"><small>Get it on</small><strong>Google Play</strong></div></a></div></div>
+</div>
+<div class="swiper-slide hero-slide">
+<div class="slide-bg" style="background-image:url('img/banner/cricket-world-cup%20hero%20banner.jpg')"></div>
+<div class="slide-overlay"></div>
+<div class="hero-content"><div class="hero-badge"><span class="pulse"></span> LIVE NOW</div><h1>World Cup 2025 — India's Road to Glory</h1><p>Follow Team India's journey. Live scores, analysis & highlights.</p><div class="hero-btns"><button class="btn-watch"><i class="fas fa-play"></i> Watch Now</button><a href="#" class="store-btn"><i class="fab fa-apple"></i><div class="s-text"><small>Download on the</small><strong>App Store</strong></div></a><a href="#" class="store-btn"><i class="fab fa-google-play"></i><div class="s-text"><small>Get it on</small><strong>Google Play</strong></div></a></div></div>
+</div>
+<div class="swiper-slide hero-slide">
+<div class="slide-bg" style="background-image:url('img/banner/tennis%20banner.jpg')"></div>
+<div class="slide-overlay"></div>
+<div class="hero-content"><div class="hero-badge"><span class="pulse"></span> LIVE NOW</div><h1>Grand Slam Action — Tennis Lives Here</h1><p>Wimbledon, US Open, Roland Garros — every serve live on PlayOn.</p><div class="hero-btns"><button class="btn-watch"><i class="fas fa-play"></i> Watch Now</button><a href="#" class="store-btn"><i class="fab fa-apple"></i><div class="s-text"><small>Download on the</small><strong>App Store</strong></div></a><a href="#" class="store-btn"><i class="fab fa-google-play"></i><div class="s-text"><small>Get it on</small><strong>Google Play</strong></div></a></div></div>
+</div>
+</div>
+<div class="swiper-pagination hero-pagination"></div>
+</div>
+<div class="marquee-strip"><div class="marquee-inner">
+<span><i class="fas fa-tv"></i> 50+ Sports Channels</span><span><i class="fas fa-film"></i> 1000+ Shows</span><span><i class="fas fa-users"></i> 50M+ Users</span><span><i class="fas fa-calendar-alt"></i> Live Events Daily</span><span><i class="fas fa-trophy"></i> Exclusive Tournaments</span><span><i class="fas fa-gamepad"></i> Win Real Prizes</span>
+<span><i class="fas fa-tv"></i> 50+ Sports Channels</span><span><i class="fas fa-film"></i> 1000+ Shows</span><span><i class="fas fa-users"></i> 50M+ Users</span><span><i class="fas fa-calendar-alt"></i> Live Events Daily</span><span><i class="fas fa-trophy"></i> Exclusive Tournaments</span><span><i class="fas fa-gamepad"></i> Win Real Prizes</span>
+<span><i class="fas fa-tv"></i> 50+ Sports Channels</span><span><i class="fas fa-film"></i> 1000+ Shows</span><span><i class="fas fa-users"></i> 50M+ Users</span><span><i class="fas fa-calendar-alt"></i> Live Events Daily</span><span><i class="fas fa-trophy"></i> Exclusive Tournaments</span><span><i class="fas fa-gamepad"></i> Win Real Prizes</span>
+<span><i class="fas fa-tv"></i> 50+ Sports Channels</span><span><i class="fas fa-film"></i> 1000+ Shows</span><span><i class="fas fa-users"></i> 50M+ Users</span><span><i class="fas fa-calendar-alt"></i> Live Events Daily</span><span><i class="fas fa-trophy"></i> Exclusive Tournaments</span><span><i class="fas fa-gamepad"></i> Win Real Prizes</span>
+</div></div>
+</section>
+
+<!-- 2. ABOUT -->
+<section id="about">
+<div class="container">
+<div class="about-grid">
+<div class="about-logo aos"><img src="logo playon .jpeg" alt="PlayOn Logo"></div>
+<div class="about-info aos">
+<h2>About <span>PlayOn</span></h2>
+<p>PlayOn is India's ultimate sports and entertainment super-app. We bring you live sports, 50+ TV channels, breaking news, and exciting games — all in one place.</p>
+<p>Built for Indian sports fans, by Indian sports fans. Whether it's IPL cricket, Premier League football, or daily fantasy games — PlayOn has it all.</p>
+<ul>
+<li><i class="fas fa-check-circle"></i> 50M+ active users across India</li>
+<li><i class="fas fa-check-circle"></i> 50+ live sports & news channels</li>
+<li><i class="fas fa-check-circle"></i> Daily tournaments with real cash prizes</li>
+<li><i class="fas fa-check-circle"></i> 24/7 breaking sports news coverage</li>
+<li><i class="fas fa-check-circle"></i> Available on iOS & Android</li>
+</ul>
+<div style="display:flex;gap:12px;flex-wrap:wrap">
+<a href="#" class="store-btn"><i class="fab fa-apple"></i><div class="s-text"><small>Download on the</small><strong>App Store</strong></div></a>
+<a href="#" class="store-btn"><i class="fab fa-google-play"></i><div class="s-text"><small>Get it on</small><strong>Google Play</strong></div></a>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- 3. SPORTS -->
+<section id="sports">
+<div class="container">
+<div class="sec-head aos"><h2><i class="fas fa-trophy" style="color:var(--orange)"></i> Your Favourite <span>Sports</span></h2><div class="line"></div><p>Stream live matches — from cricket to kho-kho.</p></div>
+<div class="swiper sportsSwiper">
+<div class="swiper-wrapper">
+<div class="swiper-slide"><div class="sport-card"><img src="img/Cricket.jpg" alt="Cricket"><div class="card-ov"><div class="live-badge"><span class="live-dot"></span> LIVE</div><span class="s-name">Cricket</span></div></div></div>
+<div class="swiper-slide"><div class="sport-card"><img src="img/foot%20ball.jpg" alt="Football"><div class="card-ov"><div class="live-badge"><span class="live-dot"></span> LIVE</div><span class="s-name">Football</span></div></div></div>
+<div class="swiper-slide"><div class="sport-card"><img src="img/hockey.jpg" alt="Hockey"><div class="card-ov"><span class="s-name">Hockey</span></div></div></div>
+<div class="swiper-slide"><div class="sport-card"><img src="img/kho%20kho.jpg" alt="Kho-Kho"><div class="card-ov"><span class="s-name">Kho-Kho</span></div></div></div>
+<div class="swiper-slide"><div class="sport-card"><img src="img/Tennis%20%F0%9F%8E%BE.jpg" alt="Tennis"><div class="card-ov"><span class="s-name">Tennis</span></div></div></div>
+</div>
+<div class="swiper-button-next"></div>
+<div class="swiper-button-prev"></div>
+</div>
+</div>
+</section>
+
+<!-- 4. WHY CHOOSE -->
+<section id="features">
+<div class="container">
+<div class="sec-head aos"><h2>Why Choose <span>PlayOn?</span></h2><div class="line"></div><p>Everything you love — sports, TV, news & games — in one app.</p></div>
+<div class="features-grid">
+<div class="feature-card aos"><div class="f-icon blue"><i class="fas fa-futbol"></i></div><h3>Live Sports</h3><p>Watch Cricket, Football, Hockey, Kho-Kho & Tennis live with real-time scores.</p></div>
+<div class="feature-card aos"><div class="f-icon orange"><i class="fas fa-tv"></i></div><h3>Live TV</h3><p>50+ live channels — news, entertainment & sports, streaming 24/7.</p></div>
+<div class="feature-card aos"><div class="f-icon purple"><i class="fas fa-newspaper"></i></div><h3>Breaking News</h3><p>Fastest sports news updates from India's top news channels.</p></div>
+<div class="feature-card aos"><div class="f-icon green"><i class="fas fa-gamepad"></i></div><h3>Games & Prizes</h3><p>Play fantasy & casual games. Win real cash in daily tournaments.</p></div>
+</div>
+</div>
+</section>
+
+<!-- 5. HOW IT WORKS -->
+<section id="howItWorks">
+<div class="container">
+<div class="sec-head aos"><h2>How It <span>Works</span></h2><div class="line"></div><p>Get started in 3 simple steps.</p></div>
+<div class="steps">
+<div class="step aos"><div class="step-num"><i class="fas fa-download" style="color:var(--blue)"></i></div><h3>Download App</h3><p>Free on App Store & Google Play</p></div>
+<div class="step aos"><div class="step-num"><i class="fas fa-user-plus" style="color:var(--orange)"></i></div><h3>Create Account</h3><p>Sign up in 30 seconds</p></div>
+<div class="step aos"><div class="step-num"><i class="fas fa-play" style="color:#7B2FFF"></i></div><h3>Watch & Play</h3><p>Stream sports, TV & play games</p></div>
+</div>
+</div>
+</section>
+
+<!-- 6. LIVE TV & NEWS -->
+<section id="livetv">
+<div class="container">
+<div class="sec-head aos"><h2><i class="fas fa-tv" style="color:var(--blue)"></i> Live TV & <span>News Channels</span></h2><div class="line"></div><p>India's top news channels — all in one app.</p></div>
+<div class="swiper tvSwiper" style="margin-top:32px">
+<div class="swiper-wrapper">
+<div class="swiper-slide"><div class="tv-card"><div class="tc-logo"><img src="img/logo/aaj%20tak.jpg" alt="Aaj Tak"></div><div class="live-badge"><span class="live-dot"></span> LIVE</div><h4>Aaj Tak</h4><p class="viewers"><i class="fas fa-eye"></i> 2.4M watching</p></div></div>
+<div class="swiper-slide"><div class="tv-card"><div class="tc-logo"><img src="img/logo/Zee%20News.jpg" alt="Zee News"></div><div class="live-badge"><span class="live-dot"></span> LIVE</div><h4>Zee News</h4><p class="viewers"><i class="fas fa-eye"></i> 1.8M watching</p></div></div>
+<div class="swiper-slide"><div class="tv-card"><div class="tc-logo"><img src="img/logo/NDTV.jpg" alt="NDTV"></div><div class="live-badge"><span class="live-dot"></span> LIVE</div><h4>NDTV</h4><p class="viewers"><i class="fas fa-eye"></i> 1.2M watching</p></div></div>
+<div class="swiper-slide"><div class="tv-card"><div class="tc-logo"><img src="img/logo/ABP%20NEWS.jpg" alt="ABP News"></div><div class="live-badge"><span class="live-dot"></span> LIVE</div><h4>ABP News</h4><p class="viewers"><i class="fas fa-eye"></i> 980K watching</p></div></div>
+<!-- Duplicates for looping -->
+<div class="swiper-slide"><div class="tv-card"><div class="tc-logo"><img src="img/logo/aaj%20tak.jpg" alt="Aaj Tak"></div><div class="live-badge"><span class="live-dot"></span> LIVE</div><h4>Aaj Tak</h4><p class="viewers"><i class="fas fa-eye"></i> 2.4M watching</p></div></div>
+<div class="swiper-slide"><div class="tv-card"><div class="tc-logo"><img src="img/logo/Zee%20News.jpg" alt="Zee News"></div><div class="live-badge"><span class="live-dot"></span> LIVE</div><h4>Zee News</h4><p class="viewers"><i class="fas fa-eye"></i> 1.8M watching</p></div></div>
+<div class="swiper-slide"><div class="tv-card"><div class="tc-logo"><img src="img/logo/NDTV.jpg" alt="NDTV"></div><div class="live-badge"><span class="live-dot"></span> LIVE</div><h4>NDTV</h4><p class="viewers"><i class="fas fa-eye"></i> 1.2M watching</p></div></div>
+<div class="swiper-slide"><div class="tv-card"><div class="tc-logo"><img src="img/logo/ABP%20NEWS.jpg" alt="ABP News"></div><div class="live-badge"><span class="live-dot"></span> LIVE</div><h4>ABP News</h4><p class="viewers"><i class="fas fa-eye"></i> 980K watching</p></div></div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- 7. APP EXPERIENCE -->
+<section id="experience">
+<div class="container">
+<div class="sec-head aos"><h2>Premium App <span>Experience</span></h2><div class="line"></div><p>Designed for the ultimate sports fan.</p></div>
+<div class="app-exp-grid">
+<div class="app-exp-card aos"><div class="exp-icon" style="background:rgba(255,107,53,.12);color:var(--orange)"><i class="fas fa-bolt"></i></div><h3>Zero Lag Streaming</h3><p>Adaptive bitrate technology ensures buffer-free live streaming even on slow networks.</p></div>
+<div class="app-exp-card aos"><div class="exp-icon" style="background:rgba(0,168,255,.12);color:var(--blue)"><i class="fas fa-bullseye"></i></div><h3>Personalized Feed</h3><p>AI-powered recommendations based on your favourite sports, teams & viewing history.</p></div>
+<div class="app-exp-card aos"><div class="exp-icon" style="background:rgba(255,215,0,.12);color:#FFD700"><i class="fas fa-bell"></i></div><h3>Smart Notifications</h3><p>Never miss a match. Get alerts for live games, scores, breaking news & events.</p></div>
+<div class="app-exp-card aos"><div class="exp-icon" style="background:rgba(123,47,255,.12);color:#7B2FFF"><i class="fas fa-sync-alt"></i></div><h3>Multi-Device Sync</h3><p>Start watching on mobile, continue on tablet. Your progress syncs seamlessly.</p></div>
+<div class="app-exp-card aos"><div class="exp-icon" style="background:rgba(100,100,255,.12);color:#6464FF"><i class="fas fa-moon"></i></div><h3>Dark Mode</h3><p>Easy on the eyes during late-night matches. Beautiful dark UI optimized for AMOLED.</p></div>
+<div class="app-exp-card aos"><div class="exp-icon" style="background:rgba(0,200,83,.12);color:#00C853"><i class="fas fa-shield-halved"></i></div><h3>Secure & Private</h3><p>Bank-grade encryption protects your data. We never sell your information.</p></div>
+</div>
+</div>
+</section>
+
+<!-- 8. WHY INDIA LOVES PLAYON -->
+<section id="whyIndia">
+<div class="container">
+<div class="sec-head aos"><h2>Why India Loves <span>PlayOn</span></h2><div class="line"></div><p>Built for Bharat. Loved by millions.</p></div>
+<div class="why-grid">
+<div class="why-card aos"><div class="w-icon" style="background:rgba(0,168,255,.12);color:var(--blue)"><i class="fas fa-medal"></i></div><h3>Made for Indian Sports</h3><p>From IPL to Pro Kabaddi, Kho-Kho to ISL — we cover every Indian sport with passion.</p></div>
+<div class="why-card aos"><div class="w-icon" style="background:rgba(123,47,255,.12);color:#7B2FFF"><i class="fas fa-language"></i></div><h3>Regional Languages</h3><p>Watch & read in Hindi, English, Tamil, Telugu, Bengali, Marathi & more.</p></div>
+<div class="why-card aos"><div class="w-icon" style="background:rgba(255,107,53,.12);color:var(--orange)"><i class="fas fa-indian-rupee-sign"></i></div><h3>Win Real Cash</h3><p>Play fantasy cricket, football & quiz games. Win real money daily with instant withdrawals.</p></div>
+<div class="why-card aos"><div class="w-icon" style="background:rgba(0,200,83,.12);color:#00C853"><i class="fas fa-satellite-dish"></i></div><h3>Works Everywhere</h3><p>Optimized for 2G/3G/4G/5G. Stream smoothly even in rural areas with low bandwidth.</p></div>
+<div class="why-card aos"><div class="w-icon" style="background:rgba(255,215,0,.12);color:#FFD700"><i class="fas fa-gift"></i></div><h3>100% Free</h3><p>No subscriptions. No hidden charges. Download and start watching instantly.</p></div>
+<div class="why-card aos"><div class="w-icon" style="background:rgba(255,100,100,.12);color:#FF6464"><i class="fas fa-users"></i></div><h3>Community</h3><p>Join 50M+ fans. Chat during live matches, share predictions & celebrate together.</p></div>
+</div>
+</div>
+</section>
+
+<!-- 9. DOWNLOAD CTA -->
+<section class="download-section" id="download">
+<div class="container">
+<h2 class="aos">Download <span>PlayOn</span> Now</h2>
+<p class="sub aos">Free to download. No subscription needed. Start streaming instantly.</p>
+<div class="dl-btns aos">
+<a href="#" class="store-btn"><i class="fab fa-apple"></i><div class="s-text"><small>Download on the</small><strong>App Store</strong></div></a>
+<a href="#" class="store-btn"><i class="fab fa-google-play"></i><div class="s-text"><small>Get it on</small><strong>Google Play</strong></div></a>
+</div>
+</div>
+</section>
+
+<!-- 10. STATS & REVIEWS -->
+<section id="stats">
+<div class="container">
+<div class="stats-row">
+<div class="stat-item aos"><div class="num" data-target="50">0</div><div class="label">Million+ Users</div></div>
+<div class="stat-item aos"><div class="num" data-target="50">0</div><div class="label">Live Channels</div></div>
+<div class="stat-item aos"><div class="num" data-target="1000">0</div><div class="label">Daily Events</div></div>
+</div>
+<div class="sec-head aos"><h2>What Users <span>Say</span></h2><div class="line"></div></div>
+<div class="reviews">
+<div class="review-card aos"><div class="stars">★★★★★</div><p>"Best sports app in India! IPL live streaming is flawless. No buffering at all."</p><strong class="reviewer">— Rohit S., Mumbai</strong></div>
+<div class="review-card aos"><div class="stars">★★★★★</div><p>"I watch all my news channels here. Aaj Tak, NDTV — everything in one app!"</p><strong class="reviewer">— Priya M., Delhi</strong></div>
+<div class="review-card aos"><div class="stars">★★★★★</div><p>"Won ₹5,000 in my first fantasy cricket game! Games section is addictive."</p><strong class="reviewer">— Arjun K., Bangalore</strong></div>
+</div>
+</div>
+</section>
+
+<!-- 11. FAQ -->
+<section id="faq">
+<div class="container">
+<div class="sec-head aos"><h2>Frequently Asked <span>Questions</span></h2><div class="line"></div></div>
+<div class="faq-list">
+<div class="faq-item aos"><div class="faq-q">Is PlayOn free to use? <i class="fas fa-chevron-down"></i></div><div class="faq-a">Yes! PlayOn is 100% free to download and use. Watch live sports, TV channels, and news without any subscription or hidden charges.</div></div>
+<div class="faq-item aos"><div class="faq-q">Which sports can I watch live? <i class="fas fa-chevron-down"></i></div><div class="faq-a">You can watch Cricket (IPL, World Cup), Football (Premier League, ISL), Hockey, Tennis, Kho-Kho, Kabaddi, and many more sports live on PlayOn.</div></div>
+<div class="faq-item aos"><div class="faq-q">How do I win prizes in games? <i class="fas fa-chevron-down"></i></div><div class="faq-a">Join daily fantasy contests and tournaments. Create your team, compete against other fans, and win real cash prizes. Withdrawals are instant to your bank account or UPI.</div></div>
+<div class="faq-item aos"><div class="faq-q">Is PlayOn available on iOS and Android? <i class="fas fa-chevron-down"></i></div><div class="faq-a">Yes! PlayOn is available on both the Apple App Store (iOS) and Google Play Store (Android). Download it for free today.</div></div>
+<div class="faq-item aos"><div class="faq-q">How many TV channels are available? <i class="fas fa-chevron-down"></i></div><div class="faq-a">PlayOn offers 50+ live TV channels including Aaj Tak, Zee News, NDTV, ABP News, DD Sports, and many more entertainment and sports channels.</div></div>
+</div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+<div class="container">
+<div class="footer-inner">
+<div class="footer-brand"><img src="logo playon .png" alt="PlayOn"><p>India's #1 Sports & Entertainment App. Stream live sports, watch TV, play games & win real prizes.</p>
+<div class="social-icons">
+<a href="https://www.instagram.com/play_on2026/" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+<a href="https://x.com/playon2026" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+<a href="https://www.facebook.com/share/1EUtkYpvCG/" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+</div></div>
+<div class="footer-links">
+<div><h4>Quick Links</h4><ul><li><a href="#hero">Home</a></li><li><a href="#about">About</a></li><li><a href="#sports">Sports</a></li><li><a href="#livetv">Live TV</a></li><li><a href="contact.html">Contact Us</a></li></ul></div>
+<div><h4>Legal</h4><ul><li><a href="privacy.html">Privacy Policy</a></li><li><a href="terms.html">Terms & Conditions</a></li><li><a href="delete-url.html">Delete Account</a></li><li><a href="#">Cookie Policy</a></li></ul></div>
+<div><h4>Support</h4><ul><li><a href="contact.html">Contact Us</a></li><li><a href="#faq">FAQs</a></li><li><a href="#">Help Center</a></li><li><a href="#">Advertise</a></li></ul></div>
+</div>
+</div>
+<div class="footer-bottom"><p>&copy; 2025 PlayOn. All Rights Reserved. Made with <span class="heart">❤️</span> for Indian Sports Fans</p></div>
+</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
