@@ -24,9 +24,14 @@ const userSchema = new mongoose.Schema(
       default: null
     },
 
+    appleId: {
+      type: String,
+      default: null
+    },
+
     authProvider: {
       type: String,
-      enum: ["mobile", "google", "facebook"],
+      enum: ["mobile", "google", "facebook", "apple"],
       default: "mobile"
     },
 
@@ -198,6 +203,17 @@ userSchema.index(
     unique: true,
     partialFilterExpression: {
       facebookId: { $gt: "" }
+    }
+  }
+);
+
+// Unique Apple ID
+userSchema.index(
+  { appleId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      appleId: { $gt: "" }
     }
   }
 );

@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const axios = require("axios");
 // const sendOtpSms = require("../utils/sendOtpSms");
 const { OAuth2Client } = require("google-auth-library");
+const appleSignin = require("apple-signin-auth");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -522,3 +523,182 @@ exports.googleLogin = async (req, res) => {
     });
   }
 };
+
+// =======================
+// APPLE LOGIN
+// =======================
+exports.appleLogin = async (req, res) => {
+  try {
+    const { idToken, fullName, email: requestEmail, referralCode } = req.body;
+
+    if (!idToken) {
+      return res.status(400).json({
+        success: false,
+        message: "idToken is required"
+      });
+    }
+
+    let payload;
+    const hasAppleConfig = process.env.APPLE_CLIENT_ID || process.env.APPLE_SERVICES_ID;
+
+    if (hasAppleConfig) {
+      // Secure verification with Apple
+      const audiences = [process.env.APPLE_CLIENT_ID];
+      if (process.env.APPLE_SERVICES_ID) {
+        audiences.push(process.env.APPLE_SERVICES_ID);
+      }
+
+      payload = await appleSignin.verifyIdToken(idToken, {
+        audience: audiences.filter(Boolean),
+        ignoreExpiration: false,
+      });
+    } else {
+      // Development mode: decode token without verifying signature
+      console.warn("WARNING: Apple Sign-In Client ID not configured. Bypassing cryptographic signature verification (Insecure - development only).");
+      payload = jwt.decode(idToken);
+
+      if (!payload) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid token format"
+        });
+      }
+    }
+
+    const appleId = payload.sub;
+    // Email is included in Apple ID token payload
+    const email = payload.email || requestEmail;
+
+    let user = await User.findOne({
+      $or: [
+        { appleId },
+        ...(email ? [{ email }] : [])
+      ],
+      isDeleted: false
+    });
+
+    let isNewUser = false;
+
+    // =========================
+    // EXISTING USER
+    // =========================
+    if (user) {
+      if (!user.appleId) {
+        user.appleId = appleId;
+        user.authProvider = "apple";
+      }
+
+      if (!user.email && email) {
+        user.email = email;
+      }
+
+      if (!user.fullName && fullName) {
+        user.fullName = fullName;
+      }
+
+      if (!user.referralCode) {
+        user.referralCode = await getUniqueReferralCode();
+      }
+
+      // apply referral only once
+      if (referralCode && !user.referredBy) {
+        const referredByUser = await User.findOne({ referralCode });
+
+        if (!referredByUser) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid referral code"
+          });
+        }
+
+        if (referredByUser.email === email || (user.mobile && referredByUser.mobile === user.mobile)) {
+          return res.status(400).json({
+            success: false,
+            message: "You cannot refer yourself"
+          });
+        }
+
+        user.referredBy = referredByUser._id;
+
+        await User.findByIdAndUpdate(referredByUser._id, {
+          $inc: { referralCount: 1 }
+        });
+      }
+
+      await user.save();
+    }
+
+    // =========================
+    // NEW USER
+    // =========================
+    else {
+      let referredByUser = null;
+
+      if (referralCode) {
+        referredByUser = await User.findOne({ referralCode });
+
+        if (!referredByUser) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid referral code"
+          });
+        }
+
+        if (email && referredByUser.email === email) {
+          return res.status(400).json({
+            success: false,
+            message: "You cannot refer yourself"
+          });
+        }
+      }
+
+      const newReferralCode = await getUniqueReferralCode();
+
+      user = await User.create({
+        appleId,
+        email: email || "",
+        fullName: fullName || "",
+        authProvider: "apple",
+        isProfileComplete: !!fullName,
+        referralCode: newReferralCode,
+        referredBy: referredByUser?._id || null
+      });
+
+      // increment referral count
+      if (referredByUser) {
+        await User.findByIdAndUpdate(referredByUser._id, {
+          $inc: { referralCount: 1 }
+        });
+        await rewardReferrer(referredByUser._id);
+      }
+
+      isNewUser = true;
+    }
+
+    // Stamp lastLoginAt so the notification filter knows which session to start from
+    await User.findByIdAndUpdate(user._id, { lastLoginAt: new Date() });
+
+    const token = jwt.sign(
+      { userId: user._id, provider: "apple" },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      success: true,
+      message: "Apple login successful",
+      token,
+      isNewUser,
+      user
+    });
+
+  } catch (error) {
+    console.error("Apple login FULL ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
