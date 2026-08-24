@@ -8,7 +8,7 @@ const PromoCode = require("../models/promoCode.model");
 const PromoUsage = require("../models/promoUsage.model");
 
 const promoService = require("../services/promoCode.service");
-
+const appleIapService = require("../services/appleIap.service");
 // Create Razorpay Order
 exports.createOrder = async (req, res) => {
   try {
@@ -381,6 +381,130 @@ exports.verifyPayment = async (req, res) => {
       res.status(400).json({
         success: false,
         message: error.message
+      });
+    }
+  }
+};
+
+// Verify Apple In-App Purchase
+exports.verifyApplePayment = async (req, res) => {
+  let responseSent = false;
+
+  try {
+    const {
+      verification_data,
+      planId,
+      teamId,
+      matchId,
+      seriesId
+    } = req.body;
+
+    if (!verification_data || !planId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing payment fields (verification_data, planId)"
+      });
+    }
+
+    // 1. Verify Apple Transaction via Service
+    const verifiedTransaction = await appleIapService.verifyAppleTransaction(verification_data);
+    const appleTransactionId = verifiedTransaction.transactionId;
+
+    const userId = req.user.userId;
+
+    // 2. Idempotency Check
+    const alreadyExists = await Subscription.findOne({
+      paymentId: appleTransactionId
+    });
+
+    if (alreadyExists) {
+      return res.json({
+        success: true,
+        message: "Already processed",
+        subscription: alreadyExists
+      });
+    }
+
+    // 3. Plan Check
+    const plan = await Plan.findById(planId);
+
+    if (!plan) {
+      return res.status(404).json({
+        success: false,
+        message: "Plan not found"
+      });
+    }
+
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + plan.durationDays);
+
+    // 4. Create Subscription
+    const subscription = await Subscription.create({
+      userId,
+      planId: plan._id,
+      teamId: teamId || null,
+      matchId: matchId || null,
+      seriesId: seriesId || null,
+      accessType: plan.planType,
+      status: "active",
+      startDate,
+      endDate,
+      amountPaid: plan.price,
+      paymentId: appleTransactionId
+    });
+
+    res.json({
+      success: true,
+      message: "Apple Payment verified",
+      subscription
+    });
+    responseSent = true;
+
+    // 5. Side Effects (Ad-Free logic)
+    try {
+      if (plan.planType === "ad_free") {
+        const userForAdFree = await User.findById(userId);
+
+        if (userForAdFree) {
+          userForAdFree.adsDisabled = true;
+
+          if (plan.durationDays >= 99999) {
+            userForAdFree.adsExpiry = null;
+            userForAdFree.adFreePurchaseType = "lifetime";
+          } else {
+            const expiryDate = new Date();
+            expiryDate.setDate(
+              expiryDate.getDate() + plan.durationDays
+            );
+
+            userForAdFree.adsExpiry = expiryDate;
+            userForAdFree.adFreePurchaseType = "temporary";
+          }
+
+          await userForAdFree.save();
+        }
+      }
+    } catch (adFreeError) {
+      console.error(
+        "AD-FREE UPDATE ERROR (Apple) for paymentId",
+        appleTransactionId,
+        ":",
+        adFreeError
+      );
+    }
+
+  } catch (error) {
+    console.error("\n====== VERIFY APPLE PAYMENT CONTROLLER ERROR ======");
+    console.error(error);
+    console.error("Stack trace:", error.stack);
+    console.dir(error, { depth: null });
+    console.error("===================================================\n");
+
+    if (!responseSent) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Apple transaction verification failed"
       });
     }
   }
