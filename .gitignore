@@ -4,6 +4,7 @@ node_modules/
 # env files
 .env
 frontend/.env
+frontend/.env.production
 backend/.env
 
 # build folders
